@@ -12,8 +12,8 @@ using OrderService.Infrastructure.Persistence;
 namespace OrderService.Infrastructure.Migrations
 {
     [DbContext(typeof(OrderDbContext))]
-    [Migration("20260405053726_UpdateInOrderEntity")]
-    partial class UpdateInOrderEntity
+    [Migration("20260406085253_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

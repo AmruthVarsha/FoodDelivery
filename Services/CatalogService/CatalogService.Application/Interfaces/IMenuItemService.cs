@@ -11,6 +11,8 @@ namespace CatalogService.Application.Interfaces
 
         Task<MenuItemDto> GetByIdAsync(Guid id);
 
+        Task<IEnumerable<MenuItemDto>> SearchByNameAsync(string searchTerm);
+
         Task<Guid> CreateAsync(CreateMenuItemDto dto, string requestorId);
 
         Task UpdateAsync(Guid id, UpdateMenuItemDto dto, string requestorId);

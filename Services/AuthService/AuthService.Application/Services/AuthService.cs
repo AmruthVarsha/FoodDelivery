@@ -4,6 +4,7 @@ using AuthService.Application.Interfaces;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using AuthService.Domain.Interfaces;
+using AuthService.Infrastructure.Messaging.Publishers;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
@@ -20,14 +21,20 @@ namespace AuthService.Application.Service
         private readonly IEmailService emailService;
         private readonly IRefreshTokenService refreshTokenService;
         private readonly IUserRepository userRepository;
+        private readonly UserDataSyncPublisher _userDataSyncPublisher;
+        private readonly UserRoleApprovalPublisher _userRoleApprovalPublisher;
 
-        public AuthService(IAuthRepository authRepository, JwtSettingsDTO jwtSettingsDTO, IRefreshTokenService refreshTokenService, IEmailService emailService, IUserRepository userRepository)
+        public AuthService(IAuthRepository authRepository, JwtSettingsDTO jwtSettingsDTO, IRefreshTokenService refreshTokenService, 
+            IEmailService emailService, IUserRepository userRepository, UserDataSyncPublisher userDataSyncPublisher, 
+            UserRoleApprovalPublisher userRoleApprovalPublisher)
         {
             this.authRepository = authRepository;
             this.jwtSettingsDTO = jwtSettingsDTO;
             this.refreshTokenService = refreshTokenService;
             this.emailService = emailService;
             this.userRepository =userRepository;
+            _userDataSyncPublisher = userDataSyncPublisher;
+            _userRoleApprovalPublisher = userRoleApprovalPublisher;
         }
 
         private string GenerateToken(string userId, string fullName, IList<string> roles, string email, bool emailConfirmed)
@@ -82,17 +89,40 @@ namespace AuthService.Application.Service
                 Email = model.Email,
                 PhoneNo = model.PhoneNo,
             };
+            
+            // For Partner and Admin roles, set IsActive to false (requires approval)
             if (model.Role != RoleEnum.Customer && model.Role != RoleEnum.DeliveryAgent)
             {
                 newUser.IsActive = false;
-                await authRepository.AddRoleApprovalRequest(new RoleApprovalRequest { Email=model.Email, Role=model.Role,IsApproved = false });
-                await emailService.SendEmailAsync("amruthvarsha2005@gmail.com", "Request to approve to Role", $"This is a request mail to approve the user,\nUserName:{model.FullName}\nEmail:{model.Email}\nRole:{model.Role}");
             }
+            
             user = await authRepository.RegisterUserAsync(newUser, model.Password);
             if (user == null) throw new BadRequestException("Unexpected error occurred");
+            
+            // Assign role directly during registration for all roles
+            await authRepository.AddToRoleAsync(user.Id, model.Role.ToString());
+            
+            // For Customer and DeliveryAgent, publish sync event immediately
             if(model.Role == RoleEnum.Customer || model.Role == RoleEnum.DeliveryAgent)
             {
-                await authRepository.AddToRoleAsync(user.Id, model.Role.ToString());
+                await _userDataSyncPublisher.PublishUserDataSync(
+                    user.Id, user.FullName, user.Email, user.PhoneNo, 
+                    model.Role.ToString(), user.IsActive, user.EmailConfirmed, 
+                    user.TwoFactorEnabled, "Created");
+            }
+            // For Partner and Admin, save approval request locally and publish to AdminService
+            else
+            {
+                // Save approval request in AuthService database
+                await authRepository.AddRoleApprovalRequest(new RoleApprovalRequest
+                {
+                    Email = model.Email,
+                    Role = model.Role,
+                    IsApproved = false
+                });
+                
+                // Publish approval request event to AdminService
+                await _userRoleApprovalPublisher.PublishApprovalRequest(model.Email, model.FullName, model.Role.ToString());
             }
         }
 
@@ -466,8 +496,11 @@ namespace AuthService.Application.Service
         {
             var user = await authRepository.FindByEmailAsync(email);
             if(user == null) { throw new NotFoundException($"User with email {email} not found"); }
-            user.IsActive = true;
-            await userRepository.UpdateAsync(user);
+            
+            // Activate the account using the repository method
+            await authRepository.ChangeAccountStatusAsync(user.Id, true);
+            
+            // Mark the approval request as approved
             await authRepository.ApproveRequest(email);
         }
     }

@@ -102,9 +102,36 @@ namespace OrderService.Application.Services
             if (!menuItem.IsAvailable)
                 throw new BadRequestException("The requested menu item is currently unavailable.");
 
+            // Validate category is active
+            var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
+            if (category == null || !category.IsActive)
+                throw new BadRequestException("The menu item's category is currently inactive.");
+
+            // Validate restaurant is active and approved
+            var restaurant = await _catalogRepository.GetRestaurantById(menuItem.RestaurantId);
+            if (restaurant == null)
+                throw new NotFoundException("Restaurant", menuItem.RestaurantId);
+
+            if (!restaurant.IsActive)
+                throw new BadRequestException("The restaurant is currently inactive and not accepting orders.");
+
+            if (!restaurant.IsApproved)
+                throw new BadRequestException("The restaurant is not approved yet and cannot accept orders.");
+
             var cart = await _cartRepository.GetById(cartItemDTO.CartId);
             if (cart == null)
                 throw new NotFoundException("Cart", cartItemDTO.CartId);
+
+            // MIXED CART PREVENTION: Check if cart already has items from a different restaurant
+            if (cart.CartItems.Any())
+            {
+                var existingRestaurantId = cart.RestaurantId;
+                if (menuItem.RestaurantId != existingRestaurantId)
+                {
+                    throw new BadRequestException(
+                        "Cannot add items from different restaurants. Please clear your cart or create a new cart for this restaurant.");
+                }
+            }
 
             if (cart.RestaurantId != menuItem.RestaurantId)
                 throw new BadRequestException("Menu item does not belong to the cart's restaurant.");

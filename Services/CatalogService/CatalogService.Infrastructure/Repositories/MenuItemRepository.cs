@@ -35,6 +35,14 @@ namespace CatalogService.Infrastructure.Repositories
                 .FirstOrDefaultAsync(mi => mi.Id == id);
         }
 
+        public async Task<IEnumerable<MenuItem>> SearchByNameAsync(string searchTerm)
+        {
+            return await _context.MenuItems
+                .Include(mi => mi.Category)
+                .Where(mi => mi.Name.Contains(searchTerm))
+                .ToListAsync();
+        }
+
         public async Task<bool> ExistsAsync(Guid id)
         {
             return await _context.MenuItems.AnyAsync(mi => mi.Id == id);
@@ -58,6 +66,10 @@ namespace CatalogService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-
+        public async Task UpdateBulkAsync(IEnumerable<MenuItem> menuItems)
+        {
+            _context.MenuItems.UpdateRange(menuItems);
+            await _context.SaveChangesAsync();
+        }
     }
 }

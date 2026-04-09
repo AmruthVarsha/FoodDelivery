@@ -11,5 +11,7 @@ namespace CatalogService.Domain.Interfaces
         public Task<Guid> CreateAsync(Category category);
         public Task UpdateAsync(Category category);
         public Task DeleteAsync(Guid id);
+        public Task<IEnumerable<MenuItem>> GetMenuItemsByCategoryIdAsync(Guid categoryId);
+        public Task UpdateMenuItemsBulkAsync(IEnumerable<MenuItem> menuItems);
     }
 }

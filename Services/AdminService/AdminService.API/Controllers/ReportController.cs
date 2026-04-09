@@ -25,5 +25,25 @@ namespace AdminService.API.Controllers
             var report = await _reportService.GetSalesReportAsync(from, to);
             return Ok(report);
         }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUserReport([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            if (from >= to)
+                return BadRequest(new { message = "From date must be before To date" });
+
+            var report = await _reportService.GetUserReportAsync(from, to);
+            return Ok(report);
+        }
+
+        [HttpGet("restaurants")]
+        public async Task<IActionResult> GetRestaurantReport([FromQuery] DateTime from, [FromQuery] DateTime to)
+        {
+            if (from >= to)
+                return BadRequest(new { message = "From date must be before To date" });
+
+            var report = await _reportService.GetRestaurantReportAsync(from, to);
+            return Ok(report);
+        }
     }
 }

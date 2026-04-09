@@ -253,9 +253,12 @@ namespace AuthService.Infrastructure.Repositories
         public async Task ApproveRequest(string email)
         {
             var request = await context.RoleApprovalRequests.FirstOrDefaultAsync(r => r.Email == email);
-            request.IsApproved = true;
-            context.RoleApprovalRequests.Update(request);
-            await context.SaveChangesAsync();
+            if (request != null)
+            {
+                request.IsApproved = true;
+                context.RoleApprovalRequests.Update(request);
+                await context.SaveChangesAsync();
+            }
         }
         public async Task<IEnumerable<RoleApprovalRequest>> PendingRequests()
         {

@@ -5,8 +5,11 @@ using AuthService.Application.Service;
 using AuthService.Application.Services;
 using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Identity;
+using AuthService.Infrastructure.Messaging.Consumers;
+using AuthService.Infrastructure.Messaging.Publishers;
 using AuthService.Infrastructure.Persistence;
 using AuthService.Infrastructure.Repositories;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -46,6 +49,25 @@ namespace AuthService.API
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IAddressRepository, AddressRepository>();
             builder.Services.AddScoped<IAddressService, AddressService>();
+
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<UserRoleApprovalResponseConsumer>();
+                x.AddConsumer<UserUpdateConsumer>();
+
+                x.UsingRabbitMq((ctx, cfg) =>
+                {
+                    cfg.Host(builder.Configuration["RabbitMQ:Host"], h =>
+                    {
+                        h.Username(builder.Configuration["RabbitMQ:Username"]);
+                        h.Password(builder.Configuration["RabbitMQ:Password"]);
+                    });
+                    cfg.ConfigureEndpoints(ctx);
+                });
+            });
+
+            builder.Services.AddScoped<UserDataSyncPublisher>();
+            builder.Services.AddScoped<UserRoleApprovalPublisher>();
 
 
 

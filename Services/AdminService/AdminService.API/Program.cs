@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using MassTransit;
 using AdminService.Infrastructure.Messaging.Consumers;
+using AdminService.Infrastructure.Messaging.Publishers;
 
 namespace AdminService.API
 {
@@ -33,9 +34,13 @@ namespace AdminService.API
 
             builder.Services.AddMassTransit(x =>
             {
-            x.AddConsumer<OrderStatusChangedConsumer>();
+                x.AddConsumer<OrderStatusChangedConsumer>();
+                x.AddConsumer<UserDataSyncConsumer>();
+                x.AddConsumer<UserRoleApprovalConsumer>();
+                x.AddConsumer<RestaurantDataSyncConsumer>();
+                x.AddConsumer<RestaurantApprovalConsumer>();
 
-            x.UsingRabbitMq((ctx, cfg) =>
+                x.UsingRabbitMq((ctx, cfg) =>
                 {
                     cfg.Host(builder.Configuration["RabbitMQ:Host"], h =>
                     {
@@ -116,10 +121,23 @@ namespace AdminService.API
 
             builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
             builder.Services.AddScoped<IOrderSummaryRepository, OrderSummaryRepository>();
+            builder.Services.AddScoped<IUserSummaryRepository, UserSummaryRepository>();
+            builder.Services.AddScoped<IUserRoleApprovalRepository, UserRoleApprovalRepository>();
+            builder.Services.AddScoped<IRestaurantSummaryRepository, RestaurantSummaryRepository>();
+            builder.Services.AddScoped<IRestaurantApprovalRepository, RestaurantApprovalRepository>();
 
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IReportService, ReportService>();
+            builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+            builder.Services.AddScoped<IUserApprovalService, UserApprovalService>();
+            builder.Services.AddScoped<IRestaurantManagementService, RestaurantManagementService>();
+            builder.Services.AddScoped<IRestaurantApprovalService, RestaurantApprovalService>();
+
+            builder.Services.AddScoped<UserRoleApprovalResponsePublisher>();
+            builder.Services.AddScoped<RestaurantApprovalResponsePublisher>();
+            builder.Services.AddScoped<UserUpdatePublisher>();
+            builder.Services.AddScoped<RestaurantUpdatePublisher>();
 
             var app = builder.Build();
 

@@ -11,6 +11,10 @@ namespace AdminService.Infrastructure.Persistence
 
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<OrderSummary> OrderSummaries { get; set; }
+        public DbSet<UserSummary> UserSummaries { get; set; }
+        public DbSet<UserRoleApprovalRequest> UserRoleApprovalRequests { get; set; }
+        public DbSet<RestaurantSummary> RestaurantSummaries { get; set; }
+        public DbSet<RestaurantApprovalRequest> RestaurantApprovalRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -47,6 +51,70 @@ namespace AdminService.Infrastructure.Persistence
                 entity.HasIndex(e => e.OrderId).IsUnique();
                 entity.HasIndex(e => e.CustomerId);
                 entity.HasIndex(e => e.PlacedAt);
+            });
+
+            modelBuilder.Entity<UserSummary>(entity =>
+            {
+                entity.ToTable("UserSummaries");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.UserId).HasMaxLength(450).IsRequired();
+                entity.Property(e => e.FullName).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.PhoneNo).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+
+                entity.HasIndex(e => e.UserId).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.Role);
+            });
+
+            modelBuilder.Entity<UserRoleApprovalRequest>(entity =>
+            {
+                entity.ToTable("UserRoleApprovalRequests");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.FullName).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Role).HasMaxLength(50).IsRequired();
+                entity.Property(e => e.ApprovedByAdminId).HasMaxLength(450);
+                entity.Property(e => e.RejectionReason).HasMaxLength(500);
+
+                entity.HasIndex(e => e.Email).IsUnique();
+                entity.HasIndex(e => e.IsApproved);
+            });
+
+            modelBuilder.Entity<RestaurantSummary>(entity =>
+            {
+                entity.ToTable("RestaurantSummaries");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.RestaurantId).IsRequired();
+                entity.Property(e => e.OwnerId).HasMaxLength(450).IsRequired();
+                entity.Property(e => e.Name).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20).IsRequired();
+
+                entity.HasIndex(e => e.RestaurantId).IsUnique();
+                entity.HasIndex(e => e.OwnerId);
+                entity.HasIndex(e => e.IsActive);
+            });
+
+            modelBuilder.Entity<RestaurantApprovalRequest>(entity =>
+            {
+                entity.ToTable("RestaurantApprovalRequests");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.RestaurantId).IsRequired();
+                entity.Property(e => e.OwnerId).HasMaxLength(450).IsRequired();
+                entity.Property(e => e.RestaurantName).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.Email).HasMaxLength(255).IsRequired();
+                entity.Property(e => e.PhoneNumber).HasMaxLength(20).IsRequired();
+                entity.Property(e => e.ApprovedByAdminId).HasMaxLength(450);
+                entity.Property(e => e.RejectionReason).HasMaxLength(500);
+
+                entity.HasIndex(e => e.RestaurantId).IsUnique();
+                entity.HasIndex(e => e.IsApproved);
             });
         }
     }

@@ -5,6 +5,8 @@ namespace AdminService.Application.Exceptions
         public NotFoundException(string message) : base(message) { }
         public NotFoundException(string entity, Guid id)
             : base($"{entity} with id '{id}' was not found.") { }
+        public NotFoundException(string entity, string id)
+            : base($"{entity} with id '{id}' was not found.") { }
     }
 
     public class ConflictException : Exception

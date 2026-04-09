@@ -11,19 +11,27 @@ namespace OrderService.Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly ICatalogRepository _catalogRepository;
         private static readonly Random _random = new();
 
-        public PaymentService(IPaymentRepository paymentRepository, IOrderRepository orderRepository)
+        public PaymentService(
+            IPaymentRepository paymentRepository, 
+            IOrderRepository orderRepository,
+            ICatalogRepository catalogRepository)
         {
             _paymentRepository = paymentRepository;
             _orderRepository = orderRepository;
+            _catalogRepository = catalogRepository;
         }
 
-        public async Task<PaymentResponseDTO> SimulatePaymentAsync(SimulatePaymentDTO dto)
+        public async Task<PaymentResponseDTO> SimulatePaymentAsync(SimulatePaymentDTO dto, string userId)
         {
             var order = await _orderRepository.GetById(dto.OrderId);
             if (order == null)
                 throw new NotFoundException("Order", dto.OrderId);
+
+            // Check authorization: user must be the customer or restaurant owner
+            await ValidateUserAccess(order, userId);
 
             var existing = await _paymentRepository.GetByOrderId(dto.OrderId);
 
@@ -50,11 +58,14 @@ namespace OrderService.Application.Services
             return MapToDTO(existing);
         }
 
-        public async Task<PaymentResponseDTO> CompletePaymentAsync(Guid orderId)
+        public async Task<PaymentResponseDTO> CompletePaymentAsync(Guid orderId, string userId)
         {
             var order = await _orderRepository.GetById(orderId);
             if (order == null)
                 throw new NotFoundException("Order", orderId);
+
+            // Check authorization: user must be the customer or restaurant owner
+            await ValidateUserAccess(order, userId);
 
             var payment = await _paymentRepository.GetByOrderId(orderId);
             if (payment == null)
@@ -74,6 +85,36 @@ namespace OrderService.Application.Services
             return MapToDTO(payment);
         }
 
+        public async Task<PaymentResponseDTO> GetPaymentStatusAsync(Guid orderId, string userId)
+        {
+            var order = await _orderRepository.GetById(orderId);
+            if (order == null)
+                throw new NotFoundException("Order", orderId);
+
+            // Check authorization: user must be the customer or restaurant owner
+            await ValidateUserAccess(order, userId);
+
+            var payment = await _paymentRepository.GetByOrderId(orderId);
+            if (payment == null)
+                throw new NotFoundException("Payment", orderId);
+
+            return MapToDTO(payment);
+        }
+
+        private async Task ValidateUserAccess(Order order, string userId)
+        {
+            // Check if user is the customer who placed the order
+            if (order.CustomerId == userId)
+                return;
+
+            // Check if user is the restaurant owner
+            var restaurant = await _catalogRepository.GetRestaurantById(order.RestaurantId);
+            if (restaurant != null && restaurant.OwnerId == userId)
+                return;
+
+            throw new ForbiddenException("You do not have access to this payment.");
+        }
+
         private bool DeterminePaymentSuccess(PaymentMethod method)
         {
             if (method == PaymentMethod.COD)
@@ -83,15 +124,6 @@ namespace OrderService.Application.Services
             {
                 return _random.NextDouble() < 0.8;
             }
-        }
-
-        public async Task<PaymentResponseDTO> GetPaymentStatusAsync(Guid orderId)
-        {
-            var payment = await _paymentRepository.GetByOrderId(orderId);
-            if (payment == null)
-                throw new NotFoundException("Payment", orderId);
-
-            return MapToDTO(payment);
         }
 
         private static string GenerateTransactionReference()

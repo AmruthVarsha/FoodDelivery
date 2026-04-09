@@ -45,6 +45,16 @@ namespace CatalogService.API.Controllers
             return Ok("Category updated successfully.");
         }
 
+        /// <summary>Toggles category active status and cascades to menu items. Partner only.</summary>
+        [Authorize(Roles = "Partner")]
+        [HttpPatch("{id:guid}/toggle-status")]
+        public async Task<IActionResult> ToggleStatus([FromRoute] Guid id, [FromBody] ToggleCategoryStatusDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            await _categoryService.ToggleCategoryStatusAsync(id, dto.IsActive, userId!);
+            return Ok($"Category status updated to {(dto.IsActive ? "active" : "inactive")}. Menu items have been updated accordingly.");
+        }
+
         /// <summary>Deletes a category and all its menu items. Partner only.</summary>
         [Authorize(Roles = "Partner")]
         [HttpDelete("{id:guid}")]

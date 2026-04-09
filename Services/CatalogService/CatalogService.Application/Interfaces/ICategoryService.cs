@@ -20,6 +20,9 @@ namespace CatalogService.Application.Interfaces
         /// <summary>Updates an existing category. Requestor must own the parent restaurant.</summary>
         Task UpdateAsync(Guid id, UpdateCategoryDto dto, string requestorId);
 
+        /// <summary>Toggles category active status and cascades to menu items. Requestor must own the parent restaurant.</summary>
+        Task ToggleCategoryStatusAsync(Guid id, bool isActive, string requestorId);
+
         /// <summary>Deletes a category and its menu items. Requestor must own the parent restaurant.</summary>
         Task DeleteAsync(Guid id, string requestorId);
     }

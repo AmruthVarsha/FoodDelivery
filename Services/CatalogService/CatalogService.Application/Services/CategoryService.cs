@@ -44,6 +44,9 @@ namespace CatalogService.Application.Services
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
 
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot add categories.");
+
             var category = new Category
             {
                 Id = Guid.NewGuid(),
@@ -67,11 +70,46 @@ namespace CatalogService.Application.Services
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
 
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot update categories.");
+
             category.Name = dto.Name.Trim();
             category.DisplayOrder = dto.DisplayOrder;
             category.IsActive = dto.IsActive;
 
             await _categoryRepo.UpdateAsync(category);
+        }
+
+        public async Task ToggleCategoryStatusAsync(Guid id, bool isActive, string requestorId)
+        {
+            var category = await _categoryRepo.GetByIdAsync(id)
+                ?? throw new NotFoundException(nameof(Category), id);
+
+            var restaurant = await _restaurantRepo.GetByIdAsync(category.RestaurantId)
+                ?? throw new NotFoundException(nameof(Restaurant), category.RestaurantId);
+
+            if (restaurant.OwnerId != requestorId)
+                throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot update categories.");
+
+            category.IsActive = isActive;
+            await _categoryRepo.UpdateAsync(category);
+
+            // CASCADE: If category is being deactivated, deactivate all menu items in this category
+            if (!isActive)
+            {
+                var menuItems = await _categoryRepo.GetMenuItemsByCategoryIdAsync(id);
+                if (menuItems.Any())
+                {
+                    foreach (var item in menuItems)
+                    {
+                        item.IsAvailable = false;
+                    }
+                    await _categoryRepo.UpdateMenuItemsBulkAsync(menuItems);
+                }
+            }
         }
 
         public async Task DeleteAsync(Guid id, string requestorId)
@@ -84,6 +122,9 @@ namespace CatalogService.Application.Services
 
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot delete categories.");
 
             await _categoryRepo.DeleteAsync(id);
         }

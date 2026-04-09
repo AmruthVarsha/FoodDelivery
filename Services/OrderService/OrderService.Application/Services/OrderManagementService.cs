@@ -55,6 +55,48 @@ namespace OrderService.Application.Services
             if (address.UserId != customerId)
                 throw new ForbiddenException("The selected address does not belong to you.");
 
+            // Get restaurant details for validation
+            var restaurant = await _catalogRepository.GetRestaurantById(cart.RestaurantId);
+            if (restaurant == null)
+                throw new NotFoundException("Restaurant", cart.RestaurantId);
+
+            if (!restaurant.IsActive)
+                throw new BadRequestException("The restaurant is currently inactive and not accepting orders.");
+
+            if (!restaurant.IsApproved)
+                throw new BadRequestException("The restaurant is not approved yet and cannot accept orders.");
+
+            // SERVICE AREA VALIDATION: Check if delivery address pincode is serviceable
+            var isServiceable = await _catalogRepository.IsServiceAreaAvailable(cart.RestaurantId, address.Pincode);
+            if (!isServiceable)
+            {
+                throw new BadRequestException(
+                    $"Sorry, the restaurant does not deliver to pincode {address.Pincode}. Please select a different address or restaurant.");
+            }
+
+            // OPERATING HOURS VALIDATION: Check if restaurant is currently open
+            var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+            if (currentTime < restaurant.OpeningTime || currentTime > restaurant.ClosingTime)
+            {
+                throw new BadRequestException(
+                    $"The restaurant is currently closed. Operating hours: {restaurant.OpeningTime:HH:mm} - {restaurant.ClosingTime:HH:mm}");
+            }
+
+            // RE-VALIDATE CART ITEMS: Ensure all items are still available and their categories are active
+            foreach (var cartItem in cart.CartItems)
+            {
+                var menuItem = await _catalogRepository.GetItemById(cartItem.MenuItemId);
+                if (menuItem == null)
+                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' is no longer available.");
+
+                if (!menuItem.IsAvailable)
+                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' is currently unavailable.");
+
+                var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
+                if (category == null || !category.IsActive)
+                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' belongs to an inactive category.");
+            }
+
             var totalAmount = cart.CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
 
             var order = new Order
@@ -98,9 +140,7 @@ namespace OrderService.Application.Services
 
             await _paymentRepository.AddAsync(payment);
 
-            var restaurant = await _catalogRepository.GetRestaurantById(order.RestaurantId);
-
-            await _orderStatusPublisher.PublishOrderStatus(order.Id, order.CustomerId,restaurant.Name, order.TotalAmount, order.Status.ToString(), order.CreatedAt);
+            await _orderStatusPublisher.PublishOrderStatus(order.Id, order.CustomerId, restaurant.Name, order.TotalAmount, order.Status.ToString(), order.CreatedAt);
 
             cart.Status = CartStatus.Ordered;
             cart.UpdatedAt = DateTime.UtcNow;
@@ -109,9 +149,35 @@ namespace OrderService.Application.Services
             return MapToResponse(order, null);
         }
 
-        public async Task<IEnumerable<OrderSummaryDTO>> GetOrderHistoryAsync(string customerId)
+        public async Task<IEnumerable<OrderSummaryDTO>> GetOrderHistoryAsync(string userId, string userRole)
         {
-            var orders = await _orderRepository.GetByCustomerId(customerId);
+            IEnumerable<Order> orders;
+
+            if (userRole == "Customer")
+            {
+                // Get orders placed by the customer
+                orders = await _orderRepository.GetByCustomerId(userId);
+            }
+            else if (userRole == "Partner")
+            {
+                // Get all restaurants owned by the partner
+                var restaurants = await _catalogRepository.GetRestaurantsByOwnerId(userId);
+                var restaurantIds = restaurants.Select(r => r.Id).ToList();
+
+                // Get all orders for those restaurants
+                var allOrders = new List<Order>();
+                foreach (var restaurantId in restaurantIds)
+                {
+                    var restaurantOrders = await _orderRepository.GetByRestaurantId(restaurantId);
+                    allOrders.AddRange(restaurantOrders);
+                }
+                orders = allOrders.OrderByDescending(o => o.CreatedAt);
+            }
+            else
+            {
+                orders = new List<Order>();
+            }
+
             return orders.Select(o => new OrderSummaryDTO
             {
                 Id = o.Id,
@@ -193,7 +259,9 @@ namespace OrderService.Application.Services
                 (OrderStatus.Pending, OrderStatus.RestaurantRejected) => true,
                 (OrderStatus.RestaurantAccepted, OrderStatus.Preparing) => true,
                 (OrderStatus.Preparing, OrderStatus.ReadyForPickup) => true,
-                (OrderStatus.ReadyForPickup, OrderStatus.OutForDelivery) => true,
+                (OrderStatus.ReadyForPickup, OrderStatus.PickedUp) => true,
+                (OrderStatus.PickedUp, OrderStatus.OutForDelivery) => true,
+                (OrderStatus.OutForDelivery, OrderStatus.Delivered) => true,
                 _ => false
             };
         }

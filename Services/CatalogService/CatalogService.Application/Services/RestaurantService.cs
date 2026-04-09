@@ -5,6 +5,7 @@ using CatalogService.Application.Exceptions;
 using CatalogService.Application.Interfaces;
 using CatalogService.Domain.Entities;
 using CatalogService.Domain.Interfaces;
+using CatalogService.Infrastructure.Messaging.Publishers;
 
 namespace CatalogService.Application.Services
 {
@@ -12,13 +13,19 @@ namespace CatalogService.Application.Services
     {
         private readonly IRestaurantRepository _restaurantRepo;
         private readonly ICuisineRepository _cuisineRepo;
+        private readonly RestaurantDataSyncPublisher _dataSyncPublisher;
+        private readonly RestaurantApprovalRequestPublisher _approvalPublisher;
 
         public RestaurantService(
             IRestaurantRepository restaurantRepo,
-            ICuisineRepository cuisineRepo)
+            ICuisineRepository cuisineRepo,
+            RestaurantDataSyncPublisher dataSyncPublisher,
+            RestaurantApprovalRequestPublisher approvalPublisher)
         {
             _restaurantRepo = restaurantRepo;
             _cuisineRepo = cuisineRepo;
+            _dataSyncPublisher = dataSyncPublisher;
+            _approvalPublisher = approvalPublisher;
         }
 
         // ─── Queries ─────────────────────────────────────────────────────────────
@@ -117,7 +124,18 @@ namespace CatalogService.Application.Services
                     .ToList()
             };
 
-            return await _restaurantRepo.CreateAsync(restaurant);
+            var restaurantId = await _restaurantRepo.CreateAsync(restaurant);
+            
+            await _dataSyncPublisher.PublishRestaurantDataSync(
+                restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
+                restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
+                restaurant.IsActive, restaurant.IsApproved, "Created");
+            
+            await _approvalPublisher.PublishApprovalRequest(
+                restaurant.Id, restaurant.OwnerId, restaurant.Name, 
+                restaurant.Email, restaurant.PhoneNumber);
+            
+            return restaurantId;
         }
 
         public async Task UpdateAsync(Guid id, UpdateRestaurantDto dto, string requestorId)
@@ -127,6 +145,9 @@ namespace CatalogService.Application.Services
 
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot update.");
 
             // Resolve cuisine names → IDs
             var cuisineIds = new List<Guid>();
@@ -168,6 +189,11 @@ namespace CatalogService.Application.Services
                 .ToList();
 
             await _restaurantRepo.UpdateAsync(restaurant);
+
+            await _dataSyncPublisher.PublishRestaurantDataSync(
+                restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
+                restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
+                restaurant.IsActive, restaurant.IsApproved, "Updated");
         }
 
         public async Task DeleteAsync(Guid id, string requestorId, bool isAdmin = false)
@@ -179,6 +205,11 @@ namespace CatalogService.Application.Services
                 throw new ForbiddenException("You do not own this restaurant.");
 
             await _restaurantRepo.DeleteAsync(id);
+
+            await _dataSyncPublisher.PublishRestaurantDataSync(
+                restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
+                restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
+                restaurant.IsActive, restaurant.IsApproved, "Deleted");
         }
 
 

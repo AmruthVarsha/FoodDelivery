@@ -55,5 +55,17 @@ namespace CatalogService.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<IEnumerable<MenuItem>> GetMenuItemsByCategoryIdAsync(Guid categoryId)
+        {
+            return await _context.MenuItems
+                .Where(mi => mi.CategoryId == categoryId)
+                .ToListAsync();
+        }
+
+        public async Task UpdateMenuItemsBulkAsync(IEnumerable<MenuItem> menuItems)
+        {
+            _context.MenuItems.UpdateRange(menuItems);
+            await _context.SaveChangesAsync();
+        }
     }
 }

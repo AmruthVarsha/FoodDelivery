@@ -1,6 +1,8 @@
 using CatalogService.Domain.Interfaces;
 using CatalogService.Infrastructure.Persistence;
 using CatalogService.Infrastructure.Repositories;
+using CatalogService.Infrastructure.Messaging.Consumers;
+using CatalogService.Infrastructure.Messaging.Publishers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -11,6 +13,7 @@ using System.Security.Claims;
 using CatalogService.Application.Interfaces;
 using CatalogService.Application.Services;
 using CatalogService.API.Middleware;
+using MassTransit;
 using Serilog;
 
 namespace CatalogService.API
@@ -44,6 +47,26 @@ namespace CatalogService.API
             builder.Services.AddScoped<ICuisineService, CuisineService>();
             builder.Services.AddScoped<IServiceAreaRepository, ServiceAreaRepository>();
             builder.Services.AddScoped<IServiceAreaService, ServiceAreaService>();
+
+            builder.Services.AddScoped<RestaurantDataSyncPublisher>();
+            builder.Services.AddScoped<RestaurantApprovalRequestPublisher>();
+
+            builder.Services.AddMassTransit(x =>
+            {
+                x.AddConsumer<RestaurantApprovalResponseConsumer>();
+                x.AddConsumer<RestaurantUpdateConsumer>();
+
+                x.UsingRabbitMq((ctx, cfg) =>
+                {
+                    cfg.Host(builder.Configuration["RabbitMQ:Host"], h =>
+                    {
+                        h.Username(builder.Configuration["RabbitMQ:Username"]);
+                        h.Password(builder.Configuration["RabbitMQ:Password"]);
+                    });
+
+                    cfg.ConfigureEndpoints(ctx);
+                });
+            });
 
 
             builder.Services.AddEndpointsApiExplorer();

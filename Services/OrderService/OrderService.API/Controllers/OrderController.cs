@@ -22,6 +22,12 @@ namespace OrderService.API.Controllers
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderDTO dto)
         {
+            var emailConfirmedClaim = User.FindFirstValue("EmailConfirmed");
+            if (emailConfirmedClaim == null || emailConfirmedClaim.ToLower() != "true")
+            {
+                return StatusCode(403, new { message = "Please confirm your email first before placing an order." });
+            }
+
             var token = Request.Headers["Authorization"].ToString();
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             var result = await _orderService.PlaceOrderAsync(dto, customerId,token);
@@ -29,11 +35,12 @@ namespace OrderService.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Customer")]
+        [Authorize(Roles = "Customer,Partner")]
         public async Task<IActionResult> GetOrderHistory()
         {
-            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _orderService.GetOrderHistoryAsync(customerId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var userRole = User.FindFirstValue(ClaimTypes.Role)!;
+            var result = await _orderService.GetOrderHistoryAsync(userId, userRole);
             return Ok(result);
         }
 

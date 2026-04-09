@@ -48,6 +48,12 @@ namespace CatalogService.Application.Services
             return Map(item);
         }
 
+        public async Task<IEnumerable<MenuItemDto>> SearchByNameAsync(string searchTerm)
+        {
+            var items = await _menuItemRepo.SearchByNameAsync(searchTerm);
+            return items.Select(Map);
+        }
+
         public async Task<Guid> CreateAsync(CreateMenuItemDto dto, string requestorId)
         {
             var restaurant = await _restaurantRepo.GetByIdAsync(dto.RestaurantId)
@@ -55,6 +61,9 @@ namespace CatalogService.Application.Services
 
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot add menu items.");
 
             // Resolve category name → ID within this restaurant
             var category = await _categoryRepo.GetByNameAsync(dto.RestaurantId, dto.CategoryName)
@@ -88,6 +97,9 @@ namespace CatalogService.Application.Services
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
 
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot update menu items.");
+
             // Resolve category name → ID within this restaurant
             var category = await _categoryRepo.GetByNameAsync(menuItem.RestaurantId, dto.CategoryName)
                 ?? throw new NotFoundException($"Category '{dto.CategoryName}' was not found.");
@@ -114,6 +126,9 @@ namespace CatalogService.Application.Services
 
             if (restaurant.OwnerId != requestorId)
                 throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot delete menu items.");
 
             await _menuItemRepo.DeleteAsync(id);
         }

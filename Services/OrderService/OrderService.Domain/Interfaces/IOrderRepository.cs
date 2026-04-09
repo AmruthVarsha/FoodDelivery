@@ -7,6 +7,7 @@ namespace OrderService.Domain.Interfaces
         Task<Order?> GetById(Guid id);
         Task<Order?> GetByIdWithDetails(Guid id);
         Task<IEnumerable<Order>> GetByCustomerId(string customerId);
+        Task<IEnumerable<Order>> GetByRestaurantId(Guid restaurantId);
         Task<IEnumerable<Order>> GetAll();
         Task AddAsync(Order order);
         Task UpdateAsync(Order order);

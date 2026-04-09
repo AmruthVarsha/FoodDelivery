@@ -37,6 +37,15 @@ namespace OrderService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Order>> GetByRestaurantId(Guid restaurantId)
+        {
+            return await _context.Orders
+                .Include(o => o.OrderItems)
+                .Where(o => o.RestaurantId == restaurantId)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<Order>> GetAll()
         {
             return await _context.Orders.ToListAsync();

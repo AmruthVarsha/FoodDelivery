@@ -41,6 +41,17 @@ namespace CatalogService.API.Controllers
             return Ok(item);
         }
 
+        /// <summary>Searches menu items by name. Public.</summary>
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchByName([FromQuery] string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return BadRequest(new { message = "Search term cannot be empty" });
+
+            var items = await _menuItemService.SearchByNameAsync(name);
+            return Ok(items);
+        }
+
         /// <summary>Creates a new menu item. Partner only.</summary>
         [Authorize(Roles = "Partner")]
         [HttpPost]
