@@ -18,6 +18,7 @@ namespace CatalogService.Infrastructure.Repositories
             return await _context.MenuItems
                 .Include(mi => mi.Category)
                 .Where(mi => mi.CategoryId == categoryId)
+                .OrderBy(mi => mi.Name)
                 .ToListAsync();
         }
 
@@ -26,6 +27,8 @@ namespace CatalogService.Infrastructure.Repositories
             return await _context.MenuItems
                 .Include(mi => mi.Category)
                 .Where(mi => mi.RestaurantId == restaurantId)
+                .OrderBy(mi => mi.Category.DisplayOrder)
+                .ThenBy(mi => mi.Name)
                 .ToListAsync();
         }
         public async Task<MenuItem?> GetByIdAsync(Guid id)

@@ -45,7 +45,15 @@ namespace AuthService.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegistrationDTO model)
         {
             await authService.RegisterAsync(model);
-            return Ok();
+            
+            // Return different messages based on role
+            if (model.Role == AuthService.Domain.Enums.RoleEnum.Partner || 
+                model.Role == AuthService.Domain.Enums.RoleEnum.Admin)
+            {
+                return Ok(new { message = "Registration successful! Please wait for admin approval before you can login." });
+            }
+            
+            return Ok(new { message = "Registration successful! You can now login." });
         }
 
         [HttpPost("Login")]

@@ -123,6 +123,23 @@ namespace AuthService.Application.Service
                 
                 // Publish approval request event to AdminService
                 await _userRoleApprovalPublisher.PublishApprovalRequest(model.Email, model.FullName, model.Role.ToString());
+                
+                // Send email notification to admin
+                await emailService.SendEmailAsync(
+                    "amruthvarsha2005@gmail.com",
+                    "New User Approval Request - Food Delivery App",
+                    $@"<h3>New User Registration Approval Request</h3>
+                       <p>A new user has registered and is awaiting approval:</p>
+                       <ul>
+                           <li><strong>Name:</strong> {model.FullName}</li>
+                           <li><strong>Email:</strong> {model.Email}</li>
+                           <li><strong>Phone:</strong> {model.PhoneNo}</li>
+                           <li><strong>Requested Role:</strong> {model.Role}</li>
+                       </ul>
+                       <p>Please review and approve/reject this request in the admin panel.</p>
+                       <br/>
+                       <p>Regards,<br/>Food Delivery App</p>"
+                );
             }
         }
 

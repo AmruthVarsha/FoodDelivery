@@ -8,6 +8,7 @@ namespace OrderService.Domain.ExternalDTO
     {
         public Guid Id { get; set; }
         public Guid RestaurantId { get; set; }
+        public Guid CategoryId { get; set; }
         public string Name { get; set; }
         public decimal Price { get; set; }
         public bool IsAvailable { get; set; }

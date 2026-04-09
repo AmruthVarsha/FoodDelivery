@@ -26,7 +26,7 @@ namespace AuthService.Application.Service
 
                 using (var mail = new MailMessage
                 {
-                    From = new MailAddress(emailSettingsDTO.SenderEmail),
+                    From = new MailAddress(emailSettingsDTO.SenderEmail, "Food Delivery App"),
                     Subject = subject,
                     Body = body,
                     IsBodyHtml = true

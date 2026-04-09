@@ -16,7 +16,11 @@ namespace CatalogService.Infrastructure.Repositories
 
         public async Task<IEnumerable<Category>> GetByRestaurantIdAsync(Guid restaurantId)
         {
-            return await _context.Categories.Where(c => c.RestaurantId == restaurantId).ToListAsync();
+            return await _context.Categories
+                .Where(c => c.RestaurantId == restaurantId)
+                .OrderBy(c => c.DisplayOrder)
+                .ThenBy(c => c.Name)
+                .ToListAsync();
         }
         public async Task<Category?> GetByIdAsync(Guid id)
         {

@@ -133,6 +133,7 @@ namespace AdminService.API
             builder.Services.AddScoped<IUserApprovalService, UserApprovalService>();
             builder.Services.AddScoped<IRestaurantManagementService, RestaurantManagementService>();
             builder.Services.AddScoped<IRestaurantApprovalService, RestaurantApprovalService>();
+            builder.Services.AddScoped<AdminService.Application.Interfaces.IEmailService, AdminService.Application.Services.EmailService>();
 
             builder.Services.AddScoped<UserRoleApprovalResponsePublisher>();
             builder.Services.AddScoped<RestaurantApprovalResponsePublisher>();
