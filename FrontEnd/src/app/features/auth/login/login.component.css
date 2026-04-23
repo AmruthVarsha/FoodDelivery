@@ -1,0 +1,4 @@
+/* Component-specific styles - most styling is now in Tailwind classes */
+:host {
+  display: block;
+}

@@ -1,0 +1,128 @@
+<div class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+  <!-- Decorative Blobs -->
+  <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-container/10 blur-[120px] pointer-events-none"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-secondary-container/10 blur-[150px] pointer-events-none"></div>
+
+  <main class="w-full max-w-[450px] z-10">
+    <!-- Logo -->
+    <div class="text-center mb-6">
+      <h1 class="text-5xl font-extrabold tracking-tighter text-primary-container">QuickBites</h1>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-3xl p-6 shadow-neomorphic relative overflow-hidden">
+      <!-- Glass Overlay -->
+      <div class="absolute inset-0 bg-white/[0.03] backdrop-blur-glass border-[0.5px] border-white/10 rounded-3xl pointer-events-none"></div>
+
+      <!-- Card Content -->
+      <div class="relative z-10">
+        <!-- Header -->
+        <div class="text-center mb-10">
+          <h2 class="text-2xl font-bold text-text-primary mb-1">Welcome Back</h2>
+          <p class="text-base text-text-secondary">Sign in to continue</p>
+        </div>
+
+        <!-- Error Alert -->
+        @if (errorMessage) {
+          <div class="p-4 rounded-xl mb-6 text-sm bg-error-bg border border-error text-on-error-container">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <!-- Success Alert -->
+        @if (successMessage) {
+          <div class="p-4 rounded-xl mb-6 text-sm bg-secondary-container/20 border border-secondary text-secondary">
+            {{ successMessage }}
+          </div>
+        }
+
+        <!-- Login Form -->
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+          <!-- Email Field -->
+          <div class="flex flex-col gap-3">
+            <label for="email" class="ml-2 text-sm font-semibold text-text-secondary">Email</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">mail</span>
+              <input
+                type="email"
+                id="email"
+                formControlName="email"
+                placeholder="Enter your email"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+                [class.border-error]="hasError('email', 'required') || hasError('email', 'email')"
+              />
+            </div>
+            @if (hasError('email', 'required') || hasError('email', 'email')) {
+              <span class="text-error text-sm mt-1 ml-2">{{ getErrorMessage('email') }}</span>
+            }
+          </div>
+
+          <!-- Password Field -->
+          <div class="flex flex-col gap-3">
+            <label for="password" class="ml-2 text-sm font-semibold text-text-secondary">Password</label>
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">lock</span>
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                id="password"
+                formControlName="password"
+                placeholder="Enter your password"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 pr-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+                [class.border-error]="hasError('password', 'required') || hasError('password', 'minlength')"
+              />
+              <button
+                type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary transition-colors"
+                (click)="togglePasswordVisibility()"
+                aria-label="Toggle password visibility"
+              >
+                <span class="material-symbols-outlined text-xl">
+                  {{ showPassword ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            </div>
+            @if (hasError('password', 'required') || hasError('password', 'minlength')) {
+              <span class="text-error text-sm mt-1 ml-2">{{ getErrorMessage('password') }}</span>
+            }
+          </div>
+
+          <!-- Form Options -->
+          <div class="flex items-center justify-between px-2 mt-2">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <div class="relative flex items-center justify-center w-5 h-5 bg-surface-light rounded-full transition-all group-hover:shadow-[0_0_0_1px_rgba(255,107,53,0.5)]">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="rememberMe"
+                  [ngModelOptions]="{standalone: true}"
+                  class="opacity-0 absolute inset-0 cursor-pointer peer"
+                />
+                <span class="material-symbols-outlined text-sm text-primary-container opacity-0 peer-checked:opacity-100 transition-opacity" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              </div>
+              <span class="text-xs font-medium text-text-secondary group-hover:text-text-primary transition-colors">Remember me</span>
+            </label>
+            <a routerLink="/auth/forgot-password" class="text-xs font-medium text-primary-container hover:text-primary-light transition-colors">Forgot Password?</a>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-3">
+            <button
+              type="submit"
+              class="w-full bg-primary-container text-primary-dark text-sm font-semibold py-4 rounded-xl border-none cursor-pointer shadow-button-glow hover:bg-primary-light active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              [disabled]="isLoading"
+            >
+              {{ isLoading ? 'Signing in...' : 'Sign In' }}
+            </button>
+          </div>
+        </form>
+
+        <!-- Footer -->
+        <div class="text-center pt-6 border-t border-white/5 mt-10">
+          <p class="text-base text-text-secondary">
+            Don't have an account?
+            <a routerLink="/auth/register" class="text-sm font-semibold text-primary-container hover:text-primary-light transition-colors ml-1">Sign Up</a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

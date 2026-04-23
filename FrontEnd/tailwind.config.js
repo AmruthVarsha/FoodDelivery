@@ -1,0 +1,58 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{html,ts}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        'primary': '#ff6b35',
+        'primary-light': '#ffb59d',
+        'primary-dark': '#5f1900',
+        'primary-container': '#ff6b35',
+        'secondary': '#44e2cd',
+        'secondary-dark': '#03c6b2',
+        'secondary-container': '#03c6b2',
+        'background': '#0b1326',
+        'surface': '#131b2e',
+        'surface-light': '#2d3449',
+        'surface-container': '#171f33',
+        'surface-container-low': '#131b2e',
+        'surface-container-lowest': '#060e20',
+        'surface-container-high': '#222a3d',
+        'surface-container-highest': '#2d3449',
+        'surface-dim': '#0b1326',
+        'text-primary': '#dae2fd',
+        'text-secondary': '#e1bfb5',
+        'on-surface': '#dae2fd',
+        'on-surface-variant': '#e1bfb5',
+        'on-background': '#dae2fd',
+        'on-primary': '#5d1900',
+        'on-primary-container': '#5f1900',
+        'on-secondary': '#003731',
+        'on-error-container': '#ffdad6',
+        'error': '#ffb4ab',
+        'error-bg': '#93000a',
+        'error-container': '#93000a',
+        'tertiary': '#b9c8de',
+        'tertiary-container': '#8c9bb0',
+        'outline': '#a98a80',
+        'outline-variant': '#594139',
+        'inverse-surface': '#dae2fd',
+        'primary-fixed': '#ffdbd0',
+      },
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'sans-serif'],
+      },
+      boxShadow: {
+        'neomorphic': '20px 20px 60px rgba(0, 0, 0, 0.4), -5px -5px 30px rgba(30, 41, 59, 0.5)',
+        'neomorphic-inset': 'inset 2px 2px 5px rgba(0, 0, 0, 0.4), inset -2px -2px 5px rgba(30, 41, 59, 0.3)',
+        'button-glow': 'inset 0 1px 1px rgba(255, 255, 255, 0.3), 0 4px 15px rgba(255, 107, 53, 0.3)',
+      },
+      backdropBlur: {
+        'glass': '24px',
+      },
+    },
+  },
+  plugins: [],
+}

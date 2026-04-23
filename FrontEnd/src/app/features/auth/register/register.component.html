@@ -1,0 +1,204 @@
+<div class="min-h-screen flex items-center justify-center p-6 relative overflow-hidden bg-background">
+  <!-- Decorative Blobs -->
+  <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-primary-container/10 blur-[120px] pointer-events-none"></div>
+  <div class="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full bg-secondary-container/10 blur-[150px] pointer-events-none"></div>
+
+  <main class="w-full max-w-[450px] z-10">
+    <!-- Header / Brand -->
+    <div class="text-center mb-10">
+      <h1 class="text-5xl font-extrabold tracking-tighter text-primary-container">QuickBites</h1>
+      <p class="text-lg text-text-primary mt-1">Create Account</p>
+      <p class="text-base text-tertiary-container">Join us today</p>
+    </div>
+
+    <!-- Registration Card -->
+    <div class="bg-surface/30 backdrop-blur-3xl border border-white/5 rounded-3xl p-6 shadow-neomorphic relative overflow-hidden">
+      <!-- Glass Overlay -->
+      <div class="absolute inset-0 bg-white/[0.03] backdrop-blur-glass border-[0.5px] border-white/10 rounded-3xl pointer-events-none"></div>
+
+      <!-- Card Content -->
+      <div class="relative z-10">
+        <!-- Error Alert -->
+        @if (errorMessage) {
+          <div class="p-4 rounded-xl mb-6 text-sm bg-error-bg border border-error text-on-error-container">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <!-- Success Alert -->
+        @if (successMessage) {
+          <div class="p-4 rounded-xl mb-6 text-sm bg-secondary-container/20 border border-secondary text-secondary">
+            {{ successMessage }}
+          </div>
+        }
+
+        <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+          <!-- Role Selection -->
+          <div class="flex flex-col gap-3">
+            <label class="text-sm font-semibold text-text-secondary">I am a...</label>
+            <div class="grid grid-cols-2 gap-3 p-1 bg-surface-container-low rounded-xl">
+              <button
+                type="button"
+                (click)="selectRole('Customer')"
+                class="py-3 rounded-lg text-sm font-semibold transition-all"
+                [class]="selectedRole === 'Customer' ? 'shadow-neomorphic-inset bg-primary-container/10 text-primary-container border border-primary-container/30' : 'shadow-[2px_2px_5px_rgba(0,0,0,0.2),-2px_-2px_5px_rgba(30,41,59,0.2)] text-text-secondary border border-transparent hover:bg-white/5'"
+              >
+                Customer
+              </button>
+              <button
+                type="button"
+                (click)="selectRole('Partner')"
+                class="py-3 rounded-lg text-sm font-semibold transition-all"
+                [class]="selectedRole === 'Partner' ? 'shadow-neomorphic-inset bg-primary-container/10 text-primary-container border border-primary-container/30' : 'shadow-[2px_2px_5px_rgba(0,0,0,0.2),-2px_-2px_5px_rgba(30,41,59,0.2)] text-text-secondary border border-transparent hover:bg-white/5'"
+              >
+                Partner
+              </button>
+              <button
+                type="button"
+                (click)="selectRole('DeliveryAgent')"
+                class="py-3 rounded-lg text-sm font-semibold transition-all"
+                [class]="selectedRole === 'DeliveryAgent' ? 'shadow-neomorphic-inset bg-primary-container/10 text-primary-container border border-primary-container/30' : 'shadow-[2px_2px_5px_rgba(0,0,0,0.2),-2px_-2px_5px_rgba(30,41,59,0.2)] text-text-secondary border border-transparent hover:bg-white/5'"
+              >
+                Delivery Agent
+              </button>
+              <button
+                type="button"
+                (click)="selectRole('Admin')"
+                class="py-3 rounded-lg text-sm font-semibold transition-all"
+                [class]="selectedRole === 'Admin' ? 'shadow-neomorphic-inset bg-primary-container/10 text-primary-container border border-primary-container/30' : 'shadow-[2px_2px_5px_rgba(0,0,0,0.2),-2px_-2px_5px_rgba(30,41,59,0.2)] text-text-secondary border border-transparent hover:bg-white/5'"
+              >
+                Admin
+              </button>
+            </div>
+          </div>
+
+          <!-- Full Name -->
+          <div class="flex flex-col gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">person</span>
+              <input
+                type="text"
+                formControlName="fullName"
+                placeholder="Full Name"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+              />
+            </div>
+            @if (hasError('fullName', 'required') || hasError('fullName', 'minlength')) {
+              <span class="text-error text-sm ml-2">{{ getErrorMessage('fullName') }}</span>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="flex flex-col gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">mail</span>
+              <input
+                type="email"
+                formControlName="email"
+                placeholder="Email Address"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+              />
+            </div>
+            @if (hasError('email', 'required') || hasError('email', 'email')) {
+              <span class="text-error text-sm ml-2">{{ getErrorMessage('email') }}</span>
+            }
+          </div>
+
+          <!-- Phone Number -->
+          <div class="flex flex-col gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">phone</span>
+              <input
+                type="tel"
+                formControlName="phoneNumber"
+                placeholder="Phone Number"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+              />
+            </div>
+            @if (hasError('phoneNumber', 'required') || hasError('phoneNumber', 'pattern')) {
+              <span class="text-error text-sm ml-2">{{ getErrorMessage('phoneNumber') }}</span>
+            }
+          </div>
+
+          <!-- Password -->
+          <div class="flex flex-col gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">lock</span>
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Password"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 pr-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+              />
+              <button
+                type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary-container transition-colors"
+                (click)="togglePasswordVisibility()"
+              >
+                <span class="material-symbols-outlined text-xl">{{ showPassword ? 'visibility' : 'visibility_off' }}</span>
+              </button>
+            </div>
+            @if (hasError('password', 'required') || hasError('password', 'minlength')) {
+              <span class="text-error text-sm ml-2">{{ getErrorMessage('password') }}</span>
+            }
+          </div>
+
+          <!-- Confirm Password -->
+          <div class="flex flex-col gap-3">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary z-10 text-xl">lock_reset</span>
+              <input
+                [type]="showConfirmPassword ? 'text' : 'password'"
+                formControlName="confirmPassword"
+                placeholder="Confirm Password"
+                class="w-full bg-surface-light border-none rounded-xl py-4 px-4 pl-12 pr-12 text-base text-text-primary placeholder:text-text-secondary/50 shadow-neomorphic-inset focus:outline-none focus:ring-1 focus:ring-primary-container transition-all"
+              />
+              <button
+                type="button"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-text-secondary hover:text-primary-container transition-colors"
+                (click)="toggleConfirmPasswordVisibility()"
+              >
+                <span class="material-symbols-outlined text-xl">{{ showConfirmPassword ? 'visibility' : 'visibility_off' }}</span>
+              </button>
+            </div>
+            @if (registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched) {
+              <span class="text-error text-sm ml-2">Passwords do not match</span>
+            }
+          </div>
+
+          <!-- Terms & Conditions -->
+          <label class="flex items-center gap-3 cursor-pointer mt-1">
+            <div class="relative flex items-center justify-center w-5 h-5 rounded-md shadow-neomorphic-inset bg-surface-light">
+              <input
+                type="checkbox"
+                formControlName="agreeToTerms"
+                class="opacity-0 absolute inset-0 cursor-pointer peer"
+              />
+              <div class="w-3 h-3 rounded-sm bg-primary-container opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+            </div>
+            <span class="text-xs text-text-secondary">
+              I agree to the <a href="#" class="text-primary-container hover:underline">Terms & Conditions</a>
+            </span>
+          </label>
+          @if (hasError('agreeToTerms', 'required')) {
+            <span class="text-error text-sm ml-2">You must agree to the terms</span>
+          }
+
+          <!-- Actions -->
+          <div class="mt-3 flex flex-col gap-6 text-center">
+            <button
+              type="submit"
+              class="w-full bg-primary-container text-primary-dark text-sm font-semibold py-4 rounded-xl shadow-button-glow hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              [disabled]="isLoading"
+            >
+              {{ isLoading ? 'Creating Account...' : 'Register' }}
+            </button>
+            <p class="text-xs text-text-secondary">
+              Already have an account? <a routerLink="/auth/login" class="text-primary-container hover:underline font-semibold">Log In</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
