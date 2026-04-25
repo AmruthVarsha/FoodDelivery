@@ -1,7 +1,7 @@
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 
-namespace AdminService.API
+namespace FoodDelivery.Gateway
 {
     public class Program
     {
@@ -9,40 +9,28 @@ namespace AdminService.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Configuration.AddJsonFile("Ocelot.json", optional: false, reloadOnChange: true);
-            builder.Services.AddOcelot();
+            // Add Ocelot configuration
+            builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+            builder.Services.AddOcelot(builder.Configuration);
 
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerForOcelot(builder.Configuration);
-            
-            builder.Services.AddSwaggerGen(c =>
+            // Add CORS
+            builder.Services.AddCors(options =>
             {
-                c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    Title = "Food Delivery Gateway API",
-                    Version = "v1",
-                    Description = "API Gateway for Food Delivery Platform"
-                });
-            });
-
-            builder.Services.AddCors(options => {
-                options.AddPolicy("AllowFrontEnd",policy => 
                     policy.WithOrigins("http://localhost:4200", "http://localhost:3000")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials()
-                );
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
+                });
             });
 
             var app = builder.Build();
 
-            app.UseCors("AllowFrontEnd");
-            
-            app.UseSwaggerForOcelotUI(opt =>
-            {
-                opt.PathToSwaggerGenerator = "/swagger/docs";
-            });
-            
+            // Use CORS (must be before Ocelot)
+            app.UseCors("AllowFrontend");
+
+            // Use Ocelot middleware
             await app.UseOcelot();
 
             app.Run();
