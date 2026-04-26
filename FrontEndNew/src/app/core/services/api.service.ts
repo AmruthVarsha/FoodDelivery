@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError, timeout } from 'rxjs/operators';
+import { catchError, timeout, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 /**
@@ -45,12 +45,44 @@ export class ApiService {
    * @param body - Request body
    * @returns Observable of type T
    */
-  post<T>(endpoint: string, body: any): Observable<T> {
+  post<T>(endpoint: string, body: any, options?: { responseType?: 'json' | 'text' }): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    return this.http.post<T>(url, body)
+    console.log('[ApiService] POST request to:', url);
+    console.log('[ApiService] Request body:', body);
+    console.log('[ApiService] Response type:', options?.responseType || 'json');
+    
+    // Set headers to ensure Content-Type is application/json
+    const headers = { 'Content-Type': 'application/json' };
+    
+    // If responseType is 'text', use text response
+    if (options?.responseType === 'text') {
+      return this.http.post(url, body, { 
+        responseType: 'text',
+        headers: headers
+      })
+        .pipe(
+          timeout(this.apiTimeout),
+          tap((response) => {
+            console.log('[ApiService] POST text response from', url, ':', response);
+          }),
+          catchError((error) => {
+            console.error('[ApiService] POST error from', url, ':', error);
+            return this.handleError(error);
+          })
+        ) as any;
+    }
+    
+    // Default JSON response
+    return this.http.post<T>(url, body, { headers: headers })
       .pipe(
         timeout(this.apiTimeout),
-        catchError(this.handleError)
+        tap((response) => {
+          console.log('[ApiService] POST response from', url, ':', response);
+        }),
+        catchError((error) => {
+          console.error('[ApiService] POST error from', url, ':', error);
+          return this.handleError(error);
+        })
       );
   }
 

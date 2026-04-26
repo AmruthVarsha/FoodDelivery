@@ -1,0 +1,159 @@
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full px-6 py-4 sticky top-0 bg-slate-950/80 backdrop-blur-3xl z-50 border-b border-white/5 shadow-[0px_4px_24px_rgba(0,0,0,0.4)]">
+  <div class="flex items-center gap-12">
+    <span 
+      routerLink="/customer/dashboard"
+      class="text-2xl font-black tracking-tighter text-primary-container italic cursor-pointer"
+    >
+      QuickBites
+    </span>
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium tracking-tight">
+      <a routerLink="/customer/dashboard" routerLinkActive="text-primary-container border-b-2 border-primary-container pb-1" [routerLinkActiveOptions]="{exact: true}" class="text-slate-400 hover:text-white transition-colors">Explore</a>
+      <a class="text-slate-400 hover:text-white transition-colors" href="#">Offers</a>
+      <a class="text-slate-400 hover:text-white transition-colors" href="#">Orders</a>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-6">
+    <div class="hidden lg:flex items-center neomorph-inset rounded-full px-4 py-2 w-80">
+      <span class="material-symbols-outlined text-slate-400 mr-2">search</span>
+      <input 
+        [(ngModel)]="searchQuery"
+        class="bg-transparent border-none focus:ring-0 text-sm text-white w-full placeholder-slate-500" 
+        placeholder="Search for food..." 
+        type="text"
+      />
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform">
+        <span class="material-symbols-outlined text-slate-300">notifications</span>
+      </button>
+      
+      <!-- Cart Button with Dropdown -->
+      <div class="relative cart-container">
+        <button 
+          (click)="goToCheckout()"
+          class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform relative"
+        >
+          <span class="material-symbols-outlined text-slate-300">shopping_cart</span>
+          @if (cartItemCount > 0) {
+            <span class="absolute -top-1 -right-1 bg-primary-container text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
+              {{ cartItemCount }}
+            </span>
+          }
+        </button>
+        
+        <!-- Cart Dropdown -->
+        <div class="cart-dropdown glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl">
+          <div class="p-6 border-b border-white/5 bg-slate-950/80">
+            <h3 class="text-xl font-bold text-white">Your Basket</h3>
+            <p class="text-slate-400 text-sm">{{ cartItemCount }} items ready to checkout</p>
+          </div>
+
+          <!-- Empty Cart State -->
+          @if (cartItems.length === 0) {
+            <div class="p-8 text-center">
+              <span class="material-symbols-outlined text-slate-500 text-5xl mb-3">shopping_cart</span>
+              <p class="text-slate-400 text-sm">Your cart is empty</p>
+              <p class="text-slate-500 text-xs mt-2">Add items from restaurants to get started</p>
+            </div>
+          }
+
+          <!-- Cart Items -->
+          @if (cartItems.length > 0) {
+            <div class="max-h-[400px] overflow-y-auto p-4 space-y-3">
+              @for (item of cartItems; track item.menuItem.id) {
+                <div class="flex gap-3 p-3 rounded-xl hover:bg-white/5 transition-all">
+                  <div class="h-16 w-16 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                    <img 
+                      [alt]="item.menuItem.name" 
+                      [src]="item.menuItem.imageUrl || 'https://via.placeholder.com/100'" 
+                      class="w-full h-full object-cover" 
+                    />
+                  </div>
+                  <div class="flex flex-col justify-center flex-1 min-w-0">
+                    <p class="text-white text-sm font-bold truncate">{{ item.menuItem.name }}</p>
+                    <p class="text-xs text-slate-500 truncate">{{ item.restaurantName }}</p>
+                    <p class="text-primary-container text-xs font-bold mt-1">₹{{ item.menuItem.price }}</p>
+                  </div>
+                  <div class="flex items-center gap-2 flex-shrink-0">
+                    <button (click)="updateCartQuantity(item, -1); $event.stopPropagation()" class="hover:text-white transition-colors">
+                      <span class="material-symbols-outlined text-slate-500 text-[18px]">remove_circle_outline</span>
+                    </button>
+                    <span class="text-white text-sm font-bold w-4 text-center">{{ item.quantity }}</span>
+                    <button (click)="updateCartQuantity(item, 1); $event.stopPropagation()" class="hover:text-white transition-colors">
+                      <span class="material-symbols-outlined text-slate-500 text-[18px]">add_circle_outline</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="p-6 border-t border-white/5 space-y-4 bg-slate-950/90">
+              <div class="flex justify-between text-slate-400 text-sm">
+                <span>Subtotal</span>
+                <span class="text-white font-medium">₹{{ cartSubtotal }}</span>
+              </div>
+              <div class="flex justify-between text-slate-400 text-sm">
+                <span>Delivery Fee</span>
+                <span class="text-secondary font-medium">{{ deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee }}</span>
+              </div>
+              <div class="flex justify-between font-bold text-white text-base pt-2 border-t border-white/5">
+                <span>Total</span>
+                <span class="text-primary-container">₹{{ cartTotal }}</span>
+              </div>
+              <button 
+                (click)="goToCheckout()"
+                class="w-full bg-primary-container text-white py-3 rounded-xl font-bold primary-glow hover:scale-[1.02] active:scale-95 transform transition-all"
+              >
+                Checkout Now
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+      
+      <!-- User Profile Dropdown (Authenticated) -->
+      @if (isAuthenticated) {
+        <div class="relative group">
+          <div class="h-8 w-8 rounded-full overflow-hidden border border-white/10 ml-2 cursor-pointer active:scale-95 transform transition-transform">
+            <img 
+              alt="User profile" 
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrYgeKzq3cvCzGshp77LfQ-pClgnPaDL2N6FyI0QkCZ9nNe-hNW4e6pHTg20oifLIs6CSRqy6ibYOTAn6qsd8uFl18W9tcjJth3nvWySx94qiZ9reVcwit9hqqWhkqkMfNe7AodaJbsEd_RpAjjDFovFB9rA5j4URJdKHp_F8LV2ACly83DILzmj_MjeX_FHxlfQGSHUos6i_5u0LGBdc4hFHrl7XF4DJLOFCHMgOTLYuFugp7knG8qKmcPDEZX2lqzoWxv_XgONQ"
+            />
+          </div>
+          
+          <!-- Dropdown Menu -->
+          <div class="absolute right-0 mt-2 w-48 glass-card rounded-2xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-xl z-50">
+            <button 
+              routerLink="/customer/profile"
+              class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-white/5 rounded-xl transition-all"
+            >
+              <span class="material-symbols-outlined">person</span>
+              <span class="text-sm font-medium">Profile</span>
+            </button>
+            <button 
+              (click)="logout()"
+              class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-white/5 rounded-xl transition-all"
+            >
+              <span class="material-symbols-outlined text-error">logout</span>
+              <span class="text-sm font-medium">Logout</span>
+            </button>
+          </div>
+        </div>
+      }
+      
+      <!-- Login Button (Not Authenticated) -->
+      @if (!isAuthenticated) {
+        <button 
+          routerLink="/auth/login"
+          class="px-6 py-2 bg-primary-container text-white rounded-xl font-bold text-sm primary-glow hover:scale-105 active:scale-95 transform transition-all"
+        >
+          Login
+        </button>
+      }
+    </div>
+  </div>
+</header>

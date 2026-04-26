@@ -75,8 +75,11 @@ export class ResetPasswordComponent implements OnInit {
       newPassword: this.resetPasswordForm.value.password
     };
 
+    console.log('Resetting password with token:', this.token);
+
     this.authService.resetPassword(resetData).subscribe({
       next: (response) => {
+        console.log('Password reset successful:', response);
         this.isLoading = false;
         this.successMessage = 'Password reset successful! Redirecting to login...';
         setTimeout(() => {
@@ -84,8 +87,24 @@ export class ResetPasswordComponent implements OnInit {
         }, 2000);
       },
       error: (error) => {
+        console.error('Reset password error:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Failed to reset password. Please try again.';
+        
+        // Extract error message
+        let errorMsg = 'Failed to reset password. Please try again.';
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
       }
     });
   }

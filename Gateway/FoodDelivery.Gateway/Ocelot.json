@@ -1,9 +1,9 @@
 {
   "Routes": [
     {
-      "UpstreamPathTemplate": "/gateway/auth/{catch-all}",
+      "UpstreamPathTemplate": "/gateway/auth/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
-      "DownstreamPathTemplate": "/api/auth/{catch-all}",
+      "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -13,9 +13,9 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/gateway/catalog/{catch-all}",
+      "UpstreamPathTemplate": "/gateway/catalog/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
-      "DownstreamPathTemplate": "/api/catalog/{catch-all}",
+      "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -25,9 +25,9 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/gateway/order/{catch-all}",
+      "UpstreamPathTemplate": "/gateway/order/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
-      "DownstreamPathTemplate": "/api/order/{catch-all}",
+      "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -37,9 +37,9 @@
       ]
     },
     {
-      "UpstreamPathTemplate": "/gateway/admin/{catch-all}",
+      "UpstreamPathTemplate": "/gateway/admin/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "PATCH" ],
-      "DownstreamPathTemplate": "/api/admin/{catch-all}",
+      "DownstreamPathTemplate": "/api/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {

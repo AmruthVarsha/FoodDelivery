@@ -1,0 +1,170 @@
+<div class="min-h-screen flex flex-col bg-background">
+  <!-- Decorative Blobs -->
+  <div class="blob top-[-10%] left-[-10%]"></div>
+  <div class="blob bottom-[-10%] right-[-10%]"></div>
+
+  <!-- Shared Navbar -->
+  <app-navbar></app-navbar>
+
+  <main class="max-w-7xl mx-auto px-6 py-10">
+    <!-- Hero Section & Search -->
+    <section class="mb-16 relative">
+      <div class="glass-card rounded-[32px] p-6 md:p-16 overflow-hidden relative">
+        <div class="relative z-10 max-w-2xl">
+          <h1 class="text-5xl font-extrabold leading-tight text-white mb-2">
+            Satisfy Your <span class="text-primary-container">Nightly</span> Cravings.
+          </h1>
+          <p class="text-lg text-slate-400 mb-10">
+            Premium restaurants delivered to your doorstep with urban speed and futuristic precision.
+          </p>
+
+          <div class="flex flex-col md:flex-row gap-4 p-2 neomorph-inset rounded-2xl md:rounded-full">
+            <div class="flex flex-1 items-center px-4 py-2">
+              <span class="material-symbols-outlined text-primary-container mr-3">location_on</span>
+              <input 
+                [(ngModel)]="deliveryAddress"
+                class="bg-transparent border-none focus:ring-0 text-white w-full" 
+                placeholder="Enter delivery address..." 
+                type="text"
+              />
+            </div>
+            <button 
+              (click)="findFood()"
+              class="bg-primary-container text-white px-8 py-3 rounded-xl md:rounded-full font-bold primary-glow active:scale-95 transform transition-all"
+            >
+              Find Food
+            </button>
+          </div>
+        </div>
+
+        <!-- Decorative Element -->
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block opacity-40">
+          <img 
+            alt="Gourmet Food" 
+            class="h-full w-full object-cover rounded-l-full" 
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rrjazWbpUAa_zrcoLh7JGosrLMkIOERCBE9WC2WUvztPFLUq_YWpajdJr8zXDI5CdTbOs0wsOYzb4eV4VbXnupf-gq-2OVYfI2dVJEOSh1ILfqLblqCbP7MFKSiab5xyr4uGrWqzIDfN92grimBub0aHp5vEb1rF1bcUSnfMZafk-qTJunYevZd2_kCNHT1r2JxTradkKIIdXO_yOYjtv-zOHqIDrtOlbEdUT7jY-u3beLupIbwy4P02leIz3lV0MCH39xIg5FM"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="mb-10 flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        @for (cuisine of cuisines; track cuisine) {
+          <button 
+            (click)="selectCuisine(cuisine)"
+            [class.bg-primary-container]="selectedCuisine === cuisine"
+            [class.text-white]="selectedCuisine === cuisine"
+            [class.bg-white/5]="selectedCuisine !== cuisine"
+            [class.border]="selectedCuisine !== cuisine"
+            [class.border-white/5]="selectedCuisine !== cuisine"
+            [class.hover:border-primary-container/50]="selectedCuisine !== cuisine"
+            [class.text-slate-300]="selectedCuisine !== cuisine"
+            class="px-6 py-2 rounded-full text-xs font-semibold tracking-wider whitespace-nowrap transition-all"
+          >
+            {{ cuisine }}
+          </button>
+        }
+      </div>
+
+      <div class="flex items-center gap-2">
+        <div class="flex items-center neomorph-inset px-4 py-2 rounded-xl text-slate-400">
+          <span class="material-symbols-outlined text-sm mr-2">filter_list</span>
+          <span class="text-sm font-medium">Sort by: Popular</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Grid of Restaurant Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <!-- Loading State -->
+      @if (isLoading) {
+        <div class="col-span-full flex justify-center items-center py-20">
+          <div class="text-center">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-container"></div>
+            <p class="text-slate-400 mt-4">Loading restaurants...</p>
+          </div>
+        </div>
+      }
+
+      <!-- Error State -->
+      @if (errorMessage && !isLoading) {
+        <div class="col-span-full">
+          <div class="glass-card rounded-2xl p-8 text-center">
+            <span class="material-symbols-outlined text-error text-5xl mb-4">error</span>
+            <p class="text-error text-lg mb-4">{{ errorMessage }}</p>
+            <button 
+              (click)="loadRestaurants()"
+              class="bg-primary-container text-white px-6 py-3 rounded-xl font-bold primary-glow active:scale-95 transform transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      }
+
+      <!-- Restaurant Cards -->
+      @if (!isLoading && !errorMessage) {
+        @if (filteredRestaurants.length === 0) {
+          <div class="col-span-full">
+            <div class="glass-card rounded-2xl p-8 text-center">
+              <span class="material-symbols-outlined text-slate-400 text-5xl mb-4">restaurant</span>
+              <p class="text-slate-400 text-lg">No restaurants found matching your criteria.</p>
+            </div>
+          </div>
+        }
+
+        @for (restaurant of filteredRestaurants; track restaurant.id) {
+          <div 
+            (click)="addToCart(restaurant)"
+            class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300 cursor-pointer"
+          >
+            <div class="h-48 relative overflow-hidden">
+              <img 
+                [alt]="restaurant.name" 
+                [src]="restaurant.imageUrl || 'https://via.placeholder.com/400x300?text=Restaurant'"
+                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+              />
+              <div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+                <span class="material-symbols-outlined text-primary-container text-sm mr-1" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="text-xs font-bold text-white">{{ restaurant.rating }}</span>
+              </div>
+            </div>
+
+            <div class="p-6">
+              <div class="flex justify-between items-start mb-1">
+                <h3 class="text-xl font-bold text-white">{{ restaurant.name }}</h3>
+                <button (click)="toggleFavorite(restaurant); $event.stopPropagation()">
+                  <span 
+                    class="material-symbols-outlined transition-colors cursor-pointer"
+                    [class.text-error]="restaurant.isFavorite"
+                    [class.text-slate-500]="!restaurant.isFavorite"
+                    [ngStyle]="{'font-variation-settings': restaurant.isFavorite ? '\'FILL\' 1' : '\'FILL\' 0'}"
+                  >
+                    favorite
+                  </span>
+                </button>
+              </div>
+              <p class="text-slate-400 text-sm mb-6">{{ restaurant.cuisineType || 'Various' }}</p>
+
+              <div class="flex items-center justify-between border-t border-white/5 pt-6">
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center text-secondary">
+                    <span class="material-symbols-outlined text-sm mr-1">schedule</span>
+                    <span class="text-xs font-bold">{{ restaurant.deliveryTime || '20-30 min' }}</span>
+                  </div>
+                  <div class="text-slate-500 text-xs">•</div>
+                  <div class="text-slate-400 text-xs font-medium">Min. ₹{{ (restaurant.minimumOrder || 10) }}</div>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-primary-container group-hover:text-white transition-all text-slate-400">
+                  <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      }
+    </section>
+  </main>
+</div>

@@ -37,6 +37,7 @@ namespace AuthService.Application.Service
                 Email = user.Email,
                 PhoneNo = user.PhoneNo,
                 IsEmailConfirmed = user.EmailConfirmed,
+                IsTwoFactorEnabled = user.TwoFactorEnabled,
                 Role = roles != null && roles.Any() ? string.Join(",", roles) : string.Empty
             };
         }

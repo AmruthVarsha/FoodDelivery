@@ -18,7 +18,8 @@ export interface LoginDTO {
  */
 export interface LoginResponseDTO {
   token: string | null;  // JWT access token (null if 2FA required)
-  refreshToken: RefreshTokenDTO;
+  refreshToken: RefreshTokenDTO | null;  // Refresh token (null if 2FA required)
+  requireTwoFactor?: boolean;  // True if 2FA is required (matches backend property name)
   message?: string;
 }
 
@@ -60,11 +61,22 @@ export interface ConfirmEmailDTO {
 }
 
 /**
+ * Verify Two-Factor OTP DTO
+ * Backend expects Token field (not otp)
+ */
+export interface VerifyTwoFactorDTO {
+  email: string;
+  token: string;  // Backend expects 'Token' field
+}
+
+/**
  * Change Password DTO
+ * Matches backend ChangePasswordDTO
  */
 export interface ChangePasswordDTO {
-  oldPassword: string;
+  currentPassword: string;
   newPassword: string;
+  confirmNewPassword: string;
 }
 
 /**

@@ -13,6 +13,7 @@ namespace AuthService.Application.DTOs
 
         public string PhoneNo { get; set; } = string.Empty;
         public bool IsEmailConfirmed { get; set; }
+        public bool IsTwoFactorEnabled { get; set; }
         public string Role { get; set; } = string.Empty;
 
     }

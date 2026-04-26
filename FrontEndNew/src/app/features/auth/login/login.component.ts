@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -18,10 +18,9 @@ import { LoginDTO } from '../../../shared/models/auth.model';
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   
-  loginForm: FormGroup;
-  isLoading = false;
+  loginForm!: FormGroup;
   errorMessage = '';
   successMessage = '';
   showPassword = false;
@@ -31,79 +30,201 @@ export class LoginComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {
+  ) {}
+
+  ngOnInit(): void {
     // Initialize the login form with validation
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
+
+    console.log('Login component initialized');
+    console.log('Form valid:', this.loginForm.valid);
   }
 
   /**
    * Handle form submission
    */
   onSubmit(): void {
+    console.log('=== LOGIN FORM SUBMITTED ===');
+    console.log('Form valid:', this.loginForm.valid);
+    
     // Clear previous messages
     this.errorMessage = '';
     this.successMessage = '';
 
     // Check if form is valid
     if (this.loginForm.invalid) {
+      console.log('Form is INVALID, marking fields as touched');
       this.markFormGroupTouched(this.loginForm);
       return;
     }
 
-    this.isLoading = true;
-    const credentials: LoginDTO = this.loginForm.value;
+    console.log('Form is VALID, proceeding with login...');
+    
+    const credentials: LoginDTO = {
+      email: this.loginForm.value.email,
+      password: this.loginForm.value.password
+    };
+    
+    console.log('Calling authService.login with:', { email: credentials.email, password: '***' });
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        this.isLoading = false;
+        console.log('=== LOGIN SUCCESS ===');
+        console.log('Response:', response);
+        console.log('requireTwoFactor:', response.requireTwoFactor);
+        console.log('token:', response.token ? 'present' : 'null');
         
-        if (response.token) {
-          // Login successful
+        // Check if 2FA is required
+        if (response.requireTwoFactor === true) {
+          console.log('✓✓✓ 2FA REQUIRED - REDIRECTING TO TWO-FACTOR PAGE ✓✓✓');
+          this.successMessage = 'Please check your email for the verification code.';
+          
+          this.router.navigate(['/auth/two-factor'], { 
+            queryParams: { email: credentials.email } 
+          }).then(success => {
+            console.log('✓ Navigation to two-factor SUCCESS:', success);
+          }).catch(err => {
+            console.error('✗ Navigation to two-factor FAILED:', err);
+          });
+          
+          return; // Exit early
+        }
+        
+        // Check if token is present (normal login)
+        if (response.token && response.token !== null) {
+          console.log('✓✓✓ TOKEN RECEIVED - Normal login successful ✓✓✓');
           this.successMessage = 'Login successful! Redirecting...';
           
-          // Redirect based on user role
+          // Give auth service a moment to process the token and load profile
           setTimeout(() => {
-            const user = this.authService.currentUserValue;
-            if (user) {
-              this.redirectBasedOnRole(user.role);
+            const currentUser = this.authService.currentUserValue;
+            console.log('Checking current user after delay:', currentUser);
+            
+            if (currentUser) {
+              // Profile already loaded
+              console.log('✓ Profile already loaded, redirecting immediately');
+              this.redirectBasedOnRole(currentUser.role);
+            } else {
+              // Wait for profile to load
+              console.log('Profile not loaded yet, subscribing to currentUser$');
+              const userSub = this.authService.currentUser$.subscribe(user => {
+                console.log('Current user update:', user);
+                if (user) {
+                  console.log('✓ User profile loaded:', user);
+                  console.log('✓ Redirecting based on role:', user.role);
+                  this.redirectBasedOnRole(user.role);
+                  userSub.unsubscribe();
+                }
+              });
+              
+              // Fallback timeout - redirect anyway after 3 seconds
+              setTimeout(() => {
+                const user = this.authService.currentUserValue;
+                if (user) {
+                  console.log('✓ Fallback: Profile loaded, redirecting');
+                  this.redirectBasedOnRole(user.role);
+                } else {
+                  console.warn('✗ Fallback: Profile still not loaded, redirecting to customer dashboard anyway');
+                  this.router.navigate(['/customer/dashboard']);
+                }
+                userSub.unsubscribe();
+              }, 3000);
             }
-          }, 1000);
+          }, 500);
         } else {
-          // 2FA required
-          this.successMessage = 'Please check your email for the verification code.';
-          setTimeout(() => {
-            this.router.navigate(['/auth/two-factor'], { 
-              queryParams: { email: credentials.email } 
-            });
-          }, 2000);
+          // Unexpected: no token and no 2FA flag
+          console.warn('✗ Unexpected response: no token and no 2FA flag');
+          this.errorMessage = 'Unexpected response from server. Please try again.';
         }
       },
       error: (error) => {
-        this.isLoading = false;
-        this.errorMessage = error.message || 'Login failed. Please try again.';
+        console.error('=== LOGIN ERROR ===');
+        console.error('Error object:', error);
+        
+        // Extract error message
+        let errorMsg = 'Login failed. Please check your credentials and try again.';
+        
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          } else if (error.error.errors) {
+            const errors = error.error.errors;
+            const errorMessages = Object.keys(errors).map(key => errors[key].join(', '));
+            errorMsg = errorMessages.join('; ');
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
+        console.log('Error message set to:', this.errorMessage);
+      },
+      complete: () => {
+        console.log('=== LOGIN OBSERVABLE COMPLETED ===');
       }
     });
+    
+    console.log('Subscribe called, waiting for response...');
   }
 
   /**
    * Redirect user based on their role
+   * Handles both string and number role types
    */
-  private redirectBasedOnRole(role: number): void {
-    switch (role) {
+  private redirectBasedOnRole(role: string | number): void {
+    console.log('Redirecting based on role:', role);
+    
+    // Convert string role to number if needed
+    let roleNum: number;
+    
+    if (typeof role === 'string') {
+      const roleMap: { [key: string]: number } = {
+        'Customer': 0,
+        'Partner': 1,
+        'DeliveryAgent': 2,
+        'Delivery Agent': 2,
+        'Admin': 3
+      };
+      roleNum = roleMap[role] ?? 0; // Default to Customer if unknown
+    } else {
+      roleNum = role;
+    }
+    
+    console.log('Role number:', roleNum);
+    
+    switch (roleNum) {
       case 0: // Customer
-        this.router.navigate(['/customer/home']);
+        console.log('Navigating to customer dashboard');
+        this.router.navigate(['/customer/dashboard']);
         break;
       case 1: // Partner
-        this.router.navigate(['/partner/dashboard']);
+        console.log('Partner dashboard not implemented yet, redirecting to customer dashboard');
+        // TODO: Implement partner dashboard
+        // this.router.navigate(['/partner/dashboard']);
+        this.router.navigate(['/customer/dashboard']); // Temporary fallback
         break;
-      case 2: // Admin
-        this.router.navigate(['/admin/dashboard']);
+      case 2: // DeliveryAgent
+        console.log('Delivery dashboard not implemented yet, redirecting to customer dashboard');
+        // TODO: Implement delivery dashboard
+        // this.router.navigate(['/delivery/dashboard']);
+        this.router.navigate(['/customer/dashboard']); // Temporary fallback
+        break;
+      case 3: // Admin
+        console.log('Admin dashboard not implemented yet, redirecting to customer dashboard');
+        // TODO: Implement admin dashboard
+        // this.router.navigate(['/admin/dashboard']);
+        this.router.navigate(['/customer/dashboard']); // Temporary fallback
         break;
       default:
-        this.router.navigate(['/']);
+        console.log('Unknown role, navigating to customer dashboard');
+        this.router.navigate(['/customer/dashboard']);
     }
   }
 
@@ -152,5 +273,6 @@ export class LoginComponent {
    */
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
+    console.log('Password visibility toggled:', this.showPassword);
   }
 }

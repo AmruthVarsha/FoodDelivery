@@ -1,0 +1,51 @@
+.glass-panel {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.neo-outset {
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4), -5px -5px 15px rgba(255, 255, 255, 0.05);
+}
+
+.neo-inset {
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.orange-glow {
+  box-shadow: 0px 0px 20px rgba(255, 107, 53, 0.3);
+}
+
+.neomorph-inset {
+  background: #0c111d;
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.6), 
+              inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom scrollbar for cart sidebar */
+aside::-webkit-scrollbar {
+  width: 4px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 53, 0.5);
+  border-radius: 10px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 53, 0.7);
+}

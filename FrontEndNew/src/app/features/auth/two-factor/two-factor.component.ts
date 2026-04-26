@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChildren, QueryList, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -19,15 +19,55 @@ export class TwoFactorComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
   code: string[] = ['', '', '', '', '', ''];
+  email: string = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    // Get email from query params
+    this.route.queryParams.subscribe(params => {
+      this.email = params['email'] || '';
+      console.log('[TwoFactor] Email from query params:', this.email);
+      
+      if (!this.email) {
+        // If no email, redirect back to login
+        console.warn('[TwoFactor] No email provided, redirecting to login');
+        this.router.navigate(['/auth/login']);
+        return;
+      }
+      
+      // Automatically send OTP when page loads
+      console.log('[TwoFactor] Automatically sending OTP to:', this.email);
+      this.sendOTPOnLoad();
+    });
+    
     this.initializeForm();
+  }
+
+  /**
+   * Send OTP automatically when page loads
+   */
+  private sendOTPOnLoad(): void {
+    console.log('[TwoFactor] sendOTPOnLoad called');
+    this.authService.sendTwoFactorOTP(this.email).subscribe({
+      next: () => {
+        console.log('[TwoFactor] OTP sent successfully on page load');
+        this.successMessage = 'Verification code sent to your email!';
+        setTimeout(() => {
+          this.successMessage = '';
+        }, 3000);
+      },
+      error: (error: any) => {
+        console.error('[TwoFactor] Failed to send OTP on page load:', error);
+        // Don't show error on auto-send, user can click resend if needed
+        // The OTP might have already been sent during login
+      }
+    });
   }
 
   initializeForm(): void {
@@ -123,15 +163,19 @@ export class TwoFactorComponent implements OnInit {
   }
 
   resendCode(): void {
+    if (!this.email) {
+      this.errorMessage = 'Email not found. Please login again.';
+      return;
+    }
+
+    console.log('[TwoFactor] Resending OTP to:', this.email);
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
-
-    // Get email from storage or use a placeholder
-    const email = ''; // Email should be stored during login flow
     
-    this.authService.sendTwoFactorOTP(email).subscribe({
+    this.authService.sendTwoFactorOTP(this.email).subscribe({
       next: () => {
+        console.log('[TwoFactor] OTP resent successfully');
         this.isLoading = false;
         this.successMessage = 'Verification code resent!';
         setTimeout(() => {
@@ -139,8 +183,23 @@ export class TwoFactorComponent implements OnInit {
         }, 3000);
       },
       error: (error: any) => {
+        console.error('[TwoFactor] Failed to resend OTP:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Failed to resend code. Please try again.';
+        
+        let errorMsg = 'Failed to resend code. Please try again.';
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
       }
     });
   }
@@ -151,26 +210,70 @@ export class TwoFactorComponent implements OnInit {
       return;
     }
 
+    if (!this.email) {
+      this.errorMessage = 'Email not found. Please login again.';
+      return;
+    }
+
+    console.log('[TwoFactor] Submitting OTP verification');
+    console.log('[TwoFactor] Email:', this.email);
+    console.log('[TwoFactor] OTP:', this.twoFactorForm.value.code);
+    
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
 
     const verifyData = {
-      email: '', // Email should be stored during login flow
+      email: this.email,
       otp: this.twoFactorForm.value.code
     };
 
     this.authService.verifyTwoFactorOTP(verifyData).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('[TwoFactor] Verification successful:', response);
         this.isLoading = false;
-        this.successMessage = 'Verification successful!';
+        this.successMessage = 'Verification successful! Redirecting...';
+        
+        // Wait for profile to load, then redirect based on role
+        const userSub = this.authService.currentUser$.subscribe(user => {
+          console.log('[TwoFactor] Current user:', user);
+          if (user) {
+            setTimeout(() => {
+              this.redirectBasedOnRole(user.role);
+              userSub.unsubscribe();
+            }, 1000);
+          }
+        });
+        
+        // Fallback timeout
         setTimeout(() => {
-          this.router.navigate(['/dashboard']);
-        }, 1000);
+          const currentUser = this.authService.currentUserValue;
+          if (!currentUser) {
+            console.warn('[TwoFactor] Profile not loaded, redirecting to dashboard anyway');
+            this.router.navigate(['/customer/dashboard']);
+            userSub.unsubscribe();
+          }
+        }, 3000);
       },
       error: (error: any) => {
+        console.error('[TwoFactor] Verification failed:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Invalid verification code. Please try again.';
+        
+        let errorMsg = 'Invalid verification code. Please try again.';
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
+        
         // Clear the code inputs
         this.code = ['', '', '', '', '', ''];
         this.codeInputs.forEach(input => {
@@ -179,5 +282,43 @@ export class TwoFactorComponent implements OnInit {
         this.codeInputs.first.nativeElement.focus();
       }
     });
+  }
+
+  /**
+   * Redirect user based on their role
+   */
+  private redirectBasedOnRole(role: string | number): void {
+    // Convert string role to number if needed
+    let roleNum: number;
+    
+    if (typeof role === 'string') {
+      const roleMap: { [key: string]: number } = {
+        'Customer': 0,
+        'Partner': 1,
+        'DeliveryAgent': 2,
+        'Delivery Agent': 2,
+        'Admin': 3
+      };
+      roleNum = roleMap[role] ?? 0;
+    } else {
+      roleNum = role;
+    }
+    
+    switch (roleNum) {
+      case 0: // Customer
+        this.router.navigate(['/customer/dashboard']);
+        break;
+      case 1: // Partner
+        this.router.navigate(['/partner/dashboard']);
+        break;
+      case 2: // DeliveryAgent
+        this.router.navigate(['/delivery/dashboard']);
+        break;
+      case 3: // Admin
+        this.router.navigate(['/admin/dashboard']);
+        break;
+      default:
+        this.router.navigate(['/customer/dashboard']);
+    }
   }
 }

@@ -63,7 +63,7 @@ namespace AuthService.API.Controllers
 
             if (response.Token == null)
             {
-                return Ok("Please continue for two factor verification");
+                return Ok(response);
             }
 
             SetRefreshTokenCookie(response.RefreshToken.Token);

@@ -107,8 +107,11 @@ export class RegisterComponent implements OnInit {
       role: roleMap[this.selectedRole]
     };
 
+    console.log('Registering user:', { ...registerData, password: '***' });
+
     this.authService.register(registerData).subscribe({
       next: (response) => {
+        console.log('Registration successful:', response);
         this.isLoading = false;
         this.successMessage = 'Registration successful! Redirecting to login...';
         setTimeout(() => {
@@ -116,8 +119,24 @@ export class RegisterComponent implements OnInit {
         }, 2000);
       },
       error: (error) => {
+        console.error('Registration error:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+        
+        // Extract error message
+        let errorMsg = 'Registration failed. Please try again.';
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
       }
     });
   }

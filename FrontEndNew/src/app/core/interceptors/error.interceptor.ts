@@ -21,10 +21,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       
       if (error.status === 401) {
         // Unauthorized - Token expired or invalid
-        console.warn('Unauthorized request. Logging out...');
-        authService.logout().subscribe(() => {
+        // Don't trigger logout if the error is from the logout endpoint itself
+        if (!req.url.includes('/Logout')) {
+          console.warn('Unauthorized request. Logging out...');
+          
+          // Clear local storage and redirect without making API call
+          // to avoid infinite loop if logout endpoint also returns 401
+          authService.clearAuthData();
           router.navigate(['/auth/login']);
-        });
+        }
       }
 
       if (error.status === 403) {

@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QuickBites - Premium Food Delivery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1a1c1c",
+                        "tertiary-fixed-dim": "#bfc6e0",
+                        "on-background": "#e2e2e2",
+                        "inverse-primary": "#ab3500",
+                        "on-secondary-fixed-variant": "#005047",
+                        "background": "#121414",
+                        "surface": "#121414",
+                        "on-error": "#690005",
+                        "tertiary-container": "#9299b2",
+                        "secondary-container": "#00c3af",
+                        "surface-variant": "#333535",
+                        "surface-dim": "#121414",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-container": "#2a3146",
+                        "on-secondary": "#003731",
+                        "secondary-fixed": "#62fae4",
+                        "surface-tint": "#ffb59d",
+                        "on-secondary-fixed": "#00201c",
+                        "on-primary-fixed-variant": "#832600",
+                        "surface-container-highest": "#333535",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#0c0f0f",
+                        "primary-fixed": "#ffdbd0",
+                        "tertiary-fixed": "#dbe2fd",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#131b2e",
+                        "outline-variant": "#594139",
+                        "surface-bright": "#37393a",
+                        "on-surface": "#e2e2e2",
+                        "tertiary": "#bfc6e0",
+                        "on-surface-variant": "#e1bfb5",
+                        "on-primary": "#5d1900",
+                        "error": "#ffb4ab",
+                        "secondary": "#40e0cb",
+                        "primary-fixed-dim": "#ffb59d",
+                        "on-primary-container": "#5f1900",
+                        "on-secondary-container": "#004a42",
+                        "outline": "#a98a80",
+                        "inverse-surface": "#e2e2e2",
+                        "primary-container": "#ff6b35",
+                        "surface-container": "#1e2020",
+                        "inverse-on-surface": "#2f3131",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#283044",
+                        "secondary-fixed-dim": "#3cddc8",
+                        "on-primary-fixed": "#390c00",
+                        "primary": "#ffb59d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "lg": "40px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #e2e2e2;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4), 
+                        -5px -5px 15px rgba(255, 255, 255, 0.02);
+        }
+
+        .neomorph-inset {
+            background: #0c111d;
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.6), 
+                        inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+        }
+
+        .primary-glow {
+            box-shadow: 0 10px 20px -5px rgba(255, 107, 53, 0.4);
+        }
+
+        .blob {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0) 70%);
+            z-index: -1;
+            filter: blur(80px);
+        }
+    </style>
+</head>
+<body class="antialiased">
+<!-- Ambient Background Blobs -->
+<div class="blob top-[-10%] left-[-10%]"></div>
+<div class="blob bottom-[-10%] right-[-10%]"></div>
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center w-full px-6 py-4 sticky top-0 bg-slate-950/80 backdrop-blur-3xl z-50 border-b border-white/5 shadow-[0px_4px_24px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-12">
+<span class="text-2xl font-black tracking-tighter text-orange-500 italic font-['Plus_Jakarta_Sans']">QuickBites</span>
+<div class="hidden md:flex items-center gap-8 font-['Plus_Jakarta_Sans'] text-sm font-medium tracking-tight">
+<a class="text-orange-500 border-b-2 border-orange-500 pb-1" href="#">Explore</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Offers</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Orders</a>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden lg:flex items-center neomorph-inset rounded-full px-4 py-2 w-80">
+<span class="material-symbols-outlined text-slate-400 mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-white w-full placeholder-slate-500" placeholder="Search for food..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform">
+<span class="material-symbols-outlined text-slate-300" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform relative">
+<span class="material-symbols-outlined text-slate-300" data-icon="shopping_cart">shopping_cart</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-orange-500 rounded-full"></span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/10 ml-2 cursor-pointer active:scale-95 transform transition-transform">
+<img alt="User profile" data-alt="close-up portrait of a stylish young professional with a friendly smile, clean minimalist avatar style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrYgeKzq3cvCzGshp77LfQ-pClgnPaDL2N6FyI0QkCZ9nNe-hNW4e6pHTg20oifLIs6CSRqy6ibYOTAn6qsd8uFl18W9tcjJth3nvWySx94qiZ9reVcwit9hqqWhkqkMfNe7AodaJbsEd_RpAjjDFovFB9rA5j4URJdKHp_F8LV2ACly83DILzmj_MjeX_FHxlfQGSHUos6i_5u0LGBdc4hFHrl7XF4DJLOFCHMgOTLYuFugp7knG8qKmcPDEZX2lqzoWxv_XgONQ"/>
+</div>
+</div>
+</div>
+</header>
+<main class="max-w-7xl mx-auto px-container-padding py-lg">
+<!-- Hero Section & Search -->
+<section class="mb-xl relative">
+<div class="glass-card rounded-[32px] p-md md:p-xl overflow-hidden relative">
+<div class="relative z-10 max-w-2xl">
+<h1 class="font-display text-display text-white mb-base">Satisfy Your <span class="text-orange-500">Nightly</span> Cravings.</h1>
+<p class="font-body-lg text-body-lg text-slate-400 mb-lg">Premium restaurants delivered to your doorstep with urban speed and futuristic precision.</p>
+<div class="flex flex-col md:flex-row gap-4 p-2 neomorph-inset rounded-2xl md:rounded-full">
+<div class="flex flex-1 items-center px-4 py-2">
+<span class="material-symbols-outlined text-orange-500 mr-3" data-icon="location_on">location_on</span>
+<input class="bg-transparent border-none focus:ring-0 text-white w-full font-body-md" placeholder="Enter delivery address..." type="text"/>
+</div>
+<button class="bg-primary-container text-white px-8 py-3 rounded-xl md:rounded-full font-bold primary-glow active:scale-95 transform transition-all">
+                            Find Food
+                        </button>
+</div>
+</div>
+<!-- Decorative Element -->
+<div class="absolute right-0 top-0 bottom-0 w-1/3 hidden lg:block opacity-40">
+<img alt="Gourmet Food" class="h-full w-full object-cover rounded-l-full" data-alt="overhead shot of a variety of gourmet dark-themed dishes including steak, charred vegetables, and artisanal pasta on a slate background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rrjazWbpUAa_zrcoLh7JGosrLMkIOERCBE9WC2WUvztPFLUq_YWpajdJr8zXDI5CdTbOs0wsOYzb4eV4VbXnupf-gq-2OVYfI2dVJEOSh1ILfqLblqCbP7MFKSiab5xyr4uGrWqzIDfN92grimBub0aHp5vEb1rF1bcUSnfMZafk-qTJunYevZd2_kCNHT1r2JxTradkKIIdXO_yOYjtv-zOHqIDrtOlbEdUT7jY-u3beLupIbwy4P02leIz3lV0MCH39xIg5FM"/>
+</div>
+</div>
+</section>
+<!-- Filters Section -->
+<section class="mb-lg flex flex-wrap items-center justify-between gap-gutter">
+<div class="flex items-center gap-base overflow-x-auto pb-2 scrollbar-hide">
+<button class="px-6 py-2 rounded-full bg-primary-container text-white font-label-caps whitespace-nowrap">All Cuisines</button>
+<button class="px-6 py-2 rounded-full bg-white/5 border border-white/5 hover:border-orange-500/50 text-slate-300 font-label-caps whitespace-nowrap transition-all">Sushi</button>
+<button class="px-6 py-2 rounded-full bg-white/5 border border-white/5 hover:border-orange-500/50 text-slate-300 font-label-caps whitespace-nowrap transition-all">Italian</button>
+<button class="px-6 py-2 rounded-full bg-white/5 border border-white/5 hover:border-orange-500/50 text-slate-300 font-label-caps whitespace-nowrap transition-all">Burgers</button>
+<button class="px-6 py-2 rounded-full bg-white/5 border border-white/5 hover:border-orange-500/50 text-slate-300 font-label-caps whitespace-nowrap transition-all">Vegan</button>
+<button class="px-6 py-2 rounded-full bg-white/5 border border-white/5 hover:border-orange-500/50 text-slate-300 font-label-caps whitespace-nowrap transition-all">Desserts</button>
+</div>
+<div class="flex items-center gap-sm">
+<div class="flex items-center neomorph-inset px-4 py-2 rounded-xl text-slate-400">
+<span class="material-symbols-outlined text-sm mr-2" data-icon="filter_list">filter_list</span>
+<span class="text-sm font-medium">Sort by: Popular</span>
+</div>
+</div>
+</section>
+<!-- Grid of Restaurant Cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-lg">
+<!-- Restaurant Card 1 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="Neo Tokyo Sushi" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="meticulously plated premium sushi rolls with gold leaf accents on a dark ceramic plate in a moody neon-lit restaurant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGyfOJDnX4RP-urLGl8tw6gZ03Q8s_bl-BQN-iP2MrpRMwDHUyUeLWxImElfIkBY3Qsyjk8lRXfXHmn5k_uVHaKWAkr8uOfjE5hAJvi-ol03lpvjy0LuMq9ejD0VIXEUKbShQqPc9U6RFTLOv72--BJqwsYs-pNd4I6lPPCu83PqqFZ26KUq6jD11AIIfQCaamJS1xnheKc9GYWEyYCOT4YhwTDPsavjIo7V5oLBzAkT0Rn_5uj8rp8yN4AzMoJ5EumoB6OR_etsQ"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">4.9</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">Neo Tokyo Sushi</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Japanese • Premium • Seafood</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">20-30 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $25.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Restaurant Card 2 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="Midnight Pizza Art" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="authentic thin crust wood-fired pizza with bubbling mozzarella and fresh basil on a dark rustic surface with dramatic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb9u1TvQsi-kJPfXfbh2rNLkyoVtAIsjEM9wXFnVhhnhBFromQSoHdHLI1BfmglJMOKHe3ei3phe36rgK0w-j_zYSYUJGaGkpBau88KJ7eC0kwa5WsVLoIl622rax6eGTeqeekXWqRcHfwmbP_XGJoeP7D33Dq-GFLXYyZrCIChhZMDBINKfxiHFBVPhu8m5NoK0e9uhGFArRn5Fff0LOt1jt0tFU2xns2qzNfGKSEm22rMydp7oIZWisBnsTN907SjK4uRQ8vfzI"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">4.7</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">Midnight Pizza Art</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Italian • Comfort • Artisan</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">15-25 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $15.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Restaurant Card 3 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="Cyber Burger" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="towering gourmet Wagyu beef burger with melting cheese and caramelized onions in a dark high-tech urban setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS6LNrT92m_jGCQakHPL3nJg_IGBXRs9TBN91kzNXlslDVNJF-0pz1Xx8Juaq4o-SQ3_stsOyt9cHDVYdW9g8adk_lPAPrOf5D4AusoSrygWd1aawLcqjwzELB2Ed59n5ydvqmnEzeJzyejdbpK8kEmPK4CDavTbpZ-sF2jiCdRpiYfGEft882hZCiZIlUZIfKWcD75aof5BR-BNjUaGK0rlwNz6uazbMeRT71j24lBiFF-kOLf1Y7I27zVLezaKnOgiwyB2SNQ3U"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">4.8</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">Cyber Burger</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Burgers • American • Street</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">25-40 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $10.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Restaurant Card 4 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="The Green Bowl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vibrant vegan buddha bowl with avocado, quinoa, and colorful fresh vegetables on a dark granite surface with soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfLxEFOQL6ZjUXwb_VotCsu4y0hgdOGducLdCnguM6-s2f2Gtobsog-BiTOHlpxyUKjMzMDPHdRq6zQ4XHy3dvoY4g-JT2baPOaEkvwU7VOoEA1GGwr3FBjgHSKZT8qbTkbxwzo5fX9X4wQKwjD15QuzjR9si5Ynhx-PqxZuhTyEXtLp-Habw308QmMExMxJOyYVtJuC9CynR7EqqFB7yHy1SMwfmRiQYPG1fktrpPYTZ19Kcm8mxLCr2OaxBBr4gP-1UdUO9GTvI"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">4.6</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">The Green Bowl</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Healthy • Vegan • Organic</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">20-35 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $12.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Restaurant Card 5 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="Velvet Patisserie" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="luxury chocolate desserts and glazed donuts on a dark reflective surface with gold decorative elements" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXvZoVU_KKSN2yV0Wh8TV-gVhRmnulolYlr5O172iDjTexSEIDnDbGzgUb1zr55Kl6D3EkfaF9uJnF-CU66TpF4_sEoPjd0v73yTO0lMXJdkSZemT-HPUWhaJMzJE1DCOtlQDG7XURrP5aan_d5ZXZf8mCtPYuudoMfFkeDuu9zb49WvC_YVHMk_cBrPzzINsqyhg730wMwGrJbC_WSlVyn1fX6mjDkaDfQ0NVHu0mpU_vBfYTYDLvRuyD1bYQqcEbUn_uKAuOaVk"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">5.0</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">Velvet Patisserie</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Desserts • French • Sweet</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">10-20 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $8.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Restaurant Card 6 -->
+<div class="glass-card rounded-[24px] overflow-hidden group hover:translate-y-[-8px] transition-all duration-300">
+<div class="h-48 relative overflow-hidden">
+<img alt="Spice Route" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="rich dark curry with vibrant spices and aromatic basmati rice served in traditional copper bowls on a dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCHJM4OKtigkX-NnRbJIk0tRDzEADcCFLAHmMKYqyjE_tEpvN_ew6GqxIB7bi1UkvIGtzP2irKT7VAvrQ67ymG3ozFi50aL93xSR3RWLZWBkr6_I_52PxcWpxz-Fdh11ebRZ1H12QM_HpQ3KsV-PZ2AlJ8tw7h6edL3k0InM1U-3bpS_PF-fEQ861u2MlFCgG1oxvXRSV4pb6ns4ySRa_wxItBw5kYI5AO6zdMSSRe9krvIJRTUn5iARjqCECPClKLKCT9VxcA34g"/>
+<div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-2 py-1 rounded-lg flex items-center">
+<span class="material-symbols-outlined text-orange-500 text-sm mr-1" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="text-xs font-bold text-white">4.5</span>
+</div>
+</div>
+<div class="p-md">
+<div class="flex justify-between items-start mb-xs">
+<h3 class="font-headline-md text-white">Spice Route</h3>
+<span class="material-symbols-outlined text-slate-500 hover:text-error transition-colors cursor-pointer" data-icon="favorite">favorite</span>
+</div>
+<p class="text-slate-400 text-body-sm mb-md">Indian • Spicy • Traditional</p>
+<div class="flex items-center justify-between border-t border-white/5 pt-md">
+<div class="flex items-center gap-4">
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-sm mr-1" data-icon="schedule">schedule</span>
+<span class="text-xs font-bold">30-45 min</span>
+</div>
+<div class="text-slate-500 text-xs">•</div>
+<div class="text-slate-400 text-xs font-medium">Min. $20.00</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-all text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Side Bar Cart Summary (Modeled after SideNavBar) -->
+<aside class="w-80 fixed right-0 top-20 flex flex-col p-6 space-y-4 bg-slate-900/60 backdrop-blur-2xl rounded-l-3xl border-l border-white/5 h-[calc(100vh-80px)] sticky right-0 shadow-[-10px_0px_30px_rgba(0,0,0,0.5)] hidden xl:flex">
+<div class="border-b border-white/5 mb-4 pb-4">
+<h2 class="font-headline-md text-white">Your Basket</h2>
+<p class="text-slate-400 text-sm">3 items ready to checkout</p>
+</div>
+<div class="flex-1 space-y-4 overflow-y-auto pr-2">
+<!-- Cart Item -->
+<div class="flex gap-4 p-3 rounded-xl hover:bg-white/5 transition-all">
+<div class="h-16 w-16 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+<img alt="Salmon Nigiri" data-alt="Close up of fresh salmon nigiri sushi on a dark plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8KrPLOcK3bYpsdDRHx4k5tjBGiBxQdxR2CotYkW8thbae0JPiQjRciOOCeR5YQiygLn2dAhqUHMZSGzG9hc4IVtUioAMguxRIjPI0Aajq-ecjwiqkTD3DlaNLjbr7MHhGOTV2_9fJstI1zR6hypYdtrHtvJ5JIAMQpkSM0hcYONvTkZvOrRYwjfqyRoWIBiY9iRX863T9q8a8mFFtANJso9xTqxZMC8CF7HPAj0succkxzl4QsZQwaPuiCiHJYp5B4qVQH5-Acb0"/>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-white text-sm font-bold">Salmon Nigiri</p>
+<p class="text-orange-500 text-xs">$12.00</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500 text-sm cursor-pointer" data-icon="remove_circle_outline">remove_circle_outline</span>
+<span class="text-white text-sm">2</span>
+<span class="material-symbols-outlined text-slate-500 text-sm cursor-pointer" data-icon="add_circle_outline">add_circle_outline</span>
+</div>
+</div>
+<!-- Cart Item -->
+<div class="flex gap-4 p-3 rounded-xl hover:bg-white/5 transition-all">
+<div class="h-16 w-16 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+<img alt="Truffle Pizza" data-alt="Gourmet pizza slice with truffle oil and mushrooms" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw6RMfNlHI_RB_9W4tDt7HHyLEAqU8g2F2lRqmnsE2ovp0WmLXZHBP11nh0LmTat3yeEzd9KKq6HLbBPQMPf_vLUlCurZXFFjPXrB-0wbZoGEEUJqeZweh2utXEezhebMjbx4A-RQB07Fj8dv0ki7qepB0dz8TTEPeHgiNIMI0yQ_pgw7FsNGPVXsCTGFpi59yZ667xJOw_6M01I9WEa_HyK6S_jIEPbl9WQFOk9XLLNk36k6TmY8x-mkv9FsDpe5SE3S2OyBUIn4"/>
+</div>
+<div class="flex flex-col justify-center flex-1">
+<p class="text-white text-sm font-bold">Truffle Pizza</p>
+<p class="text-orange-500 text-xs">$18.50</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-500 text-sm cursor-pointer" data-icon="remove_circle_outline">remove_circle_outline</span>
+<span class="text-white text-sm">1</span>
+<span class="material-symbols-outlined text-slate-500 text-sm cursor-pointer" data-icon="add_circle_outline">add_circle_outline</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-white/5 space-y-4">
+<div class="flex justify-between text-slate-400 text-sm">
+<span>Subtotal</span>
+<span class="text-white">$42.50</span>
+</div>
+<div class="flex justify-between text-slate-400 text-sm">
+<span>Delivery Fee</span>
+<span class="text-secondary">$2.99</span>
+</div>
+<div class="flex justify-between font-bold text-white text-lg">
+<span>Total</span>
+<span>$45.49</span>
+</div>
+<button class="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold primary-glow active:scale-95 transform transition-all">
+                Checkout Now
+            </button>
+</div>
+</aside>
+<!-- Floating Action Button for Mobile Cart -->
+<button class="xl:hidden fixed bottom-8 right-8 w-16 h-16 bg-primary-container rounded-full flex items-center justify-center text-white primary-glow shadow-xl z-50 active:scale-90 transform transition-transform">
+<span class="material-symbols-outlined text-3xl" data-icon="shopping_basket">shopping_basket</span>
+<span class="absolute -top-1 -right-1 bg-white text-orange-500 text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-orange-500">3</span>
+</button>
+</body></html>

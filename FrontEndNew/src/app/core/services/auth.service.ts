@@ -84,13 +84,30 @@ export class AuthService {
    * Login user
    */
   login(credentials: LoginDTO): Observable<LoginResponseDTO> {
+    console.log('[AuthService] login() called with:', { email: credentials.email, password: '***' });
+    console.log('[AuthService] API endpoint:', API_ENDPOINTS.AUTH.LOGIN);
+    
+    // Backend now returns consistent JSON response
     return this.api.post<LoginResponseDTO>(API_ENDPOINTS.AUTH.LOGIN, credentials)
       .pipe(
         tap(response => {
-          // If token is null, 2FA is required
-          if (response.token) {
+          console.log('[AuthService] Login response received:', response);
+          console.log('[AuthService] requireTwoFactor:', response.requireTwoFactor);
+          console.log('[AuthService] token:', response.token ? 'present' : 'null');
+          
+          // Only handle auth success if token is present and 2FA is not required
+          if (response.token && !response.requireTwoFactor) {
+            console.log('[AuthService] Token found and no 2FA required, handling auth success');
             this.handleAuthSuccess(response);
+          } else if (response.requireTwoFactor) {
+            console.log('[AuthService] 2FA required - not handling auth yet');
+          } else {
+            console.log('[AuthService] No token and no 2FA flag - unexpected state');
           }
+        }),
+        catchError(error => {
+          console.error('[AuthService] Login error:', error);
+          throw error;
         })
       );
   }
@@ -98,13 +115,49 @@ export class AuthService {
   /**
    * Verify Two-Factor OTP
    */
-  verifyTwoFactorOTP(data: ConfirmEmailDTO): Observable<LoginResponseDTO> {
-    return this.api.post<LoginResponseDTO>(API_ENDPOINTS.AUTH.VERIFY_OTP, data)
+  verifyTwoFactorOTP(data: { email: string; otp: string }): Observable<any> {
+    console.log('[AuthService] verifyTwoFactorOTP called with:', { email: data.email, otp: '***' });
+    
+    // Backend expects 'token' field, not 'otp'
+    const requestData = {
+      email: data.email,
+      token: data.otp  // Map otp to token
+    };
+    
+    console.log('[AuthService] Sending request with:', { email: requestData.email, token: '***' });
+    
+    // Request text response to handle both JSON and plain text responses
+    return this.api.post<any>(API_ENDPOINTS.AUTH.VERIFY_OTP, requestData, { responseType: 'text' })
       .pipe(
+        map(response => {
+          console.log('[AuthService] Verify OTP raw response:', response);
+          
+          // Try to parse as JSON first
+          if (typeof response === 'string') {
+            try {
+              const parsed = JSON.parse(response);
+              console.log('[AuthService] Parsed JSON:', parsed);
+              return parsed;
+            } catch (e) {
+              console.log('[AuthService] Not JSON, returning as string');
+              return response;
+            }
+          }
+          
+          return response;
+        }),
         tap(response => {
-          if (response.token) {
+          console.log('[AuthService] Verify OTP processed response:', response);
+          
+          // If response has token, handle auth success
+          if (response && typeof response === 'object' && response.token) {
+            console.log('[AuthService] Token found in verify response, handling auth success');
             this.handleAuthSuccess(response);
           }
+        }),
+        catchError(error => {
+          console.error('[AuthService] Verify OTP error:', error);
+          throw error;
         })
       );
   }
@@ -197,7 +250,12 @@ export class AuthService {
    * Send Two-Factor OTP
    */
   sendTwoFactorOTP(email: string): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.TWO_FACTOR_AUTH, email);
+    console.log('[AuthService] sendTwoFactorOTP called with email:', email);
+    console.log('[AuthService] Endpoint:', API_ENDPOINTS.AUTH.TWO_FACTOR_AUTH);
+    
+    // Backend expects email as a JSON string in the body with Content-Type: application/json
+    // We need to send it as a quoted string: "email@example.com"
+    return this.api.post(API_ENDPOINTS.AUTH.TWO_FACTOR_AUTH, `"${email}"`, { responseType: 'text' });
   }
 
   // ============================================
@@ -208,22 +266,36 @@ export class AuthService {
    * Handle successful authentication
    */
   private handleAuthSuccess(response: LoginResponseDTO): void {
+    console.log('[AuthService] handleAuthSuccess called');
     if (response.token) {
+      console.log('[AuthService] Storing access token');
       // Store access token
       this.storage.setItem(STORAGE_KEYS.ACCESS_TOKEN, response.token);
       
       // Decode token to get user info
       const decodedToken = this.decodeToken(response.token);
+      console.log('[AuthService] Token decoded:', { email: decodedToken.email, role: decodedToken.role });
       
       // Fetch full user profile
-      this.getProfile().subscribe();
+      console.log('[AuthService] Fetching user profile...');
+      this.getProfile().subscribe({
+        next: (profile) => {
+          console.log('[AuthService] Profile fetched successfully:', profile);
+        },
+        error: (error) => {
+          console.error('[AuthService] Failed to fetch profile:', error);
+        }
+      });
+    } else {
+      console.warn('[AuthService] handleAuthSuccess called but no token present');
     }
   }
 
   /**
    * Clear all authentication data
+   * Public method to allow error interceptor to clear auth without API call
    */
-  private clearAuthData(): void {
+  clearAuthData(): void {
     this.storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     this.storage.removeItem(STORAGE_KEYS.USER_INFO);
     this.currentUserSubject.next(null);

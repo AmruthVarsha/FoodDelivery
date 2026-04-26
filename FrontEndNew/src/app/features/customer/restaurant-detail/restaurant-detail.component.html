@@ -1,0 +1,271 @@
+<div class="min-h-screen bg-background text-on-background">
+  <!-- Shared Navbar -->
+  <app-navbar></app-navbar>
+
+  <main class="relative">
+    <!-- Hero Section -->
+    @if (restaurant) {
+      <section class="relative h-[450px] w-full overflow-hidden">
+        <img 
+          class="w-full h-full object-cover" 
+          [src]="restaurant.imageUrl || 'https://via.placeholder.com/1920x450?text=Restaurant'"
+          [alt]="restaurant.name"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+        
+        <div class="absolute bottom-0 left-0 w-full p-16 md:px-10">
+          <div class="max-w-7xl mx-auto flex flex-col gap-3">
+            <div class="flex items-center gap-2">
+              @if (restaurant.isActive) {
+                <span class="bg-secondary-container/20 text-secondary-container px-3 py-1 rounded-full text-xs font-semibold tracking-wider backdrop-blur-md border border-secondary-container/30">OPEN NOW</span>
+              }
+              <div class="flex items-center gap-1 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                <span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="text-sm font-bold">{{ restaurant.rating }} (2.4k+ Reviews)</span>
+              </div>
+            </div>
+            <h1 class="text-5xl font-extrabold text-white drop-shadow-2xl">{{ restaurant.name }}</h1>
+            <div class="flex items-center gap-6 text-slate-300">
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary-container">location_on</span>
+                <span class="text-base">{{ restaurant.address }}</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary-container">schedule</span>
+                <span class="text-base">{{ restaurant.deliveryTime || '25-35 mins' }} delivery</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary-container">payments</span>
+                <span class="text-base">{{ restaurant.cuisineType || 'Fine Dining' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+
+    <!-- Content Grid -->
+    <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col lg:flex-row gap-10">
+      <!-- Left Side: Menu Content -->
+      <div class="flex-1 space-y-6">
+        <!-- Navigation Tabs -->
+        <div class="flex border-b border-white/5 gap-10 mb-8">
+          <button 
+            (click)="selectTab('menu')"
+            [class.text-primary-container]="selectedTab === 'menu'"
+            [class.border-b-2]="selectedTab === 'menu'"
+            [class.border-primary-container]="selectedTab === 'menu'"
+            [class.text-slate-400]="selectedTab !== 'menu'"
+            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+          >
+            Menu
+          </button>
+          <button 
+            (click)="selectTab('info')"
+            [class.text-primary-container]="selectedTab === 'info'"
+            [class.border-b-2]="selectedTab === 'info'"
+            [class.border-primary-container]="selectedTab === 'info'"
+            [class.text-slate-400]="selectedTab !== 'info'"
+            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+          >
+            Information
+          </button>
+          <button 
+            (click)="selectTab('reviews')"
+            [class.text-primary-container]="selectedTab === 'reviews'"
+            [class.border-b-2]="selectedTab === 'reviews'"
+            [class.border-primary-container]="selectedTab === 'reviews'"
+            [class.text-slate-400]="selectedTab !== 'reviews'"
+            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+          >
+            Reviews
+          </button>
+        </div>
+
+        <!-- Menu Tab Content -->
+        @if (selectedTab === 'menu') {
+          <!-- Category Filters -->
+          <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            @for (category of categories; track category) {
+              <button 
+                (click)="selectCategory(category)"
+                [class.bg-primary-container]="selectedCategory === category"
+                [class.text-white]="selectedCategory === category"
+                [class.orange-glow]="selectedCategory === category"
+                [class.bg-white/5]="selectedCategory !== category"
+                [class.border]="selectedCategory !== category"
+                [class.border-white/10]="selectedCategory !== category"
+                [class.text-slate-300]="selectedCategory !== category"
+                [class.hover:bg-white/10]="selectedCategory !== category"
+                class="whitespace-nowrap px-6 py-2 rounded-full text-xs font-semibold tracking-wider transition-all"
+              >
+                {{ category }}
+              </button>
+            }
+          </div>
+
+          <!-- Menu Items Grid -->
+          @if (isLoadingMenu) {
+            <div class="flex justify-center items-center py-20">
+              <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-container"></div>
+                <p class="text-slate-400 mt-4">Loading menu...</p>
+              </div>
+            </div>
+          }
+
+          @if (!isLoadingMenu && filteredMenuItems.length === 0) {
+            <div class="glass-panel rounded-2xl p-8 text-center">
+              <span class="material-symbols-outlined text-slate-400 text-5xl mb-4">restaurant_menu</span>
+              <p class="text-slate-400 text-lg">No menu items available.</p>
+            </div>
+          }
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            @for (item of filteredMenuItems; track item.id) {
+              <div class="glass-panel neo-outset rounded-3xl p-4 flex gap-6 group">
+                <div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+                  <img 
+                    class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                    [src]="item.imageUrl || 'https://via.placeholder.com/200x200?text=Dish'"
+                    [alt]="item.name"
+                  />
+                </div>
+                <div class="flex flex-col justify-between py-2 flex-1">
+                  <div>
+                    <h3 class="text-lg font-bold text-white">{{ item.name }}</h3>
+                    <p class="text-slate-400 text-sm line-clamp-2 mt-1">{{ item.description }}</p>
+                  </div>
+                  <div class="flex justify-between items-center mt-4">
+                    <span class="text-primary-container text-xl font-bold">₹{{ item.price }}</span>
+                    <button 
+                      (click)="addToCart(item)"
+                      [disabled]="!item.isAvailable"
+                      class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span class="material-symbols-outlined text-sm">add</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Info Tab Content -->
+        @if (selectedTab === 'info' && restaurant) {
+          <div class="glass-panel rounded-3xl p-8 space-y-6">
+            <h3 class="text-2xl font-bold text-white mb-4">Restaurant Information</h3>
+            <div class="space-y-4">
+              <div>
+                <p class="text-slate-400 text-sm mb-1">Description</p>
+                <p class="text-white">{{ restaurant.description || 'No description available.' }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 text-sm mb-1">Address</p>
+                <p class="text-white">{{ restaurant.address }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 text-sm mb-1">Phone</p>
+                <p class="text-white">{{ restaurant.phoneNumber }}</p>
+              </div>
+              <div>
+                <p class="text-slate-400 text-sm mb-1">Email</p>
+                <p class="text-white">{{ restaurant.email }}</p>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Reviews Tab Content -->
+        @if (selectedTab === 'reviews') {
+          <div class="glass-panel rounded-3xl p-8 text-center">
+            <span class="material-symbols-outlined text-slate-400 text-5xl mb-4">rate_review</span>
+            <p class="text-slate-400 text-lg">Reviews coming soon!</p>
+          </div>
+        }
+      </div>
+
+      <!-- Right Side: Sticky Sidebar -->
+      <aside class="w-full lg:w-80 relative">
+        <div class="lg:sticky lg:top-24 space-y-6">
+          <div class="glass-panel rounded-3xl p-6 neo-outset flex flex-col space-y-4">
+            <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-2">
+              <div>
+                <h2 class="text-lg font-bold text-white">Your Basket</h2>
+                <p class="text-slate-400 text-sm">{{ cartItemCount }} items ready to checkout</p>
+              </div>
+              <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container">
+                <span class="material-symbols-outlined">shopping_basket</span>
+              </div>
+            </div>
+
+            <!-- Cart Items List -->
+            @if (cartItems.length === 0) {
+              <div class="text-center py-8">
+                <span class="material-symbols-outlined text-slate-500 text-4xl mb-2">shopping_cart</span>
+                <p class="text-slate-400 text-sm">Your basket is empty</p>
+              </div>
+            }
+
+            <div class="space-y-4 max-h-[400px] overflow-y-auto">
+              @for (item of cartItems; track item.menuItem.id) {
+                <div class="flex justify-between items-center">
+                  <div class="flex gap-3 flex-1">
+                    <div class="w-10 h-10 rounded-lg bg-surface-container-high neo-inset flex items-center justify-center text-xs font-bold text-primary-container">
+                      {{ item.quantity }}x
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-white text-sm font-medium">{{ item.menuItem.name }}</p>
+                      <p class="text-slate-500 text-xs">₹{{ item.menuItem.price }} each</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button (click)="updateQuantity(item, -1)" class="text-slate-400 hover:text-white">
+                      <span class="material-symbols-outlined text-sm">remove_circle_outline</span>
+                    </button>
+                    <button (click)="updateQuantity(item, 1)" class="text-slate-400 hover:text-white">
+                      <span class="material-symbols-outlined text-sm">add_circle_outline</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (cartItems.length > 0) {
+              <div class="h-px bg-white/5 my-4"></div>
+
+              <!-- Subtotal Section -->
+              <div class="space-y-2">
+                <div class="flex justify-between text-slate-400 text-sm">
+                  <span>Subtotal</span>
+                  <span>₹{{ cartSubtotal }}</span>
+                </div>
+                <div class="flex justify-between text-slate-400 text-sm">
+                  <span>Delivery Fee</span>
+                  <span>₹{{ deliveryFee }}</span>
+                </div>
+                <div class="flex justify-between text-white text-lg font-bold pt-2">
+                  <span>Total</span>
+                  <span class="text-primary-container">₹{{ cartTotal }}</span>
+                </div>
+              </div>
+
+              <!-- Checkout CTA -->
+              <button 
+                (click)="checkout()"
+                class="w-full bg-primary-container text-white py-4 rounded-2xl font-bold text-base orange-glow hover:translate-y-[-2px] transition-all active:scale-95 transform"
+              >
+                Checkout Now
+              </button>
+            }
+          </div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Decorative Glows -->
+  <div class="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary-container/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+  <div class="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+</div>

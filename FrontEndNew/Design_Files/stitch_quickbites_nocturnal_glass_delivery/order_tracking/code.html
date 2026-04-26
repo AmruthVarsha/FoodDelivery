@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1a1c1c",
+                        "tertiary-fixed-dim": "#bfc6e0",
+                        "on-background": "#e2e2e2",
+                        "inverse-primary": "#ab3500",
+                        "on-secondary-fixed-variant": "#005047",
+                        "background": "#121414",
+                        "surface": "#121414",
+                        "on-error": "#690005",
+                        "tertiary-container": "#9299b2",
+                        "secondary-container": "#00c3af",
+                        "surface-variant": "#333535",
+                        "surface-dim": "#121414",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-container": "#2a3146",
+                        "on-secondary": "#003731",
+                        "secondary-fixed": "#62fae4",
+                        "surface-tint": "#ffb59d",
+                        "on-secondary-fixed": "#00201c",
+                        "on-primary-fixed-variant": "#832600",
+                        "surface-container-highest": "#333535",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#0c0f0f",
+                        "primary-fixed": "#ffdbd0",
+                        "tertiary-fixed": "#dbe2fd",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#131b2e",
+                        "outline-variant": "#594139",
+                        "surface-bright": "#37393a",
+                        "on-surface": "#e2e2e2",
+                        "tertiary": "#bfc6e0",
+                        "on-surface-variant": "#e1bfb5",
+                        "on-primary": "#5d1900",
+                        "error": "#ffb4ab",
+                        "secondary": "#40e0cb",
+                        "primary-fixed-dim": "#ffb59d",
+                        "on-primary-container": "#5f1900",
+                        "on-secondary-container": "#004a42",
+                        "outline": "#a98a80",
+                        "inverse-surface": "#e2e2e2",
+                        "primary-container": "#ff6b35",
+                        "surface-container": "#1e2020",
+                        "inverse-on-surface": "#2f3131",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#283044",
+                        "secondary-fixed-dim": "#3cddc8",
+                        "on-primary-fixed": "#390c00",
+                        "primary": "#ffb59d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "lg": "40px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .neomorphic-outset {
+            box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.4), -4px -4px 12px rgba(255, 255, 255, 0.05);
+        }
+        .neomorphic-inset {
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.5), inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+        }
+        .glass-panel {
+            backdrop-filter: blur(24px);
+            background: rgba(26, 28, 28, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .status-line {
+            background: linear-gradient(to bottom, #ff6b35 50%, #333535 50%);
+        }
+        .glow-primary {
+            text-shadow: 0 0 15px rgba(255, 107, 53, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-slate-950/80 backdrop-blur-3xl text-orange-500 font-['Plus_Jakarta_Sans'] text-sm font-medium tracking-tight docked full-width top-0 z-50 border-b border-white/5 shadow-[0px_4px_24px_rgba(0,0,0,0.4)] flex justify-between items-center w-full px-6 py-4 sticky top-0">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-orange-500 italic">QuickBites</span>
+<nav class="hidden md:flex gap-6">
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Explore</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Offers</a>
+<a class="text-orange-500 border-b-2 border-orange-500 pb-1" href="#">Orders</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform">
+<span class="material-symbols-outlined text-slate-400">shopping_cart</span>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform">
+<span class="material-symbols-outlined text-slate-400">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/10 ml-2">
+<img class="w-full h-full object-cover" data-alt="close-up of a smiling young professional man with short dark hair in a clean minimalist studio setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD89fo8MOuCugZ5C9J4ZEcZmIL2zCwJOnAHK7nUynSynFdgQaqeXMZ2YLncbCWQ1NmktF1w8YlMsHGuED5AeeQvAeEf_cnt_IGwBFT2hC-pQuDeYVJ9iBr7lm9ORkj2__c9ELW9M5CIyY-frdTTDNap6edvePeOKxYCnipDaRwS0zyvRrQ4jyswg2rQLqznK2MtibcgWTwHlOAlHNCDVpT9-6MLJymWOJKchfcHe402ErKyCg8qkmkcEvvWTDgTPw6cReQY6dCbZuI"/>
+</div>
+</div>
+</header>
+<!-- Main Layout -->
+<main class="max-w-[1440px] mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-12 gap-8 relative">
+<!-- Sidebar Shell Logic: SideNavBar hidden as per focus journey rule (Tracking screen is a detail task) but using its visual style for information architecture -->
+<!-- Left Column: Map & Delivery Agent (8 columns) -->
+<div class="md:col-span-8 space-y-8">
+<!-- Map Container -->
+<div class="glass-panel rounded-[24px] neomorphic-outset overflow-hidden h-[500px] relative">
+<img class="w-full h-full object-cover opacity-60" data-alt="top-down dark mode map UI with neon orange and cyan route lines cutting through a stylized urban cityscape at night" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIZd-ePqWXqKpdgRAtrmbmSlJxqadj3EDSzgTnkYt5lZQ5HSn8_XIjnGbnVbzD-_BkuJO7FATAWo_Bd9ouOrgNM9CNix8bFfsPg7t6jnCC6snr4XFZDxFJtlswzcS_aWh7lE8nS-B9wu0B5jrthGpGyqB-zQOQjpSaLEOC_GOj3YX7GYjpEydzNh_szqBltaWVN3VqzvG3C7Np-tGD9q3CL81tBobkOo_tp5INyZ7XB9s5kCQTzURmJy7l1uQl_UL-_XTsMGEzcPM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<!-- Floating Info Overlay -->
+<div class="absolute bottom-6 left-6 right-6 flex justify-between items-end">
+<div class="glass-panel p-6 rounded-2xl neomorphic-outset border-l-4 border-secondary">
+<p class="text-label-caps text-secondary mb-1">CURRENT LOCATION</p>
+<h3 class="font-headline-md text-on-background">Sunset Boulevard, 42</h3>
+<p class="text-body-sm text-on-surface-variant">2.4 miles from your location</p>
+</div>
+<div class="glass-panel p-6 rounded-2xl neomorphic-outset flex flex-col items-center min-w-[160px]">
+<span class="text-label-caps text-primary-container mb-2">ARRIVING IN</span>
+<span class="font-display text-primary-container glow-primary">12:45</span>
+</div>
+</div>
+</div>
+<!-- Delivery Agent & Order Details Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Delivery Agent Card -->
+<div class="glass-panel p-md rounded-[24px] neomorphic-outset">
+<div class="flex items-center gap-4 mb-6">
+<div class="w-16 h-16 rounded-2xl overflow-hidden neomorphic-outset p-1 bg-surface-container-high">
+<img class="w-full h-full object-cover rounded-xl" data-alt="headshot of a friendly delivery courier wearing a professional cap and orange uniform against a soft blurred city background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAc9B5YrpAJmJt9PGpigng8obID6BtMcfaMEmlfJKTwR-_Xi82JY4jQ8vggWTLyxayUC3W5fwTg0QDYnYBRF1zHanipEkkF_OphcC4rqTg7BAhKv4aGe3WM9i7Z7DDylHKuF03cID27tkPHSnuAAH0sKJ7vkuajqvn-htVXX7SclRX6kFGqP_0jtmxkcMc3VxKg3YWlb9IhRAIsaO58UbcoD8LwEElmJ2r7gQO8qFSH_rJ90Y2TL4IKj5nHbq_GgkrySAg3m0uacgQ"/>
+</div>
+<div>
+<h4 class="font-headline-md text-on-background">Marcus Chen</h4>
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">stars</span>
+<span class="text-body-sm font-bold">4.9 • 2.5k Deliveries</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="neomorphic-inset bg-surface-container-lowest p-4 rounded-xl flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">electric_moped</span>
+<span class="text-body-md text-on-surface">Black Super Soco CPx</span>
+</div>
+<span class="text-label-caps bg-surface-variant px-2 py-1 rounded">NY 8842-X</span>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 bg-primary-container text-white font-bold py-3 rounded-xl neomorphic-outset hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">call</span>
+                                Call Marcus
+                            </button>
+<button class="w-14 h-14 glass-panel flex items-center justify-center rounded-xl neomorphic-outset text-secondary hover:text-white transition-colors">
+<span class="material-symbols-outlined">chat_bubble</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Order Detail Summary -->
+<div class="glass-panel p-md rounded-[24px] neomorphic-outset">
+<div class="flex justify-between items-start mb-6">
+<div>
+<p class="text-label-caps text-on-surface-variant mb-1">ORDER #QB-8829</p>
+<h4 class="font-headline-md text-on-background">The Burger Theory</h4>
+</div>
+<span class="material-symbols-outlined text-primary-container">receipt_long</span>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface-variant">2x Double Truffle Burger</span>
+<span class="text-on-background">$32.00</span>
+</div>
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface-variant">1x Parmesan Truffle Fries</span>
+<span class="text-on-background">$8.50</span>
+</div>
+<div class="flex justify-between text-body-md">
+<span class="text-on-surface-variant">Delivery Fee</span>
+<span class="text-on-background text-secondary">FREE</span>
+</div>
+</div>
+<div class="pt-4 border-t border-white/5 flex justify-between items-center">
+<span class="font-bold text-lg">Total Amount</span>
+<span class="font-display text-2xl text-on-background">$40.50</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Order Status Stepper (4 columns) -->
+<div class="md:col-span-4">
+<div class="glass-panel p-md rounded-[24px] neomorphic-outset sticky top-[104px]">
+<h3 class="font-headline-md text-on-background mb-8">Order Status</h3>
+<div class="relative space-y-12">
+<!-- Progress Line -->
+<div class="absolute left-[23px] top-4 bottom-4 w-1 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="w-full h-[65%] bg-primary-container shadow-[0_0_10px_#ff6b35]"></div>
+</div>
+<!-- Step 1 -->
+<div class="relative flex items-start gap-6 pl-1">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center neomorphic-outset ring-4 ring-background z-10">
+<span class="material-symbols-outlined text-white">check</span>
+</div>
+<div>
+<h5 class="text-body-lg font-bold text-on-background">Order Placed</h5>
+<p class="text-body-sm text-on-surface-variant">12:30 PM • We've received your order</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="relative flex items-start gap-6 pl-1">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center neomorphic-outset ring-4 ring-background z-10">
+<span class="material-symbols-outlined text-white">restaurant</span>
+</div>
+<div>
+<h5 class="text-body-lg font-bold text-on-background">Preparing</h5>
+<p class="text-body-sm text-on-surface-variant">12:38 PM • Chef is working their magic</p>
+</div>
+</div>
+<!-- Step 3 (Active) -->
+<div class="relative flex items-start gap-6 pl-1">
+<div class="w-12 h-12 rounded-full bg-surface-container-high border-2 border-primary-container flex items-center justify-center neomorphic-outset ring-4 ring-background z-10">
+<span class="material-symbols-outlined text-primary-container">delivery_dining</span>
+</div>
+<div>
+<h5 class="text-body-lg font-bold text-primary-container">Out for Delivery</h5>
+<p class="text-body-sm text-on-surface-variant">Marcus is on his way to you</p>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="relative flex items-start gap-6 pl-1">
+<div class="w-12 h-12 rounded-full bg-surface-container-low flex items-center justify-center neomorphic-inset ring-4 ring-background z-10">
+<span class="material-symbols-outlined text-on-tertiary-fixed-variant">home</span>
+</div>
+<div>
+<h5 class="text-body-lg font-bold text-on-surface-variant opacity-60">Delivered</h5>
+<p class="text-body-sm text-on-surface-variant opacity-40">Expected by 1:05 PM</p>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<div class="mt-12 pt-8 border-t border-white/5 space-y-4">
+<p class="text-body-sm text-center text-on-surface-variant italic">Need to change something?</p>
+<button class="w-full glass-panel border-secondary/30 text-secondary font-bold py-3 rounded-xl neomorphic-outset hover:bg-secondary/10 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">support_agent</span>
+                        Contact Support
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<!-- SideNavBar (Used as floating cart summary in this context) -->
+<aside class="w-80 fixed right-0 top-20 flex flex-col p-6 space-y-4 bg-slate-900/60 backdrop-blur-2xl text-cyan-400 font-['Plus_Jakarta_Sans'] text-sm rounded-l-3xl border-l border-white/5 h-[calc(100vh-80px)] shadow-[-10px_0px_30px_rgba(0,0,0,0.5)] z-40 translate-x-72 hover:translate-x-0 transition-transform duration-500">
+<div class="border-b border-white/5 mb-4 pb-4">
+<h2 class="font-bold text-orange-500 text-lg">Your Basket</h2>
+<p class="text-slate-400">3 items ready to checkout</p>
+</div>
+<div class="flex-1 space-y-4 overflow-y-auto">
+<div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all">
+<span class="material-symbols-outlined text-slate-400">receipt_long</span>
+<div class="flex-1">
+<p class="text-white font-medium">Order History</p>
+<p class="text-xs text-slate-500">View previous meals</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 bg-orange-500/10 text-orange-500 font-bold rounded-xl transition-all">
+<span class="material-symbols-outlined">payments</span>
+<div class="flex-1">
+<p class="font-bold">Payment</p>
+<p class="text-xs text-orange-500/70">Visa **** 4421</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 hover:bg-white/5 rounded-xl transition-all">
+<span class="material-symbols-outlined text-slate-400">settings</span>
+<div class="flex-1">
+<p class="text-white font-medium">Settings</p>
+<p class="text-xs text-slate-500">Manage preferences</p>
+</div>
+</div>
+</div>
+<button class="bg-primary-container text-white py-4 rounded-2xl font-bold neomorphic-outset active:scale-95 transform transition-transform">
+            Checkout Now
+        </button>
+</aside>
+<!-- FAB Rule Suppression: No primary FAB on detail screens -->
+</body></html>

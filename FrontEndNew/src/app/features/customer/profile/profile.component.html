@@ -1,0 +1,565 @@
+<div class="min-h-screen bg-background">
+  <!-- Decorative Blobs -->
+  <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-container/20 blur-[120px] -z-10"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary/10 blur-[150px] -z-10"></div>
+
+  <!-- Shared Navbar -->
+  <app-navbar></app-navbar>
+
+  <div class="flex pt-0">
+    <!-- Sidebar -->
+    <aside class="w-64 h-[calc(100vh-64px)] sticky top-16 bg-slate-950/40 backdrop-blur-3xl border-r border-white/5 flex flex-col pt-8">
+      <!-- User Profile Card -->
+      @if (userProfile) {
+        <div class="px-6 mb-10">
+          <div class="glass-card rounded-xl p-4 bg-white/5">
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-full border-2 border-primary-container p-0.5">
+                <img alt="User Profile" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3G0_fWoMc73x0H1WEX3H7uTw7TY6UIIWPuQaqzyI_-WtA4wkYP9shecXJkaEUumVAXnlUlqZ_XxYrvjq4FMcIOycPyItcwcNlLXozGmMebs_-WK6ke_ps7K9OnU87dZZ0WMRXHnXcEodCvgw4Y4U8NB-Zb_-dtpesz44wMtwHrViUq_0PLXmeLyhZbWpaqb6h5-vC8_R_pyhxYX92FfwL99zew8kEH5CN3pHWj1-qDhhG5ZNH5yWAKG_9KOBQmy4iayQVQ0De2Pw" />
+              </div>
+              <div>
+                <p class="font-bold text-white">{{ userProfile.fullName }}</p>
+                <p class="text-[10px] text-primary-container font-bold tracking-widest uppercase">{{ getRoleName(userProfile.role) }}</p>
+              </div>
+            </div>
+            <p class="text-xs text-slate-400 truncate mb-1">{{ userProfile.email }}</p>
+            <p class="text-[10px] text-slate-500">Joined {{ formatDate(userProfile.createdAt) }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Navigation Links -->
+      <nav class="flex-1 space-y-1">
+        <button 
+          (click)="selectTab('personal')"
+          [class.bg-orange-500/10]="activeTab === 'personal'"
+          [class.text-orange-500]="activeTab === 'personal'"
+          [class.border-r-4]="activeTab === 'personal'"
+          [class.border-orange-500]="activeTab === 'personal'"
+          [class.text-slate-400]="activeTab !== 'personal'"
+          class="w-full flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-white hover:translate-x-1 transition-all duration-300"
+        >
+          <span class="material-symbols-outlined" [style.font-variation-settings]="activeTab === 'personal' ? '\'FILL\' 1' : '\'FILL\' 0'">person</span>
+          <span [class.font-semibold]="activeTab === 'personal'">Personal Info</span>
+        </button>
+        
+        <button 
+          (click)="selectTab('security')"
+          [class.bg-orange-500/10]="activeTab === 'security'"
+          [class.text-orange-500]="activeTab === 'security'"
+          [class.border-r-4]="activeTab === 'security'"
+          [class.border-orange-500]="activeTab === 'security'"
+          [class.text-slate-400]="activeTab !== 'security'"
+          class="w-full flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-white hover:translate-x-1 transition-all duration-300"
+        >
+          <span class="material-symbols-outlined">shield</span>
+          <span [class.font-semibold]="activeTab === 'security'">Security</span>
+        </button>
+        
+        <button 
+          (click)="selectTab('addresses')"
+          [class.bg-orange-500/10]="activeTab === 'addresses'"
+          [class.text-orange-500]="activeTab === 'addresses'"
+          [class.border-r-4]="activeTab === 'addresses'"
+          [class.border-orange-500]="activeTab === 'addresses'"
+          [class.text-slate-400]="activeTab !== 'addresses'"
+          class="w-full flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-white hover:translate-x-1 transition-all duration-300"
+        >
+          <span class="material-symbols-outlined">location_on</span>
+          <span [class.font-semibold]="activeTab === 'addresses'">Addresses</span>
+        </button>
+        
+        <button 
+          (click)="selectTab('orders')"
+          [class.bg-orange-500/10]="activeTab === 'orders'"
+          [class.text-orange-500]="activeTab === 'orders'"
+          [class.border-r-4]="activeTab === 'orders'"
+          [class.border-orange-500]="activeTab === 'orders'"
+          [class.text-slate-400]="activeTab !== 'orders'"
+          class="w-full flex items-center gap-3 px-6 py-3 hover:bg-white/5 hover:text-white hover:translate-x-1 transition-all duration-300"
+        >
+          <span class="material-symbols-outlined">history</span>
+          <span [class.font-semibold]="activeTab === 'orders'">Order History</span>
+        </button>
+      </nav>
+
+      <div class="p-6">
+        <button 
+          (click)="logout()"
+          class="w-full flex items-center justify-center gap-2 text-error text-sm font-semibold hover:bg-error/5 py-2 rounded-lg transition-all"
+        >
+          <span class="material-symbols-outlined text-sm">logout</span>
+          Sign Out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 lg:p-12">
+      <div class="max-w-4xl mx-auto">
+        <!-- Success/Error Messages -->
+        @if (successMessage) {
+          <div class="mb-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex items-center gap-3">
+            <span class="material-symbols-outlined text-emerald-400">check_circle</span>
+            <p class="text-emerald-400">{{ successMessage }}</p>
+          </div>
+        }
+        
+        @if (errorMessage) {
+          <div class="mb-6 bg-red-500/10 border border-red-500/20 rounded-xl p-4 flex items-center gap-3">
+            <span class="material-symbols-outlined text-red-400">error</span>
+            <p class="text-red-400">{{ errorMessage }}</p>
+          </div>
+        }
+
+        <!-- Personal Information Tab -->
+        @if (activeTab === 'personal' && userProfile) {
+          <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-white mb-2">Personal Information</h1>
+            <p class="text-slate-400">Manage your profile details and account preferences.</p>
+          </header>
+
+          <div class="glass-card rounded-3xl p-6 lg:p-8 bg-white/5">
+            <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-8">
+              <!-- Profile Header -->
+              <div class="flex items-center gap-6 pb-8 border-b border-white/5">
+                <div class="relative">
+                  <div class="w-24 h-24 rounded-full border-2 border-white/10 p-1 neomorph-outset">
+                    <img alt="Profile" class="w-full h-full rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1pA6Rmw_ypJrV3pT2dcrQXhAEivEPpOJeGMxF3qJwJCG3EqlBpdOdND4qez7KzM71uv7iMgUoa3WrMGbICoZfFnHCWMx7sLGGXsDP3MmY-f1UU8QBG18nnmYqRYj97DkOyYXYs1UeWszib2C5afILLvVrYiNbUsdk9qWtY4Gt_9gkLUqCpBFiXc4UurlIUMM449SjGtFFn7jr8yPmvRL9ia92atzbtH45M8GNueEJv-3gvnBCTcYr0TnVmqwb1IsVIz4u03ynHEY" />
+                  </div>
+                  <button type="button" class="absolute bottom-0 right-0 bg-primary-container text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-sm">edit</span>
+                  </button>
+                </div>
+                <div>
+                  <div class="flex flex-wrap gap-3 items-center mb-2">
+                    <h2 class="text-2xl font-bold text-white">{{ userProfile.fullName }}</h2>
+                    <span class="bg-secondary/20 text-secondary border border-secondary/20 px-3 py-0.5 rounded-full text-[11px] font-bold tracking-widest uppercase">
+                      {{ getRoleName(userProfile.role) }}
+                    </span>
+                    @if (userProfile.accountStatus !== undefined) {
+                      <span [class]="getAccountStatusClass(userProfile.accountStatus) + ' px-3 py-0.5 rounded-full text-[11px] font-bold tracking-widest uppercase border'">
+                        {{ getAccountStatusName(userProfile.accountStatus) }}
+                      </span>
+                    }
+                  </div>
+                  <p class="text-sm text-slate-400 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">calendar_today</span>
+                    Member since {{ formatDate(userProfile.createdAt) }}
+                  </p>
+                </div>
+              </div>
+
+              <!-- Form Fields -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Name -->
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Full Name</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">person</span>
+                    <input 
+                      formControlName="fullName"
+                      type="text"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 pl-12 pr-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="Enter your full name"
+                    />
+                  </div>
+                </div>
+
+                <!-- Email -->
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Email Address</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">mail</span>
+                    <input 
+                      formControlName="email"
+                      type="email"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 pl-12 pr-12 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="your@email.com"
+                      readonly
+                    />
+                    @if (userProfile.isEmailConfirmed) {
+                      <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Phone -->
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Phone Number</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">call</span>
+                    <input 
+                      formControlName="phoneNo"
+                      type="tel"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 pl-12 pr-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="+91 98765 43210"
+                    />
+                  </div>
+                </div>
+
+                <!-- Role (Read Only) -->
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Assigned Role</label>
+                  <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm">badge</span>
+                    <div class="w-full bg-slate-900/30 border border-white/5 rounded-xl py-4 pl-12 pr-4 text-slate-500 flex items-center">
+                      {{ getRoleName(userProfile.role) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info Alert -->
+              <div class="bg-primary-container/5 border border-primary-container/20 rounded-xl p-4 flex gap-4">
+                <span class="material-symbols-outlined text-primary-container">info</span>
+                <p class="text-sm text-slate-400">Email changes require re-verification. A confirmation link will be sent to your new address.</p>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex flex-col sm:flex-row items-center justify-end gap-4 pt-8 border-t border-white/5">
+                <button 
+                  type="button"
+                  class="w-full sm:w-auto px-8 py-3 rounded-xl border border-white/10 hover:bg-white/5 font-bold transition-all active:scale-95 text-slate-300"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  [disabled]="isSavingProfile"
+                  class="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  @if (isSavingProfile) {
+                    <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    Saving...
+                  } @else {
+                    <span class="material-symbols-outlined text-sm">save</span>
+                    Save Changes
+                  }
+                </button>
+              </div>
+            </form>
+          </div>
+        }
+
+        <!-- Security Tab -->
+        @if (activeTab === 'security') {
+          <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-white mb-2">Security Settings</h1>
+            <p class="text-slate-400">Manage your password and security preferences.</p>
+          </header>
+
+          <div class="space-y-6">
+            <!-- Change Password Card -->
+            <div class="glass-card rounded-3xl p-6 lg:p-8 bg-white/5">
+              <h3 class="text-2xl font-bold text-white mb-6">Change Password</h3>
+              <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" class="space-y-6">
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Current Password</label>
+                  <input 
+                    formControlName="currentPassword"
+                    type="password"
+                    class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">New Password</label>
+                  <input 
+                    formControlName="newPassword"
+                    type="password"
+                    class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Confirm New Password</label>
+                  <input 
+                    formControlName="confirmPassword"
+                    type="password"
+                    class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                  />
+                  @if (passwordForm.hasError('passwordMismatch') && passwordForm.get('confirmPassword')?.touched) {
+                    <p class="text-red-400 text-xs">Passwords do not match</p>
+                  }
+                </div>
+
+                <button 
+                  type="submit"
+                  [disabled]="isChangingPassword || passwordForm.invalid"
+                  class="w-full sm:w-auto px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  @if (isChangingPassword) {
+                    <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                    Updating...
+                  } @else {
+                    Update Password
+                  }
+                </button>
+              </form>
+            </div>
+
+            <!-- Two-Factor Authentication Card -->
+            <div class="glass-card rounded-3xl p-6 lg:p-8 bg-white/5">
+              <div class="flex justify-between items-start mb-4">
+                <div>
+                  <h3 class="text-2xl font-bold text-white mb-2">Two-Factor Authentication</h3>
+                  <p class="text-sm text-slate-400">Add an extra layer of security to your account</p>
+                </div>
+                <button 
+                  (click)="toggleTwoFactor()"
+                  [class.bg-primary-container]="isTwoFactorEnabled"
+                  [class.bg-slate-600]="!isTwoFactorEnabled"
+                  class="w-12 h-6 rounded-full relative p-1 cursor-pointer transition-colors"
+                >
+                  <div 
+                    class="w-4 h-4 bg-white rounded-full transition-transform"
+                    [class.translate-x-6]="isTwoFactorEnabled"
+                  ></div>
+                </button>
+              </div>
+              <div class="flex items-center gap-2">
+                <span 
+                  [class.text-emerald-400]="isTwoFactorEnabled"
+                  [class.text-slate-500]="!isTwoFactorEnabled"
+                  class="text-sm font-bold"
+                >
+                  {{ isTwoFactorEnabled ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Email Verification Card -->
+            @if (userProfile) {
+              <div class="glass-card rounded-3xl p-6 lg:p-8 bg-white/5">
+                <h3 class="text-2xl font-bold text-white mb-4">Email Verification</h3>
+                @if (userProfile.isEmailConfirmed) {
+                  <div class="flex items-center gap-3 text-emerald-400">
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                    <span class="font-bold">Your email is verified</span>
+                  </div>
+                } @else {
+                  <div class="space-y-4">
+                    <p class="text-slate-400">Your email is not verified. Please verify to access all features.</p>
+                    <button 
+                      (click)="sendVerificationEmail()"
+                      class="px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95"
+                    >
+                      Send Verification Email
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Addresses Tab -->
+        @if (activeTab === 'addresses') {
+          <header class="mb-8 flex justify-between items-center">
+            <div>
+              <h1 class="text-4xl font-extrabold text-white mb-2">Saved Addresses</h1>
+              <p class="text-slate-400">Manage your delivery addresses.</p>
+            </div>
+            @if (!showAddressForm) {
+              <button 
+                (click)="showAddAddressForm()"
+                class="px-6 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95"
+              >
+                Add New Address
+              </button>
+            }
+          </header>
+
+          <!-- Address Form -->
+          @if (showAddressForm) {
+            <div class="glass-card rounded-3xl p-6 lg:p-8 bg-white/5 mb-6">
+              <h3 class="text-2xl font-bold text-white mb-6">
+                {{ editingAddressId ? 'Edit Address' : 'Add New Address' }}
+              </h3>
+              <form [formGroup]="addressForm" (ngSubmit)="saveAddress()" class="space-y-6">
+                <div class="space-y-2">
+                  <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Street Address</label>
+                  <input 
+                    formControlName="street"
+                    type="text"
+                    class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                    placeholder="123 Main Street, Apt 4B"
+                  />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">City</label>
+                    <input 
+                      formControlName="city"
+                      type="text"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="Jalandhar"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">State</label>
+                    <input 
+                      formControlName="state"
+                      type="text"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="Punjab"
+                    />
+                  </div>
+
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold tracking-wider text-slate-400 uppercase">Pincode</label>
+                    <input 
+                      formControlName="pincode"
+                      type="text"
+                      maxlength="6"
+                      class="w-full bg-slate-900/60 border-none rounded-xl py-4 px-4 neomorph-inset focus:ring-2 focus:ring-primary-container/30 transition-all text-white"
+                      placeholder="144411"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex gap-4">
+                  <button 
+                    type="button"
+                    (click)="cancelAddressForm()"
+                    class="px-8 py-3 rounded-xl border border-white/10 hover:bg-white/5 font-bold transition-all active:scale-95 text-slate-300"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    [disabled]="isSavingAddress || addressForm.invalid"
+                    class="px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    @if (isSavingAddress) {
+                      <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+                      Saving...
+                    } @else {
+                      {{ editingAddressId ? 'Update Address' : 'Add Address' }}
+                    }
+                  </button>
+                </div>
+              </form>
+            </div>
+          }
+
+          <!-- Loading State -->
+          @if (isLoadingAddresses) {
+            <div class="text-center py-20">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-container"></div>
+              <p class="text-slate-400 mt-4">Loading addresses...</p>
+            </div>
+          }
+
+          <!-- Address List -->
+          @if (!isLoadingAddresses && addresses.length > 0) {
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              @for (address of addresses; track address.id) {
+                <div class="glass-card rounded-2xl p-6 bg-white/5 hover:bg-white/10 transition-all">
+                  <div class="flex justify-between items-start mb-4">
+                    <span class="material-symbols-outlined text-primary-container text-3xl">location_on</span>
+                    <div class="flex gap-2">
+                      <button 
+                        (click)="editAddress(address)"
+                        class="p-2 hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <span class="material-symbols-outlined text-slate-400 text-sm">edit</span>
+                      </button>
+                      <button 
+                        (click)="deleteAddress(address.id)"
+                        class="p-2 hover:bg-white/5 rounded-lg transition-all"
+                      >
+                        <span class="material-symbols-outlined text-red-400 text-sm">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                  <p class="text-white font-bold mb-2">{{ address.street }}</p>
+                  <p class="text-slate-400 text-sm">{{ address.city }}, {{ address.state }} {{ address.pincode }}</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Empty State -->
+          @if (!isLoadingAddresses && addresses.length === 0 && !showAddressForm) {
+            <div class="text-center py-20">
+              <span class="material-symbols-outlined text-slate-500 text-6xl mb-4">location_on</span>
+              <p class="text-slate-400 text-lg mb-6">No saved addresses yet</p>
+              <button 
+                (click)="showAddAddressForm()"
+                class="px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95"
+              >
+                Add Your First Address
+              </button>
+            </div>
+          }
+        }
+
+        <!-- Order History Tab -->
+        @if (activeTab === 'orders') {
+          <header class="mb-8">
+            <h1 class="text-4xl font-extrabold text-white mb-2">Order History</h1>
+            <p class="text-slate-400">View your past orders and track deliveries.</p>
+          </header>
+
+          <!-- Loading State -->
+          @if (isLoadingOrders) {
+            <div class="text-center py-20">
+              <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-container"></div>
+              <p class="text-slate-400 mt-4">Loading orders...</p>
+            </div>
+          }
+
+          <!-- Order List -->
+          @if (!isLoadingOrders && orders.length > 0) {
+            <div class="space-y-4">
+              @for (order of orders; track order.id) {
+                <div 
+                  (click)="viewOrder(order.id)"
+                  class="glass-card rounded-2xl p-6 bg-white/5 hover:bg-white/10 transition-all cursor-pointer"
+                >
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <p class="text-white font-bold text-lg mb-1">Order #{{ order.id.substring(0, 8) }}</p>
+                      <p class="text-slate-400 text-sm">{{ formatDate(order.createdAt) }}</p>
+                    </div>
+                    <span 
+                      [class]="getOrderStatusClass(order.status) + ' px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase border'"
+                    >
+                      {{ getOrderStatusDisplay(order.status) }}
+                    </span>
+                  </div>
+                  
+                  <div class="flex justify-between items-center pt-4 border-t border-white/5">
+                    <div class="flex items-center gap-2 text-slate-400 text-sm">
+                      <span class="material-symbols-outlined text-sm">shopping_bag</span>
+                      <span>{{ order.itemCount }} {{ order.itemCount === 1 ? 'item' : 'items' }}</span>
+                    </div>
+                    <p class="text-primary-container font-bold text-lg">₹{{ order.totalAmount }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Empty State -->
+          @if (!isLoadingOrders && orders.length === 0) {
+            <div class="text-center py-20">
+              <span class="material-symbols-outlined text-slate-500 text-6xl mb-4">receipt_long</span>
+              <p class="text-slate-400 text-lg mb-6">No orders yet</p>
+              <button 
+                routerLink="/customer/dashboard"
+                class="px-8 py-3 rounded-xl bg-primary-container text-white font-bold primary-glow hover:brightness-110 transition-all active:scale-95"
+              >
+                Start Ordering
+              </button>
+            </div>
+          }
+        }
+      </div>
+    </main>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4), 
+              -5px -5px 15px rgba(255, 255, 255, 0.02);
+}
+
+.neomorph-inset {
+  background: #0c111d;
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.6), 
+              inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.primary-glow {
+  box-shadow: 0 10px 20px -5px rgba(255, 107, 53, 0.4);
+}
+
+.blob {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0) 70%);
+  z-index: -1;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Cart Dropdown Styles */
+.cart-container {
+  position: relative;
+}
+
+.cart-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* Add a bridge area to prevent dropdown from closing */
+.cart-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  background: transparent;
+}
+
+.cart-container:hover .cart-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Keep dropdown visible when hovering over it */
+.cart-dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Custom scrollbar for cart dropdown */
+.cart-dropdown .overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cart-dropdown .overflow-y-auto::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.cart-dropdown .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 107, 53, 0.5);
+  border-radius: 3px;
+}
+
+.cart-dropdown .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 107, 53, 0.7);
+}
+

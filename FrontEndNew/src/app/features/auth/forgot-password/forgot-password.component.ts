@@ -48,8 +48,11 @@ export class ForgotPasswordComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
+    console.log('Sending password reset email to:', this.forgotPasswordForm.value.email);
+
     this.authService.forgotPassword(this.forgotPasswordForm.value.email).subscribe({
       next: (response) => {
+        console.log('Password reset email sent:', response);
         this.isLoading = false;
         this.successMessage = 'Password reset link sent to your email!';
         setTimeout(() => {
@@ -57,8 +60,24 @@ export class ForgotPasswordComponent implements OnInit {
         }, 3000);
       },
       error: (error) => {
+        console.error('Forgot password error:', error);
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Failed to send reset link. Please try again.';
+        
+        // Extract error message
+        let errorMsg = 'Failed to send reset link. Please try again.';
+        if (error.error) {
+          if (typeof error.error === 'string') {
+            errorMsg = error.error;
+          } else if (error.error.message) {
+            errorMsg = error.error.message;
+          } else if (error.error.title) {
+            errorMsg = error.error.title;
+          }
+        } else if (error.message) {
+          errorMsg = error.message;
+        }
+        
+        this.errorMessage = errorMsg;
       }
     });
   }

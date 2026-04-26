@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>QuickBites - Restaurant Detail</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#1a1c1c",
+                        "tertiary-fixed-dim": "#bfc6e0",
+                        "on-background": "#e2e2e2",
+                        "inverse-primary": "#ab3500",
+                        "on-secondary-fixed-variant": "#005047",
+                        "background": "#121414",
+                        "surface": "#121414",
+                        "on-error": "#690005",
+                        "tertiary-container": "#9299b2",
+                        "secondary-container": "#00c3af",
+                        "surface-variant": "#333535",
+                        "surface-dim": "#121414",
+                        "surface-container-high": "#282a2b",
+                        "on-tertiary-container": "#2a3146",
+                        "on-secondary": "#003731",
+                        "secondary-fixed": "#62fae4",
+                        "surface-tint": "#ffb59d",
+                        "on-secondary-fixed": "#00201c",
+                        "on-primary-fixed-variant": "#832600",
+                        "surface-container-highest": "#333535",
+                        "on-tertiary-fixed-variant": "#3f465c",
+                        "surface-container-lowest": "#0c0f0f",
+                        "primary-fixed": "#ffdbd0",
+                        "tertiary-fixed": "#dbe2fd",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#131b2e",
+                        "outline-variant": "#594139",
+                        "surface-bright": "#37393a",
+                        "on-surface": "#e2e2e2",
+                        "tertiary": "#bfc6e0",
+                        "on-surface-variant": "#e1bfb5",
+                        "on-primary": "#5d1900",
+                        "error": "#ffb4ab",
+                        "secondary": "#40e0cb",
+                        "primary-fixed-dim": "#ffb59d",
+                        "on-primary-container": "#5f1900",
+                        "on-secondary-container": "#004a42",
+                        "outline": "#a98a80",
+                        "inverse-surface": "#e2e2e2",
+                        "primary-container": "#ff6b35",
+                        "surface-container": "#1e2020",
+                        "inverse-on-surface": "#2f3131",
+                        "error-container": "#93000a",
+                        "on-tertiary": "#283044",
+                        "secondary-fixed-dim": "#3cddc8",
+                        "on-primary-fixed": "#390c00",
+                        "primary": "#ffb59d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "64px",
+                        "lg": "40px",
+                        "gutter": "16px",
+                        "container-padding": "24px",
+                        "sm": "12px",
+                        "md": "24px",
+                        "base": "8px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Plus Jakarta Sans"],
+                        "body-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["Plus Jakarta Sans"],
+                        "label-caps": ["Plus Jakarta Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "display": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                        "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .neo-outset {
+            box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.4), -5px -5px 15px rgba(255, 255, 255, 0.05);
+        }
+        .neo-inset {
+            box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.4), inset -2px -2px 6px rgba(255, 255, 255, 0.05);
+        }
+        .orange-glow {
+            box-shadow: 0px 0px 20px rgba(255, 107, 53, 0.3);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md overflow-x-hidden selection:bg-primary-container selection:text-white">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-6 py-4 sticky top-0 bg-slate-950/80 backdrop-blur-3xl z-50 border-b border-white/5 shadow-[0px_4px_24px_rgba(0,0,0,0.4)]">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-orange-500 italic">QuickBites</span>
+<nav class="hidden md:flex gap-6">
+<a class="font-['Plus_Jakarta_Sans'] text-sm font-medium tracking-tight text-orange-500 border-b-2 border-orange-500 pb-1 active:scale-95 transform transition-transform" href="#">Explore</a>
+<a class="font-['Plus_Jakarta_Sans'] text-sm font-medium tracking-tight text-slate-400 hover:text-white transition-colors hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform transition-transform" href="#">Offers</a>
+<a class="font-['Plus_Jakarta_Sans'] text-sm font-medium tracking-tight text-slate-400 hover:text-white transition-colors hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform transition-transform" href="#">Orders</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="neo-inset bg-surface-container-lowest rounded-full px-4 py-2 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 text-on-background" placeholder="Search dishes..." type="text"/>
+</div>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all text-slate-400 active:scale-95 transform transition-transform">
+<span class="material-symbols-outlined">shopping_cart</span>
+</button>
+<button class="p-2 hover:bg-white/5 rounded-lg transition-all text-slate-400 active:scale-95 transform transition-transform">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-px bg-white/10 mx-2"></div>
+<button class="font-['Plus_Jakarta_Sans'] text-sm font-medium text-slate-400 hover:text-white active:scale-95 transform transition-transform">Login</button>
+</div>
+</header>
+<main class="relative">
+<!-- Hero Section -->
+<section class="relative h-[450px] w-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="luxury fusion restaurant interior with dark ambient lighting, glowing neon accents, and plush velvet seating in a high-end urban setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuATr1iv9K-2k9NoLg63CmcN_mo4b599z3FPyGo6K8jXbNk-BK5rO9ovo01X3F4812jwHHKY0wKNG-0XFAYSekWjzgrQzSjKfNkxZqHbEw4dYZ3d7055PYH0TgmJcWNEuaAEzBI5pMLM4UMTrG_sMMicuvIz7xSKFpkibdaYF-yQh9TID7Jr-0OpXP0JIbWqqBHOKzEUbYVyNYd7XbroI_XLRt1Dopi4XYjOROWUGPRa8quA88jbn1AKsQmoLHmD0s_4YrRKm9aWEM8"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-xl md:px-lg">
+<div class="max-w-7xl mx-auto flex flex-col gap-sm">
+<div class="flex items-center gap-base">
+<span class="bg-secondary-container/20 text-secondary-container px-3 py-1 rounded-full text-label-caps backdrop-blur-md border border-secondary-container/30">OPEN NOW</span>
+<div class="flex items-center gap-xs bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+<span class="material-symbols-outlined text-orange-500 text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-headline-md text-sm">4.8 (2.4k+ Reviews)</span>
+</div>
+</div>
+<h1 class="font-display text-white drop-shadow-2xl">Lumina Gastrobar</h1>
+<div class="flex items-center gap-md text-slate-300">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-orange-500">location_on</span>
+<span class="font-body-md">42nd Cyber Street, Neo-Tokyo District</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-orange-500">schedule</span>
+<span class="font-body-md">25-35 mins delivery</span>
+</div>
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-orange-500">payments</span>
+<span class="font-body-md">$$$ • Fine Dining</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Content Grid -->
+<div class="max-w-7xl mx-auto px-6 py-lg flex flex-col lg:flex-row gap-lg">
+<!-- Left Side: Menu Content -->
+<div class="flex-1 space-y-md">
+<!-- Navigation Tabs -->
+<div class="flex border-b border-white/5 gap-lg mb-8">
+<button class="font-headline-md text-lg text-orange-500 border-b-2 border-orange-500 pb-4">Menu</button>
+<button class="font-headline-md text-lg text-slate-400 hover:text-white pb-4 transition-colors">Information</button>
+<button class="font-headline-md text-lg text-slate-400 hover:text-white pb-4 transition-colors">Reviews</button>
+</div>
+<!-- Category Filters -->
+<div class="flex gap-sm overflow-x-auto pb-xs scrollbar-hide">
+<button class="whitespace-nowrap px-6 py-2 rounded-full bg-primary-container text-white font-label-caps orange-glow transition-all">All Items</button>
+<button class="whitespace-nowrap px-6 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-label-caps transition-all">Appetizers</button>
+<button class="whitespace-nowrap px-6 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-label-caps transition-all">Main Courses</button>
+<button class="whitespace-nowrap px-6 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-label-caps transition-all">Signature Cocktails</button>
+<button class="whitespace-nowrap px-6 py-2 rounded-full bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 font-label-caps transition-all">Desserts</button>
+</div>
+<!-- Menu Items Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Item Card 1 -->
+<div class="glass-panel neo-outset rounded-3xl p-4 flex gap-md group">
+<div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="gourmet fusion slider with activated charcoal bun, wagyu beef, and edible gold leaf on a dark slate plate" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJZ51BwxzwZfqWnbWSm-IiljkwehfeoQ-ojx641aaHxaENJjz3imNH-YOAxU-iWgcRAgBs5QyeNi0BuLGB_SkLD4Mx3nSj9ZDfaP5sbEo1cEEHewZ90MJmyIYGF5XcaTibzy_Ykpsm9bCGh4sZQo-gTEYv3ROu-qGS49-IczLD_VuGswk_eKyAD-gUmutMivDgLOmuavdM9kn57ysnXjEh8NV2ClchkFJcFHkgdsPPIGBqSFs_sg36vo-IgML25HkI__GehNp13pg"/>
+</div>
+<div class="flex flex-col justify-between py-2">
+<div>
+<h3 class="font-headline-md text-lg text-white">Midnight Wagyu Sliders</h3>
+<p class="text-slate-400 text-body-sm line-clamp-2 mt-1">Charcoal infused buns, truffle mayo, aged cheddar.</p>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-orange-500 font-headline-md">$24.00</span>
+<button class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 2 -->
+<div class="glass-panel neo-outset rounded-3xl p-4 flex gap-md group">
+<div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="vibrant healthy Buddha bowl with dragon fruit, avocado, and microgreens in a stone bowl with soft ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDH-cXCzwyY4kTQ9h3PuYmD12lT4FndwoSGPa1m2cpNEiaYY_BrguuEjzC2jwj7jiiYthmHQGIdOOdSFVAStT-gGbloy6eVf9ictM-WMaudE-dVxU8p_bzW_24CINgGSesZFKMjBCvnaxARQswXikICo8Od1KD-xfDWA8EVMGP6VGeCOi2uH2CjYyn6ofFIH5Ng_PaaaNWd1veqXo-btbGoh-bDocL4GURz9NN0fPaWpeX-gAKi5oF7eLzTCV2Ga1p3CKwZO-MP4xY"/>
+</div>
+<div class="flex flex-col justify-between py-2">
+<div>
+<h3 class="font-headline-md text-lg text-white">Neon Zen Bowl</h3>
+<p class="text-slate-400 text-body-sm line-clamp-2 mt-1">Dragon fruit, quinoa, smoked salmon, and miso dressing.</p>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-orange-500 font-headline-md">$18.50</span>
+<button class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 3 -->
+<div class="glass-panel neo-outset rounded-3xl p-4 flex gap-md group">
+<div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="molecular gastronomy cocktail with dry ice smoke, violet flowers, and clear spherical ice in a crystal coupe" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKIBb75KaeJKPg9GEurl0NPfg0q2hc1XwRBR_5HSWSDGy--GFZjpPPhgn9whEhBpqIL3gDE3RnHHtpiTLbJwcq4Eg6YV2UJoZwFJzLwrJp92Ke_5qVnHRlX8REQc2uhsO4LmU2AjTe_I2fvjNQvNxu2LHPVgJLpZrKs2PFn-Y2E1RVrhVYSqqm9R1mydL34SAj63kyMPNshD3lg0zc4B5J-GW2Z4TbfHx3jFIJuZ0exAwn_xQvVElPg1f3bhUXfxsSxHjCmAnflY4"/>
+</div>
+<div class="flex flex-col justify-between py-2">
+<div>
+<h3 class="font-headline-md text-lg text-white">Cyber-Violet Elixir</h3>
+<p class="text-slate-400 text-body-sm line-clamp-2 mt-1">Gin, lavender essence, and molecular citrus clouds.</p>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-orange-500 font-headline-md">$16.00</span>
+<button class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Item Card 4 -->
+<div class="glass-panel neo-outset rounded-3xl p-4 flex gap-md group">
+<div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" data-alt="seared sea scallops on a bed of pea purée with crispy pancetta crumbs and lemon oil drizzle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuANvXDvTH9plpCubSkEk3Uop4I1lPb-k7B2GcUy8U3Wp2Trtkb_lemlA31AVGoaViuRdfiQGKuaEm7P1ycFgYYZnHWSu_vjeyB4Ks-J-HOlRGj2MLyCzQ65s5fuuOJfEyaa-rK-j8kmY5aP_YedyO6qtzfKoMnXjJcEgOQTpqbHG8mLsXUPM2BKO2YTWomdaTkWB1ciErbNy7jMjYEcoznyuDpsyUaWIzphEmF3n7ElKSC8xfRBawvo-E2aF8UH1DiZz-M77pR96Mw"/>
+</div>
+<div class="flex flex-col justify-between py-2">
+<div>
+<h3 class="font-headline-md text-lg text-white">Glacier Scallops</h3>
+<p class="text-slate-400 text-body-sm line-clamp-2 mt-1">Pan-seared scallops, pea purée, mint oil.</p>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-orange-500 font-headline-md">$28.00</span>
+<button class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-sm">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Side: Sticky Sidebar -->
+<aside class="w-full lg:w-80 relative">
+<div class="lg:sticky lg:top-24 space-y-md">
+<!-- SideNavBar Logic from JSON -->
+<div class="glass-panel rounded-3xl p-6 neo-outset flex flex-col space-y-4">
+<div class="flex justify-between items-center border-b border-white/5 pb-4 mb-2">
+<div>
+<h2 class="font-headline-md text-white text-lg">Your Basket</h2>
+<p class="text-slate-400 text-body-sm">3 items ready to checkout</p>
+</div>
+<div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+<span class="material-symbols-outlined">shopping_basket</span>
+</div>
+</div>
+<!-- Cart Items List -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<div class="flex gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high neo-inset flex items-center justify-center text-xs font-bold text-orange-500">1x</div>
+<div>
+<p class="text-white text-sm font-medium">Midnight Wagyu</p>
+<p class="text-slate-500 text-[12px]">Extra Truffle Mayo</p>
+</div>
+</div>
+<span class="text-white text-sm">$24.00</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high neo-inset flex items-center justify-center text-xs font-bold text-orange-500">2x</div>
+<div>
+<p class="text-white text-sm font-medium">Cyber-Violet Elixir</p>
+<p class="text-slate-500 text-[12px]">Crystal Ice</p>
+</div>
+</div>
+<span class="text-white text-sm">$32.00</span>
+</div>
+</div>
+<div class="h-px bg-white/5 my-4"></div>
+<!-- Subtotal Section -->
+<div class="space-y-2">
+<div class="flex justify-between text-slate-400 text-sm">
+<span>Subtotal</span>
+<span>$56.00</span>
+</div>
+<div class="flex justify-between text-slate-400 text-sm">
+<span>Delivery Fee</span>
+<span>$4.50</span>
+</div>
+<div class="flex justify-between text-white font-headline-md text-lg pt-2">
+<span>Total</span>
+<span class="text-orange-500">$60.50</span>
+</div>
+</div>
+<!-- Checkout CTA -->
+<button class="w-full bg-primary-container text-white py-4 rounded-2xl font-headline-md text-md orange-glow hover:translate-y-[-2px] transition-all active:scale-95 transform">
+                            Checkout Now
+                        </button>
+</div>
+<!-- Quick Navigation Links (from SideNavBar JSON structure) -->
+<div class="flex flex-wrap gap-2 pt-2 px-2">
+<button class="bg-orange-500/10 text-orange-500 font-bold rounded-xl px-4 py-2 text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">home</span>
+                            Home
+                        </button>
+<button class="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl px-4 py-2 text-xs flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">favorite</span>
+                            Favorites
+                        </button>
+<button class="text-slate-400 hover:text-white hover:bg-white/5 rounded-xl px-4 py-2 text-xs flex items-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+                            History
+                        </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full glass-panel border-t border-white/5 px-6 py-4 flex justify-between items-center z-50">
+<button class="flex flex-col items-center gap-1 text-orange-500">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-[10px] font-bold">Explore</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">local_offer</span>
+<span class="text-[10px] font-bold">Offers</span>
+</button>
+<div class="relative -mt-12">
+<button class="w-14 h-14 bg-primary-container rounded-full orange-glow text-white flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">shopping_cart</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-[10px] font-bold">Orders</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Profile</span>
+</button>
+</nav>
+<!-- Decorative Glows -->
+<div class="fixed top-[-10%] right-[-10%] w-[40%] h-[40%] bg-orange-500/10 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+<div class="fixed bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-cyan-500/5 rounded-full blur-[120px] -z-10 pointer-events-none"></div>
+</body></html>

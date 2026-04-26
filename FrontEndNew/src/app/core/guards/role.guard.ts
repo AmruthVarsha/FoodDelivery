@@ -35,8 +35,11 @@ export const roleGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
+  // Convert user role (string) to RoleEnum (number) for comparison
+  const userRoleNum = convertRoleToEnum(user.role);
+
   // Check if user has one of the required roles
-  if (requiredRoles.includes(user.role)) {
+  if (requiredRoles.includes(userRoleNum)) {
     return true;
   }
 
@@ -45,3 +48,22 @@ export const roleGuard: CanActivateFn = (route, state) => {
   router.navigate(['/']);
   return false;
 };
+
+/**
+ * Helper function to convert role string to RoleEnum number
+ */
+function convertRoleToEnum(role: string | number): RoleEnum {
+  if (typeof role === 'number') {
+    return role as RoleEnum;
+  }
+  
+  const roleMap: { [key: string]: RoleEnum } = {
+    'Customer': RoleEnum.Customer,
+    'Partner': RoleEnum.Partner,
+    'DeliveryAgent': RoleEnum.DeliveryAgent,
+    'Delivery Agent': RoleEnum.DeliveryAgent,
+    'Admin': RoleEnum.Admin
+  };
+  
+  return roleMap[role] ?? RoleEnum.Customer; // Default to Customer if unknown
+}

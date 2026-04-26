@@ -1,0 +1,43 @@
+/* Cart Dropdown Styles */
+.cart-container {
+  position: relative;
+}
+
+.cart-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: 400px;
+  max-width: 90vw;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+/* Show dropdown on hover */
+.cart-container:hover .cart-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Invisible bridge to prevent dropdown from closing */
+.cart-container::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 0.5rem;
+  background: transparent;
+}
+
+/* Keep dropdown open when hovering over it */
+.cart-dropdown:hover {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}

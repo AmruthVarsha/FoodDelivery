@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saved Addresses - QuickBites</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #121414;
+            color: #e2e2e2;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 24;
+        }
+        .neomorph-outset {
+            shadow: 4px 4px 10px rgba(0,0,0,0.4), -2px -2px 10px rgba(255,255,255,0.05);
+        }
+        .neomorph-inset {
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.4), inset -1px -1px 3px rgba(255,255,255,0.05);
+        }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#00201c",
+                    "tertiary-fixed": "#dbe2fd",
+                    "primary": "#ffb59d",
+                    "on-primary": "#5d1900",
+                    "surface-dim": "#121414",
+                    "outline-variant": "#594139",
+                    "surface": "#121414",
+                    "on-secondary-fixed-variant": "#005047",
+                    "surface-tint": "#ffb59d",
+                    "primary-fixed": "#ffdbd0",
+                    "primary-container": "#ff6b35",
+                    "on-tertiary": "#283044",
+                    "tertiary-container": "#9299b2",
+                    "inverse-on-surface": "#2f3131",
+                    "on-error": "#690005",
+                    "inverse-surface": "#e2e2e2",
+                    "on-background": "#e2e2e2",
+                    "inverse-primary": "#ab3500",
+                    "on-surface-variant": "#e1bfb5",
+                    "primary-fixed-dim": "#ffb59d",
+                    "on-secondary-container": "#004a42",
+                    "on-primary-fixed-variant": "#832600",
+                    "surface-bright": "#37393a",
+                    "tertiary-fixed-dim": "#bfc6e0",
+                    "surface-container-low": "#1a1c1c",
+                    "secondary-container": "#00c3af",
+                    "on-tertiary-fixed-variant": "#3f465c",
+                    "on-surface": "#e2e2e2",
+                    "background": "#121414",
+                    "on-secondary": "#003731",
+                    "secondary-fixed-dim": "#3cddc8",
+                    "error": "#ffb4ab",
+                    "on-primary-container": "#5f1900",
+                    "tertiary": "#bfc6e0",
+                    "surface-container-lowest": "#0c0f0f",
+                    "surface-container": "#1e2020",
+                    "error-container": "#93000a",
+                    "surface-variant": "#333535",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-container": "#2a3146",
+                    "secondary-fixed": "#62fae4",
+                    "secondary": "#40e0cb",
+                    "surface-container-high": "#282a2b",
+                    "outline": "#a98a80",
+                    "surface-container-highest": "#333535",
+                    "on-tertiary-fixed": "#131b2e",
+                    "on-primary-fixed": "#390c00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "base": "8px",
+                    "container-padding": "24px",
+                    "xs": "4px",
+                    "md": "24px",
+                    "lg": "40px",
+                    "gutter": "16px",
+                    "xl": "64px",
+                    "sm": "12px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"],
+                    "label-caps": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "display": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "body-sm": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "display": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden">
+<!-- Decorative Background Blobs -->
+<div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-container/20 blur-[120px] rounded-full z-0"></div>
+<div class="fixed bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-secondary-container/10 blur-[100px] rounded-full z-0"></div>
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 flex items-center justify-between px-6 h-16 bg-slate-950/60 backdrop-blur-3xl font-['Plus_Jakarta_Sans'] antialiased border-b border-white/5 shadow-[4px_4px_10px_rgba(0,0,0,0.4),-2px_-2px_10px_rgba(255,255,255,0.05)]">
+<div class="text-2xl font-black text-orange-500 tracking-tighter">QuickBites</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Explore</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Offers</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#">Orders</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex items-center neomorph-inset bg-slate-900/50 rounded-full px-4 py-2 border border-white/5">
+<span class="material-symbols-outlined text-slate-400 text-sm mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder-slate-500 w-48" placeholder="Search saved places..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-slate-400 hover:bg-white/5 rounded-lg p-2 transition-all active:scale-95 duration-200">shopping_cart</button>
+<button class="material-symbols-outlined text-slate-400 hover:bg-white/5 rounded-lg p-2 transition-all active:scale-95 duration-200">notifications</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-orange-500/30">
+<img alt="User profile avatar" data-alt="Portrait of a young professional male in modern urban attire, soft neon rim lighting, tech-savvy persona" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx9eP1vpK5v97Dn5Ky1x1eKB9HRa0yxWB2sC5BDPLsh0kkUEoF2SJJ-V7YKKDxbhSQzSsW6UU1SCIkppIinY6pVDnRVFlWQsTE97TbqsUyqHeIqdsqLcsXDicGvYfxqbwIkRQlVQ6VhfFDEJL6jbVenK3rFr7sxe8RNUQ2u9DyiiXgqLy2N3EhWIpdetTx_yBHUzsZnbMqHjEdMO86rNKL1dSUJewsz9gw6L8p1zV7iX58XAlZt4FwtW6phpHbap0sr-uYbnjL-wM"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col pt-8 bg-slate-950/40 backdrop-blur-3xl font-['Plus_Jakarta_Sans'] text-sm border-r border-white/5 shadow-[inset_2px_2px_5px_rgba(0,0,0,0.4)] z-40">
+<div class="px-6 mb-8">
+<div class="font-bold text-on-surface text-lg">Alex Chen</div>
+<div class="text-xs text-orange-500">Premium Member</div>
+</div>
+<div class="flex flex-col gap-1">
+<a class="flex items-center gap-3 text-slate-400 px-6 py-3 hover:bg-white/5 hover:text-white transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Personal Info</span>
+</a>
+<a class="flex items-center gap-3 text-slate-400 px-6 py-3 hover:bg-white/5 hover:text-white transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span>Security</span>
+</a>
+<a class="flex items-center gap-3 bg-orange-500/10 text-orange-500 border-r-4 border-orange-500 px-6 py-3 shadow-[0_0_15px_rgba(255,107,53,0.3)] transition-all" href="#">
+<span class="material-symbols-outlined">location_on</span>
+<span>Addresses</span>
+</a>
+<a class="flex items-center gap-3 text-slate-400 px-6 py-3 hover:bg-white/5 hover:text-white transition-all hover:translate-x-1 duration-300" href="#">
+<span class="material-symbols-outlined">history</span>
+<span>Order History</span>
+</a>
+</div>
+<div class="mt-auto p-6">
+<div class="p-4 rounded-2xl bg-white/5 border border-white/5 neomorph-outset">
+<div class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Invite Friends</div>
+<div class="text-sm text-slate-300 mb-3">Get $10 off your next order.</div>
+<button class="w-full py-2 bg-orange-500/10 text-orange-500 rounded-xl border border-orange-500/30 text-xs font-bold hover:bg-orange-500/20 transition-all">Share Link</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 pt-24 px-8 min-h-screen relative z-10">
+<div class="max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Saved Addresses</h1>
+<p class="text-slate-400">Manage your delivery locations for faster checkout.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary-container text-on-primary-container px-6 py-3 rounded-2xl font-bold shadow-[0_10px_20px_-5px_rgba(255,107,53,0.3)] active:scale-95 transition-all">
+<span class="material-symbols-outlined">add_location_alt</span>
+                    Add New Address
+                </button>
+</div>
+<!-- Addresses Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Card 1 (Default) -->
+<div class="group relative bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[32px] p-8 shadow-[4px_4px_10px_rgba(0,0,0,0.4),-2px_-2px_10px_rgba(255,255,255,0.05)] transition-all hover:-translate-y-1">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 shadow-[inset_2px_2px_5px_rgba(255,107,53,0.1)]">
+<span class="material-symbols-outlined text-3xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+</div>
+<div class="bg-orange-500 text-on-primary-container text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,107,53,0.4)]">
+                            Default
+                        </div>
+</div>
+<div class="space-y-1 mb-8">
+<h3 class="text-xl font-bold text-on-surface">Home</h3>
+<p class="text-slate-400 font-medium">123 Neon St, Cyber City, NY 10001</p>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-6">
+<div class="flex gap-2">
+<button class="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-90">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-error hover:bg-error/10 transition-all active:scale-90">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+<div class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Last used: 2 days ago</div>
+</div>
+</div>
+<!-- Card 2 (Work) -->
+<div class="group relative bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[32px] p-8 shadow-[4px_4px_10px_rgba(0,0,0,0.4),-2px_-2px_10px_rgba(255,255,255,0.05)] transition-all hover:-translate-y-1">
+<div class="flex justify-between items-start mb-6">
+<div class="w-14 h-14 rounded-2xl bg-secondary-container/10 border border-secondary-container/20 flex items-center justify-center text-secondary shadow-[inset_2px_2px_5px_rgba(64,224,203,0.1)]">
+<span class="material-symbols-outlined text-3xl">work</span>
+</div>
+<button class="text-[10px] font-black text-slate-400 hover:text-orange-500 uppercase tracking-widest px-3 py-1 rounded-full bg-white/5 border border-white/5 transition-colors">
+                            Set as Default
+                        </button>
+</div>
+<div class="space-y-1 mb-8">
+<h3 class="text-xl font-bold text-on-surface">Work</h3>
+<p class="text-slate-400 font-medium">456 Tech Plaza, Metro City, CA 90210</p>
+</div>
+<div class="flex items-center justify-between border-t border-white/5 pt-6">
+<div class="flex gap-2">
+<button class="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all active:scale-90">
+<span class="material-symbols-outlined text-xl">edit</span>
+</button>
+<button class="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-error hover:bg-error/10 transition-all active:scale-90">
+<span class="material-symbols-outlined text-xl">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card 3 (Static Example to balance grid) -->
+<div class="lg:col-span-2 relative bg-slate-900/20 border border-dashed border-white/10 rounded-[32px] p-8 flex flex-col items-center justify-center text-center py-16 group hover:border-orange-500/30 transition-all">
+<div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mb-4 group-hover:bg-orange-500/10 transition-all">
+<span class="material-symbols-outlined text-slate-600 group-hover:text-orange-500 text-4xl">add</span>
+</div>
+<div class="text-slate-500 font-bold">Add another place</div>
+<p class="text-slate-600 text-sm mt-1">Gym, parents' house, or frequent hangout spot.</p>
+</div>
+</div>
+<!-- Visual Decorative Section (Map Preview) -->
+<div class="mt-16 bg-slate-900/40 backdrop-blur-3xl border border-white/5 rounded-[40px] p-6 shadow-2xl relative overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-40 mix-blend-overlay">
+<img alt="Map of Cyber City" class="w-full h-full object-cover" data-alt="Modern dark-themed map UI with orange neon route lines and glowing points of interest in a cyberpunk aesthetic" data-location="Cyber City" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBldKg0nhBdLZ7WY0yv3ydDv6XA4GCnf76onJbXGdqihhOrF3qQhVFP8KJ-nhVh5PJRdVcegZYLtZUzsILIpupgHEIkBDzZmOTGq0f4TbJHqkkRky3Lo0fQJJmA2JJxQetb7sB-rMbAAtGISJNlk0Jsp93yhM2jX5iVGFQRX2q9fkw7o_bHuFMPQGlZVWdTpK_YFAS_p5RlYsZhFzhbmV7ZTXAEwhyfuzaRNvTdSd0lr3h7F99GWz6JHXn_SfQLyZHv08isS2XjC_A"/>
+</div>
+<div class="relative z-10 flex flex-col md:flex-row items-center gap-8 py-10 px-6">
+<div class="flex-1">
+<h2 class="text-2xl font-bold text-white mb-3">Live Tracking</h2>
+<p class="text-slate-300 mb-6 max-w-md">Our precision mapping ensures your food arrives at the exact doorstep of your saved locations, even in the most complex high-rises.</p>
+<div class="flex gap-4">
+<div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+<span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_#40e0cb]"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-slate-200">98% Accuracy</span>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-full border border-white/10">
+<span class="w-2 h-2 rounded-full bg-orange-500 shadow-[0_0_8px_#ff6b35]"></span>
+<span class="text-xs font-bold uppercase tracking-wider text-slate-200">Real-time GPS</span>
+</div>
+</div>
+</div>
+<div class="w-full md:w-auto">
+<div class="bg-slate-950/80 backdrop-blur-xl p-6 rounded-3xl border border-white/10 neomorph-outset max-w-xs">
+<div class="flex items-center gap-4 mb-4">
+<div class="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-orange-500">delivery_dining</span>
+</div>
+<div>
+<div class="text-xs font-bold text-slate-400">Current Delivery</div>
+<div class="text-sm font-bold">2 mins away</div>
+</div>
+</div>
+<div class="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+<div class="w-4/5 h-full bg-secondary shadow-[0_0_10px_#44e2cd]"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Spacer -->
+<div class="h-24"></div>
+</main>
+</body></html>
