@@ -22,6 +22,10 @@ export const AUTH_ROUTES: Routes = [
     loadComponent: () => import('./two-factor/two-factor.component').then(m => m.TwoFactorComponent)
   },
   {
+    path: 'confirm-email',
+    loadComponent: () => import('./confirm-email/confirm-email.component').then(m => m.ConfirmEmailComponent)
+  },
+  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'

@@ -255,8 +255,12 @@ export class ProfileComponent implements OnInit {
   sendVerificationEmail(): void {
     this.authService.sendEmailConfirmationOTP().subscribe({
       next: () => {
-        this.successMessage = 'Verification email sent! Please check your inbox.';
+        this.successMessage = 'Verification email sent! Redirecting...';
         this.cdr.detectChanges();
+        // Navigate to confirm-email page
+        setTimeout(() => {
+          this.router.navigate(['/auth/confirm-email']);
+        }, 1000);
       },
       error: (error) => {
         this.errorMessage = 'Failed to send verification email';
