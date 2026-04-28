@@ -1,88 +1,11 @@
-<!-- Top Navigation -->
-<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-black/80 backdrop-blur-[40px] border-b border-white/10 shadow-[5px_5px_15px_rgba(0,0,0,0.4),-2px_-2px_10px_rgba(255,255,255,0.05)]">
-  <div class="flex items-center gap-4">
-    <span class="text-xl font-black text-[#00ff88] drop-shadow-[0_0_8px_rgba(0,255,136,0.5)]">QuickBites</span>
-
-    <!-- Restaurant Switcher -->
-    @if (restaurants.length > 0) {
-      <div class="relative hidden md:block">
-        <button
-          (click)="showRestaurantDropdown = !showRestaurantDropdown"
-          class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-sm text-white hover:bg-white/10 transition-all">
-          <span class="material-symbols-outlined text-[#00ff88] text-sm">restaurant</span>
-          <span class="max-w-[160px] truncate font-medium">{{ selectedRestaurant?.name || 'Select Restaurant' }}</span>
-          <span class="material-symbols-outlined text-gray-400 text-sm transition-transform" [class.rotate-180]="showRestaurantDropdown">expand_more</span>
-        </button>
-        @if (showRestaurantDropdown) {
-          <div class="absolute top-full left-0 mt-2 w-64 bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
-            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-bold px-4 pt-3 pb-2">Your Restaurants</p>
-            @for (r of restaurants; track r.id) {
-              <button (click)="selectRestaurant(r)"
-                class="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
-                [class.text-[#00ff88]]="selectedRestaurant?.id === r.id"
-                [class.text-gray-300]="selectedRestaurant?.id !== r.id">
-                <span class="material-symbols-outlined text-sm" [class.text-[#00ff88]]="selectedRestaurant?.id === r.id" [class.text-gray-500]="selectedRestaurant?.id !== r.id">restaurant</span>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium truncate">{{ r.name }}</p>
-                  <p class="text-[10px] text-gray-500">{{ r.isOpen ? 'Open' : 'Closed' }}</p>
-                </div>
-                @if (selectedRestaurant?.id === r.id) {
-                  <span class="material-symbols-outlined text-[#00ff88] text-sm">check</span>
-                }
-              </button>
-            }
-          </div>
-        }
-      </div>
-    }
-  </div>
-  <div class="flex items-center gap-6">
-    <div class="hidden md:block text-gray-400 text-sm">{{ restaurantName }} • Live</div>
-    <div class="flex items-center gap-4">
-      <button class="material-symbols-outlined text-gray-400 hover:text-[#00ff88] transition-all">notifications</button>
-      <div class="w-8 h-8 rounded-full overflow-hidden border border-[#00ff88]/30 bg-gray-600 flex items-center justify-center">
-        <span class="material-symbols-outlined text-white text-sm">person</span>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<!-- Sidebar -->
-<nav class="fixed left-0 top-0 h-full flex flex-col pt-20 w-64 bg-black/90 backdrop-blur-[40px] border-r border-white/10 shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden md:flex">
-  <div class="px-6 mb-8">
-    <h1 class="text-[#00ff88] font-bold text-xl tracking-tighter">QuickBites</h1>
-    <p class="text-gray-500 text-xs">Partner Portal</p>
-  </div>
-  <div class="flex flex-col flex-1 space-y-1 px-4">
-    <a routerLink="/partner/dashboard" class="flex items-center px-4 py-3 text-gray-500 hover:bg-white/5 hover:text-white transition-colors cursor-pointer rounded-xl">
-      <span class="material-symbols-outlined mr-3">dashboard</span>
-      Dashboard
-    </a>
-    <a routerLink="/partner/orders" class="flex items-center px-4 py-3 text-gray-500 hover:bg-white/5 hover:text-white transition-colors cursor-pointer rounded-xl">
-      <span class="material-symbols-outlined mr-3">receipt_long</span>
-      Orders
-    </a>
-    <a routerLink="/partner/menu-items" class="flex items-center px-4 py-3 text-[#00ff88] bg-[#00ff88]/10 border-r-2 border-[#00ff88] cursor-pointer">
-      <span class="material-symbols-outlined mr-3">restaurant_menu</span>
-      Menu Items
-    </a>
-    <a routerLink="/partner/categories" class="flex items-center px-4 py-3 text-gray-500 hover:bg-white/5 hover:text-white transition-colors cursor-pointer rounded-xl">
-      <span class="material-symbols-outlined mr-3">category</span>
-      Categories
-    </a>
-    <a routerLink="/partner/settings" class="flex items-center px-4 py-3 text-gray-500 hover:bg-white/5 hover:text-white transition-colors cursor-pointer rounded-xl">
-      <span class="material-symbols-outlined mr-3">settings</span>
-      Restaurant Settings
-    </a>
-  </div>
-  <div class="mt-auto pb-8 px-4">
-    <button (click)="logout()" class="flex items-center px-4 py-3 text-gray-500 hover:bg-white/5 hover:text-white transition-colors cursor-pointer rounded-xl w-full">
-      <span class="material-symbols-outlined mr-3">logout</span>
-      Logout
-    </button>
-  </div>
-</nav>
-
+<!-- Shared Partner Sidebar (includes top nav + side nav) -->
+<app-partner-sidebar
+  [selectedRestaurant]="selectedRestaurant"
+  [restaurants]="restaurants"
+  [restaurantName]="restaurantName"
+  (restaurantSelected)="selectRestaurant($event)"
+  (logoutClicked)="logout()">
+</app-partner-sidebar>
 <!-- Main Content -->
 <main class="md:ml-64 pt-24 px-6 pb-12 bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] min-h-screen">
   <div class="max-w-7xl mx-auto">
@@ -228,6 +151,91 @@
         </button>
       </div>
     </div>
-
   </div>
+
+  <!-- Menu Item Modal -->
+  @if (showItemModal) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto pt-24 pb-12">
+      <div class="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold text-white">{{ isEditing ? 'Edit Menu Item' : 'Add New Item' }}</h2>
+          <button (click)="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <form [formGroup]="itemForm" (ngSubmit)="saveItem()" class="space-y-6">
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-300">Item Name *</label>
+              <input type="text" formControlName="name" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="e.g. Classic Burger">
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-300">Category *</label>
+              <select formControlName="categoryName" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors appearance-none">
+                <option value="">Select a category</option>
+                @for (cat of categories; track cat.id) {
+                  <option [value]="cat.name">{{ cat.name }}</option>
+                }
+              </select>
+            </div>
+            
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-300">Price (₹) *</label>
+              <input type="number" formControlName="price" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="e.g. 199">
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-gray-300">Preparation Time (mins) *</label>
+              <input type="number" formControlName="prepTimeMinutes" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors">
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-300">Description</label>
+            <textarea formControlName="description" rows="3" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="Describe the item..."></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-gray-300">Image URL</label>
+            <input type="text" formControlName="imageUrl" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="https://...">
+          </div>
+
+          <div class="flex gap-8 border-t border-white/10 pt-6">
+            <label class="flex items-center gap-3 cursor-pointer">
+              <div class="relative flex items-center">
+                <input type="checkbox" formControlName="isVeg" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-green-500 transition-colors"></div>
+                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+              </div>
+              <span class="text-sm font-medium text-gray-300">Vegetarian</span>
+            </label>
+
+            <label class="flex items-center gap-3 cursor-pointer">
+              <div class="relative flex items-center">
+                <input type="checkbox" formControlName="isAvailable" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-[#00ff88] transition-colors"></div>
+                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+              </div>
+              <span class="text-sm font-medium text-gray-300">Available</span>
+            </label>
+          </div>
+
+          <div class="pt-6 flex gap-3 justify-end border-t border-white/10 mt-6">
+            <button type="button" (click)="closeModal()" class="px-6 py-2 rounded-xl font-bold text-gray-400 hover:text-white transition-colors">
+              Cancel
+            </button>
+            <button type="submit" [disabled]="itemForm.invalid || isLoading" class="bg-[#00ff88] text-black px-6 py-2 rounded-xl font-bold hover:bg-[#00cc6a] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              @if (isLoading) {
+                <span class="material-symbols-outlined animate-spin">refresh</span>
+              }
+              {{ isEditing ? 'Save Changes' : 'Create Item' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
 </main>

@@ -10,53 +10,92 @@ namespace OrderService.Application.Services
     {
         private readonly IDeliveryAssignmentRepository _deliveryRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly IDeliveryAgentProfileRepository _agentProfileRepository;
+        private readonly IRestaurantOrderRepository _restaurantOrderRepository;
+        private readonly IOrderStatusPublisher _orderStatusPublisher;
 
-        public DeliveryService(IDeliveryAssignmentRepository deliveryRepository, IOrderRepository orderRepository)
+        public DeliveryService(
+            IDeliveryAssignmentRepository deliveryRepository,
+            IOrderRepository orderRepository,
+            IDeliveryAgentProfileRepository agentProfileRepository,
+            IRestaurantOrderRepository restaurantOrderRepository,
+            IOrderStatusPublisher orderStatusPublisher)
         {
             _deliveryRepository = deliveryRepository;
             _orderRepository = orderRepository;
+            _agentProfileRepository = agentProfileRepository;
+            _restaurantOrderRepository = restaurantOrderRepository;
+            _orderStatusPublisher = orderStatusPublisher;
         }
 
-        public async Task<IEnumerable<DeliveryAssignmentResponseDTO>> GetAssignmentsAsync(string agentId)
+        public async Task<IEnumerable<DeliveryOrderResponseDTO>> GetAssignmentsAsync(string agentId)
         {
             var assignments = await _deliveryRepository.GetByAgentId(agentId);
-            return assignments.Select(a => new DeliveryAssignmentResponseDTO
+            var result = new List<DeliveryOrderResponseDTO>();
+
+            foreach (var assignment in assignments)
             {
-                Id = a.Id,
-                OrderId = a.OrderId,
-                DeliveryAgentId = a.DeliveryAgentId,
-                Status = a.Status,
-                Street = a.Order?.Street ?? string.Empty,
-                City = a.Order?.City ?? string.Empty,
-                State = a.Order?.State ?? string.Empty,
-                Pincode = a.Order?.Pincode ?? string.Empty,
-                TotalAmount = a.Order?.TotalAmount ?? 0,
-                PickedUpAt = a.PickedUpAt,
-                DeliveredAt = a.DeliveredAt
-            });
+                var order = await _orderRepository.GetByIdWithDetails(assignment.OrderId);
+                if (order == null) continue;
+
+                result.Add(MapToDeliveryResponse(order, assignment));
+            }
+
+            return result;
         }
 
-        public async Task<DeliveryAssignmentResponseDTO> UpdateDeliveryStatusAsync(Guid id, string agentId, UpdateDeliveryStatusDTO dto)
+        public async Task<DeliveryOrderResponseDTO> UpdateDeliveryStatusAsync(
+            Guid assignmentId, string agentId, UpdateDeliveryStatusDTO dto)
         {
-            var assignment = await _deliveryRepository.GetById(id);
+            var assignment = await _deliveryRepository.GetById(assignmentId);
             if (assignment == null)
-                throw new NotFoundException("DeliveryAssignment", id);
+                throw new NotFoundException("DeliveryAssignment", assignmentId);
 
             if (assignment.DeliveryAgentId != agentId)
                 throw new ForbiddenException("You are not assigned to this delivery.");
 
             if (!IsValidTransition(assignment.Status, dto.Status))
-                throw new BadRequestException($"Cannot transition from '{assignment.Status}' to '{dto.Status}'.");
+                throw new BadRequestException(
+                    $"Cannot transition from '{assignment.Status}' to '{dto.Status}'.");
 
             assignment.Status = dto.Status;
-            UpdateDeliveryTimestamps(assignment, dto.Status);
+            UpdateTimestamps(assignment, dto.Status);
             await _deliveryRepository.UpdateAsync(assignment);
 
-            await SyncOrderStatus(assignment.OrderId, dto.Status);
+            // Sync parent order status and sub-order statuses
+            await SyncOrderStatusAsync(assignment.OrderId, dto.Status);
 
-            return MapToResponse(assignment);
+            // Publish event so AdminService (and any other subscribers) are notified
+            var updatedOrder = await _orderRepository.GetByIdWithDetails(assignment.OrderId);
+            if (updatedOrder != null)
+            {
+                await _orderStatusPublisher.PublishOrderStatus(
+                    updatedOrder.Id,
+                    updatedOrder.CustomerId,
+                    string.Join(", ", updatedOrder.RestaurantOrders.Select(ro => ro.RestaurantName)),
+                    updatedOrder.TotalAmount,
+                    updatedOrder.Status.ToString(),
+                    updatedOrder.CreatedAt);
+            }
+
+            // When delivered, free the agent
+            if (dto.Status == DeliveryStatus.Delivered)
+            {
+                var agentProfile = await _agentProfileRepository.GetByAgentUserId(agentId);
+                if (agentProfile != null)
+                {
+                    agentProfile.IsActive = true;
+                    agentProfile.LastUpdated = DateTime.UtcNow;
+                    await _agentProfileRepository.UpdateAsync(agentProfile);
+                }
+            }
+
+            return MapToDeliveryResponse(updatedOrder!, assignment);
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        // Agent status transition rules: Assigned → PickedUp → Delivered
+        // ─────────────────────────────────────────────────────────────────────
         private static bool IsValidTransition(DeliveryStatus from, DeliveryStatus to)
         {
             return (from, to) switch
@@ -67,7 +106,7 @@ namespace OrderService.Application.Services
             };
         }
 
-        private static void UpdateDeliveryTimestamps(Domain.Entities.DeliveryAssignment assignment, DeliveryStatus status)
+        private static void UpdateTimestamps(Domain.Entities.DeliveryAssignment assignment, DeliveryStatus status)
         {
             if (status == DeliveryStatus.PickedUp)
                 assignment.PickedUpAt = DateTime.UtcNow;
@@ -75,43 +114,91 @@ namespace OrderService.Application.Services
                 assignment.DeliveredAt = DateTime.UtcNow;
         }
 
-        private async Task SyncOrderStatus(Guid orderId, DeliveryStatus deliveryStatus)
+        private async Task SyncOrderStatusAsync(Guid orderId, DeliveryStatus deliveryStatus)
         {
-            var order = await _orderRepository.GetById(orderId);
-            if (order == null)
-                return;
+            var order = await _orderRepository.GetByIdWithDetails(orderId);
+            if (order == null) return;
 
-            var newOrderStatus = deliveryStatus switch
+            var newStatus = deliveryStatus switch
             {
-                DeliveryStatus.Assigned => OrderStatus.OutForDelivery,
-                DeliveryStatus.PickedUp => OrderStatus.PickedUp,
+                DeliveryStatus.PickedUp => OrderStatus.OutForDelivery,
                 DeliveryStatus.Delivered => OrderStatus.Delivered,
                 _ => order.Status
             };
 
-            if (newOrderStatus != order.Status)
+            if (newStatus != order.Status)
             {
-                order.Status = newOrderStatus;
+                order.Status = newStatus;
                 order.UpdatedAt = DateTime.UtcNow;
                 await _orderRepository.UpdateAsync(order);
             }
+
+            // Also keep restaurant sub-orders in sync with the delivery lifecycle.
+            // The restaurant can only push sub-orders up to ReadyForPickup;
+            // the rest of the journey (PickedUp → Delivered) is the agent's job.
+            if (deliveryStatus == DeliveryStatus.PickedUp)
+            {
+                foreach (var ro in order.RestaurantOrders)
+                {
+                    if (ro.Status == RestaurantOrderStatus.ReadyForPickup)
+                    {
+                        ro.Status = RestaurantOrderStatus.PickedUp;
+                        ro.UpdatedAt = DateTime.UtcNow;
+                        await _restaurantOrderRepository.UpdateAsync(ro);
+                    }
+                }
+            }
+            else if (deliveryStatus == DeliveryStatus.Delivered)
+            {
+                foreach (var ro in order.RestaurantOrders)
+                {
+                    // Advance any sub-order that hasn't reached a terminal state yet
+                    if (ro.Status != RestaurantOrderStatus.Cancelled &&
+                        ro.Status != RestaurantOrderStatus.Rejected)
+                    {
+                        ro.Status = RestaurantOrderStatus.Delivered;
+                        ro.UpdatedAt = DateTime.UtcNow;
+                        await _restaurantOrderRepository.UpdateAsync(ro);
+                    }
+                }
+            }
         }
 
-        private static DeliveryAssignmentResponseDTO MapToResponse(Domain.Entities.DeliveryAssignment assignment)
+        // ─────────────────────────────────────────────────────────────────────
+        // Mapping
+        // ─────────────────────────────────────────────────────────────────────
+        private static DeliveryOrderResponseDTO MapToDeliveryResponse(
+            Domain.Entities.Order order,
+            Domain.Entities.DeliveryAssignment assignment)
         {
-            return new DeliveryAssignmentResponseDTO
+            return new DeliveryOrderResponseDTO
             {
-                Id = assignment.Id,
-                OrderId = assignment.OrderId,
-                DeliveryAgentId = assignment.DeliveryAgentId,
-                Status = assignment.Status,
-                Street = assignment.Order?.Street ?? string.Empty,
-                City = assignment.Order?.City ?? string.Empty,
-                State = assignment.Order?.State ?? string.Empty,
-                Pincode = assignment.Order?.Pincode ?? string.Empty,
-                TotalAmount = assignment.Order?.TotalAmount ?? 0,
+                OrderId = order.Id,
+                CustomerName = order.CustomerName,
+                OverallStatus = order.Status.ToString(),
+                TotalAmount = order.TotalAmount,
+                DropoffStreet = order.Street,
+                DropoffCity = order.City,
+                DropoffState = order.State,
+                DropoffPincode = order.Pincode,
+                DeliveryInstructions = order.DeliveryInstructions,
+                AssignmentId = assignment.Id,
+                AssignmentStatus = assignment.Status.ToString(),
                 PickedUpAt = assignment.PickedUpAt,
-                DeliveredAt = assignment.DeliveredAt
+                DeliveredAt = assignment.DeliveredAt,
+                RestaurantStops = order.RestaurantOrders.Select(ro => new DeliveryRestaurantStopDTO
+                {
+                    SubOrderId = ro.Id,
+                    RestaurantName = ro.RestaurantName,
+                    RestaurantAddress = ro.RestaurantAddress,
+                    SubOrderStatus = ro.Status.ToString(),
+                    SubTotal = ro.SubTotal,
+                    Items = ro.OrderItems.Select(oi => new DeliveryItemDTO
+                    {
+                        MenuItemName = oi.MenuItemName,
+                        Quantity = oi.Quantity
+                    }).ToList()
+                }).ToList()
             };
         }
     }

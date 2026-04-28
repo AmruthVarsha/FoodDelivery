@@ -166,7 +166,7 @@ export class AuthService {
    * Logout user
    */
   logout(): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.LOGOUT, {})
+    return this.api.post(API_ENDPOINTS.AUTH.LOGOUT, {}, { responseType: 'text' })
       .pipe(
         tap(() => this.clearAuthData()),
         catchError(() => {
@@ -208,14 +208,14 @@ export class AuthService {
    * Forgot Password - Send reset email
    */
   forgotPassword(email: string): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, email);
+    return this.api.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, `"${email}"`, { responseType: 'text' });
   }
 
   /**
    * Reset Password
    */
   resetPassword(data: ResetPasswordDTO): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
+    return this.api.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data, { responseType: 'text' });
   }
 
   /**
@@ -229,21 +229,21 @@ export class AuthService {
    * Send Email Confirmation OTP
    */
   sendEmailConfirmationOTP(): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.SEND_EMAIL_CONFIRMATION_OTP, {});
+    return this.api.post(API_ENDPOINTS.AUTH.SEND_EMAIL_CONFIRMATION_OTP, {}, { responseType: 'text' });
   }
 
   /**
    * Confirm Email with OTP
    */
   confirmEmail(otp: string): Observable<any> {
-    return this.api.post(API_ENDPOINTS.AUTH.CONFIRM_EMAIL, otp);
+    return this.api.post(API_ENDPOINTS.AUTH.CONFIRM_EMAIL, `"${otp}"`, { responseType: 'text' });
   }
 
   /**
    * Enable/Disable Two-Factor Authentication
    */
   setTwoFactorAuth(enable: boolean): Observable<any> {
-    return this.api.put(API_ENDPOINTS.AUTH.SET_TWO_FACTOR_AUTH, enable);
+    return this.api.put(API_ENDPOINTS.AUTH.SET_TWO_FACTOR_AUTH, enable, { responseType: 'text' });
   }
 
   /**

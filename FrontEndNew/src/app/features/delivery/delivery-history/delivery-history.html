@@ -1,0 +1,152 @@
+<main class="ml-64 pt-16 p-container-margin">
+
+<div class="max-w-6xl mx-auto">
+
+  <!-- Header Section -->
+  <div class="flex justify-between items-end mb-stack-lg">
+    <div>
+      <h1 class="text-display-lg font-display-lg text-agent-primary agent-neon-glow mb-1">Delivery History</h1>
+      <p class="text-zinc-400">Track your completed and active assignments.</p>
+    </div>
+    <!-- Filter Tabs -->
+    <div class="agent-glass-card p-1.5 rounded-2xl flex gap-1">
+      <button (click)="setFilter('today')"
+        class="px-6 py-2 rounded-xl font-semibold transition-all"
+        [class]="selectedFilter === 'today'
+          ? 'bg-primary-container text-on-primary-container shadow-[0_0_15px_rgba(0,255,136,0.3)] font-bold'
+          : 'text-zinc-400 hover:text-white'">
+        Today
+      </button>
+      <button (click)="setFilter('week')"
+        class="px-6 py-2 rounded-xl font-semibold transition-all"
+        [class]="selectedFilter === 'week'
+          ? 'bg-primary-container text-on-primary-container shadow-[0_0_15px_rgba(0,255,136,0.3)] font-bold'
+          : 'text-zinc-400 hover:text-white'">
+        Week
+      </button>
+      <button (click)="setFilter('all')"
+        class="px-6 py-2 rounded-xl font-semibold transition-all"
+        [class]="selectedFilter === 'all'
+          ? 'bg-primary-container text-on-primary-container shadow-[0_0_15px_rgba(0,255,136,0.3)] font-bold'
+          : 'text-zinc-400 hover:text-white'">
+        All Time
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (errorMessage) {
+    <div class="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{{ errorMessage }}</div>
+  }
+
+  <!-- Loading -->
+  @if (isLoading) {
+    <div class="flex items-center justify-center py-24">
+      <span class="material-symbols-outlined text-5xl text-[#00ff88] animate-spin">progress_activity</span>
+    </div>
+  }
+
+  @if (!isLoading) {
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-12 gap-gutter mb-gutter">
+      <div class="col-span-12 md:col-span-6 agent-glass-card p-card-padding rounded-3xl">
+        <div class="flex justify-between items-start mb-4">
+          <div class="w-12 h-12 bg-[#00ff88]/10 border border-[#00ff88]/20 rounded-2xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-[#00ff88]">check_circle</span>
+          </div>
+        </div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">COMPLETED DELIVERIES</p>
+        <p class="text-3xl font-black text-white">{{ deliveredCount }}</p>
+      </div>
+      <div class="col-span-12 md:col-span-6 agent-glass-card p-card-padding rounded-3xl">
+        <div class="flex justify-between items-start mb-4">
+          <div class="w-12 h-12 bg-secondary-fixed/10 border border-secondary-fixed/20 rounded-2xl flex items-center justify-center">
+            <span class="material-symbols-outlined text-secondary-fixed">payments</span>
+          </div>
+        </div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">TOTAL EARNINGS</p>
+        <p class="text-3xl font-black text-white">₹{{ totalFilteredEarnings }}</p>
+      </div>
+    </div>
+
+    <!-- Table Section -->
+    <div class="agent-glass-card rounded-3xl overflow-hidden mb-32">
+      <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/2">
+        <h3 class="font-display-md text-agent-primary">Assignment Logs</h3>
+        <span class="text-zinc-500 text-xs">{{ filteredAssignments.length }} records</span>
+      </div>
+
+      <!-- Empty state -->
+      @if (filteredAssignments.length === 0) {
+        <div class="text-center py-20">
+          <span class="material-symbols-outlined text-6xl text-zinc-700 mb-4">inbox</span>
+          <p class="text-zinc-400 text-lg font-semibold">No records found</p>
+          <p class="text-zinc-600 text-sm mt-1">
+            @if (selectedFilter === 'today') { No deliveries recorded today. }
+            @else if (selectedFilter === 'week') { No deliveries in the past 7 days. }
+            @else { No assignments yet. }
+          </p>
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="text-zinc-500 font-label-caps text-label-caps border-b border-white/5">
+                <th class="px-6 py-4">Order #</th>
+                <th class="px-6 py-4">Delivered At</th>
+                <th class="px-6 py-4">Restaurant(s)</th>
+                <th class="px-6 py-4">Customer</th>
+                <th class="px-6 py-4">Drop-off</th>
+                <th class="px-6 py-4">Amount</th>
+                <th class="px-6 py-4">Status</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+              @for (a of filteredAssignments; track a.assignmentId) {
+                <tr class="hover:bg-white/5 transition-colors group">
+                  <td class="px-6 py-5 font-mono text-[#00ff88] font-bold text-sm">
+                    #{{ a.orderId.substring(0, 8).toUpperCase() }}
+                  </td>
+                  <td class="px-6 py-5">
+                    @if (a.deliveredAt) {
+                      <div class="text-white font-medium text-sm">{{ a.deliveredAt | date:'MMM d, y' }}</div>
+                      <div class="text-xs text-zinc-500">{{ a.deliveredAt | date:'h:mm a' }}</div>
+                    } @else {
+                      <span class="text-zinc-600 text-sm italic">—</span>
+                    }
+                  </td>
+                  <td class="px-6 py-5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                        <span class="material-symbols-outlined text-xs text-zinc-400">restaurant</span>
+                      </div>
+                      <span class="text-white text-sm">
+                        {{ a.restaurantStops[0]?.restaurantName || '—' }}
+                        @if (a.restaurantStops.length > 1) {
+                          <span class="text-zinc-500 text-xs"> +{{ a.restaurantStops.length - 1 }} more</span>
+                        }
+                      </span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-5 text-white text-sm">{{ a.customerName }}</td>
+                  <td class="px-6 py-5 text-zinc-400 text-sm">{{ a.dropoffCity }}, {{ a.dropoffPincode }}</td>
+                  <td class="px-6 py-5 font-bold text-white text-sm">₹{{ a.totalAmount }}</td>
+                  <td class="px-6 py-5">
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border"
+                      [class]="getStatusClass(a.assignmentStatus)">
+                      {{ a.assignmentStatus }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+
+  }
+</div>
+
+</main>

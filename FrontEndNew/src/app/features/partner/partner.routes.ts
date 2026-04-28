@@ -22,6 +22,14 @@ export const PARTNER_ROUTES: Routes = [
     loadComponent: () => import('./settings/settings.component').then(m => m.PartnerSettingsComponent)
   },
   {
+    path: 'service-areas',
+    loadComponent: () => import('./service-areas/service-areas.component').then(m => m.PartnerServiceAreasComponent)
+  },
+  {
+    path: 'add-restaurant',
+    loadComponent: () => import('./add-restaurant/add-restaurant.component').then(m => m.AddRestaurantComponent)
+  },
+  {
     path: '',
     redirectTo: 'dashboard',
     pathMatch: 'full'

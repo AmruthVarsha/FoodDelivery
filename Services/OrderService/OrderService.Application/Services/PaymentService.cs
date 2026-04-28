@@ -11,17 +11,14 @@ namespace OrderService.Application.Services
     {
         private readonly IPaymentRepository _paymentRepository;
         private readonly IOrderRepository _orderRepository;
-        private readonly ICatalogRepository _catalogRepository;
         private static readonly Random _random = new();
 
         public PaymentService(
-            IPaymentRepository paymentRepository, 
-            IOrderRepository orderRepository,
-            ICatalogRepository catalogRepository)
+            IPaymentRepository paymentRepository,
+            IOrderRepository orderRepository)
         {
             _paymentRepository = paymentRepository;
             _orderRepository = orderRepository;
-            _catalogRepository = catalogRepository;
         }
 
         public async Task<PaymentResponseDTO> SimulatePaymentAsync(SimulatePaymentDTO dto, string userId)
@@ -101,18 +98,14 @@ namespace OrderService.Application.Services
             return MapToDTO(payment);
         }
 
-        private async Task ValidateUserAccess(Order order, string userId)
+        private static Task ValidateUserAccess(Order order, string userId)
         {
-            // Check if user is the customer who placed the order
-            if (order.CustomerId == userId)
-                return;
+            // Payment is accessible only to the customer who placed the order.
+            // Partners view payment status via their sub-order response (SubTotal field).
+            if (order.CustomerId != userId)
+                throw new ForbiddenException("You do not have access to this payment.");
 
-            // Check if user is the restaurant owner
-            var restaurant = await _catalogRepository.GetRestaurantById(order.RestaurantId);
-            if (restaurant != null && restaurant.OwnerId == userId)
-                return;
-
-            throw new ForbiddenException("You do not have access to this payment.");
+            return Task.CompletedTask;
         }
 
         private bool DeterminePaymentSuccess(PaymentMethod method)

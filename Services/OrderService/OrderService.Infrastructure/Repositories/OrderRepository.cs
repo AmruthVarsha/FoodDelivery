@@ -19,10 +19,12 @@ namespace OrderService.Infrastructure.Repositories
             return await _context.Orders.FindAsync(id);
         }
 
+        /// <summary>Full details: RestaurantOrders → OrderItems, Payment, DeliveryAssignment</summary>
         public async Task<Order?> GetByIdWithDetails(Guid id)
         {
             return await _context.Orders
-                .Include(o => o.OrderItems)
+                .Include(o => o.RestaurantOrders)
+                    .ThenInclude(ro => ro.OrderItems)
                 .Include(o => o.Payment)
                 .Include(o => o.DeliveryAssignment)
                 .FirstOrDefaultAsync(o => o.Id == id);
@@ -31,24 +33,20 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<IEnumerable<Order>> GetByCustomerId(string customerId)
         {
             return await _context.Orders
-                .Include(o => o.OrderItems)
+                .Include(o => o.RestaurantOrders)
+                    .ThenInclude(ro => ro.OrderItems)
+                .Include(o => o.Payment)
                 .Where(o => o.CustomerId == customerId)
-                .OrderByDescending(o => o.CreatedAt)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Order>> GetByRestaurantId(Guid restaurantId)
-        {
-            return await _context.Orders
-                .Include(o => o.OrderItems)
-                .Where(o => o.RestaurantId == restaurantId)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }
 
         public async Task<IEnumerable<Order>> GetAll()
         {
-            return await _context.Orders.ToListAsync();
+            return await _context.Orders
+                .Include(o => o.RestaurantOrders)
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
         }
 
         public async Task AddAsync(Order order)

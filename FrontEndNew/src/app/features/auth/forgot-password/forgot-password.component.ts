@@ -54,9 +54,9 @@ export class ForgotPasswordComponent implements OnInit {
       next: (response) => {
         console.log('Password reset email sent:', response);
         this.isLoading = false;
-        this.successMessage = 'Password reset link sent to your email!';
+        this.successMessage = 'Password reset OTP sent to your email!';
         setTimeout(() => {
-          this.router.navigate(['/auth/login']);
+          this.router.navigate(['/auth/reset-password'], { queryParams: { email: this.forgotPasswordForm.value.email } });
         }, 3000);
       },
       error: (error) => {

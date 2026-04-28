@@ -213,10 +213,8 @@ export class LoginComponent implements OnInit {
         this.router.navigate(['/partner/dashboard']);
         break;
       case 2: // DeliveryAgent
-        console.log('Delivery dashboard not implemented yet, redirecting to customer dashboard');
-        // TODO: Implement delivery dashboard
-        // this.router.navigate(['/delivery/dashboard']);
-        this.router.navigate(['/customer/dashboard']); // Temporary fallback
+        console.log('Navigating to delivery dashboard');
+        this.router.navigate(['/delivery/dashboard']);
         break;
       case 3: // Admin
         console.log('Navigating to admin dashboard');

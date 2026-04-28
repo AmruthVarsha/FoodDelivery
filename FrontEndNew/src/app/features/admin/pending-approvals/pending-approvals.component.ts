@@ -1,3 +1,4 @@
+import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar/admin-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -22,10 +23,11 @@ export interface PendingRestaurant {
   requestedAt: Date;
 }
 
+
 @Component({
   selector: 'app-admin-pending-approvals',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminSidebarComponent],
   templateUrl: './pending-approvals.component.html',
   styleUrls: ['./pending-approvals.component.css']
 })

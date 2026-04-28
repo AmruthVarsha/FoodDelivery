@@ -1,19 +1,5 @@
-<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-black/80 backdrop-blur-[40px] border-b border-white/10">
-  <span class="text-xl font-black text-emerald-400">QuickBites</span>
-  <button class="material-symbols-outlined text-gray-400">person</button>
-</nav>
-
-<aside class="fixed left-0 top-0 h-full w-64 bg-black/90 backdrop-blur-[40px] border-r border-white/10 pt-20 z-40 hidden md:flex flex-col">
-  <div class="px-6 mb-8"><p class="text-emerald-400 font-bold text-sm uppercase">System Admin</p></div>
-  <nav class="flex-1 px-4 space-y-1">
-    <a routerLink="/admin/dashboard" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">dashboard</span> Dashboard</a>
-    <a routerLink="/admin/pending-approvals" class="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400 flex items-center px-6 py-4"><span class="material-symbols-outlined mr-4">verified_user</span> Pending Approvals</a>
-    <a routerLink="/admin/user-management" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">group</span> User Management</a>
-    <a routerLink="/admin/restaurant-management" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">restaurant</span> Restaurant Management</a>
-    <a routerLink="/admin/order-management" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">receipt_long</span> Order Management</a>
-    <a routerLink="/admin/reports" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">analytics</span> Reports</a>
-  </nav>
-</aside>
+<!-- Shared Admin Sidebar -->
+<app-admin-sidebar></app-admin-sidebar>
 
 <main class="ml-64 p-6 pt-24 min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
   <header class="mb-8">

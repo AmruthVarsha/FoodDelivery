@@ -1,26 +1,28 @@
+import { PartnerSidebarComponent } from '../../../shared/components/partner-sidebar/partner-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { PartnerService, Order, OrderItem, Restaurant } from '../../../core/services/partner.service';
+import { PartnerService, Restaurant } from '../../../core/services/partner.service';
+import {
+  PartnerOrderResponseDTO,
+  UpdateRestaurantOrderStatusDTO,
+  RestaurantOrderStatus
+} from '../../../shared/models/order.model';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
-interface OrderFilter {
+interface StatusFilter {
   label: string;
   value: string;
   count: number;
 }
 
-interface OrderStage {
-  label: string;
-  value: number;
-}
-
 @Component({
   selector: 'app-partner-orders',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule, PartnerSidebarComponent],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css'
 })
@@ -32,28 +34,25 @@ export class PartnerOrdersComponent implements OnInit, OnDestroy {
   selectedFilter = 'all';
   showRestaurantDropdown = false;
 
+  // Modal for rejecting/cancelling with reason
+  showReasonModal = false;
+  reasonInput = '';
+  pendingAction: { subOrderId: string; status: RestaurantOrderStatus } | null = null;
+
   restaurants: Restaurant[] = [];
   selectedRestaurant: Restaurant | null = null;
-  orders: Order[] = [];
+  orders: PartnerOrderResponseDTO[] = [];
 
-  orderFilters: OrderFilter[] = [
-    { label: 'All Orders', value: 'all', count: 0 },
-    { label: 'Pending', value: 'pending', count: 0 },
-    { label: 'Preparing', value: 'preparing', count: 0 },
-    { label: 'Ready', value: 'ready', count: 0 },
-    { label: 'Completed', value: 'completed', count: 0 }
+  readonly RestaurantOrderStatus = RestaurantOrderStatus;
+
+  statusFilters: StatusFilter[] = [
+    { label: 'All',           value: 'all',          count: 0 },
+    { label: 'Pending',       value: 'Pending',       count: 0 },
+    { label: 'Accepted',      value: 'Accepted',      count: 0 },
+    { label: 'Preparing',     value: 'Preparing',     count: 0 },
+    { label: 'Ready',         value: 'ReadyForPickup',count: 0 },
+    { label: 'Completed',     value: 'PickedUp',      count: 0 }
   ];
-
-  orderStages: OrderStage[] = [
-    { label: 'Placed', value: 0 },
-    { label: 'Preparing', value: 1 },
-    { label: 'Ready', value: 2 },
-    { label: 'Picked Up', value: 3 }
-  ];
-
-  avgPrepTime = '12m 40s';
-  todayRating = 4.9;
-  todayEarnings = 0;
 
   private destroy$ = new Subject<void>();
 
@@ -89,138 +88,121 @@ export class PartnerOrdersComponent implements OnInit, OnDestroy {
   selectRestaurant(restaurant: Restaurant): void {
     this.partnerService.setSelectedRestaurant(restaurant);
     this.showRestaurantDropdown = false;
-    this.cdr.markForCheck();
   }
 
-  loadOrders(restaurantId?: string): void {
+  loadOrders(restaurantId: string): void {
     this.isLoading = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
 
-    this.partnerService.getRestaurantOrders().subscribe({
+    this.partnerService.getRestaurantSubOrders(restaurantId).pipe(takeUntil(this.destroy$)).subscribe({
       next: (orders) => {
-        // Filter for the selected restaurant if restaurantId provided
-        this.orders = restaurantId
-          ? orders.filter(o => o.restaurantId === restaurantId)
-          : orders;
+        this.orders = orders;
         this.updateFilterCounts();
         this.isLoading = false;
         this.cdr.markForCheck();
       },
-      error: (error) => {
-        console.error('Error loading orders:', error);
-        this.errorMessage = 'Failed to load orders. Please try again.';
+      error: () => {
+        this.errorMessage = 'Failed to load orders.';
         this.isLoading = false;
         this.cdr.markForCheck();
       }
     });
   }
-  
+
   updateFilterCounts(): void {
-    this.orderFilters[0].count = this.orders.length; // All
-    this.orderFilters[1].count = this.orders.filter(o => o.status === 0).length; // Pending
-    this.orderFilters[2].count = this.orders.filter(o => o.status === 1).length; // Preparing
-    this.orderFilters[3].count = this.orders.filter(o => o.status === 2).length; // Ready
-    this.orderFilters[4].count = this.orders.filter(o => o.status === 3).length; // Completed
-  }
-
-  get filteredOrders(): Order[] {
-    if (this.selectedFilter === 'all') {
-      return this.orders;
+    this.statusFilters[0].count = this.orders.length;
+    for (let i = 1; i < this.statusFilters.length; i++) {
+      this.statusFilters[i].count = this.orders.filter(o => o.status === this.statusFilters[i].value).length;
     }
-    
-    const statusMap: { [key: string]: number } = {
-      'pending': 0,
-      'preparing': 1,
-      'ready': 2,
-      'completed': 3
+  }
+
+  get filteredOrders(): PartnerOrderResponseDTO[] {
+    if (this.selectedFilter === 'all') return this.orders;
+    return this.orders.filter(o => o.status === this.selectedFilter);
+  }
+
+  // ─── Status transitions ───────────────────────────────────────────────────
+
+  getNextAction(status: string): { label: string; nextStatus: RestaurantOrderStatus } | null {
+    const map: Record<string, { label: string; nextStatus: RestaurantOrderStatus }> = {
+      [RestaurantOrderStatus.Pending]:   { label: 'Accept',         nextStatus: RestaurantOrderStatus.Accepted },
+      [RestaurantOrderStatus.Accepted]:  { label: 'Start Preparing', nextStatus: RestaurantOrderStatus.Preparing },
+      [RestaurantOrderStatus.Preparing]: { label: 'Mark Ready',     nextStatus: RestaurantOrderStatus.ReadyForPickup },
     };
-    
-    const status = statusMap[this.selectedFilter];
-    return this.orders.filter(order => order.status === status);
+    return map[status] ?? null;
   }
 
-  private normalizeStatus(status: number | string): number {
-    if (typeof status === 'number') return status;
-    const map: { [key: string]: number } = {
-      'Pending': 0,
-      'Preparing': 1,
-      'ReadyForPickup': 2,
-      'RestaurantAccepted': 1,
-      'Completed': 3,
-      'Delivered': 3
-    };
-    return map[status] ?? 0;
+  canReject(status: string): boolean {
+    return status === RestaurantOrderStatus.Pending;
   }
 
-  getStatusBadgeClass(status: number | string): string {
-    const normStatus = this.normalizeStatus(status);
-    const classes: { [key: number]: string } = {
-      0: 'bg-[#00ff88]/15 border border-[#00ff88]/40 text-[#00ff88]',
-      1: 'bg-yellow-500/15 border border-yellow-500/40 text-yellow-500',
-      2: 'bg-blue-500/15 border border-blue-500/40 text-blue-500',
-      3: 'bg-green-500/15 border border-green-500/40 text-green-500'
-    };
-    return classes[normStatus] || classes[0];
+  canCancel(status: string): boolean {
+    return status === RestaurantOrderStatus.Accepted || status === RestaurantOrderStatus.Preparing;
   }
 
-  getStatusLabel(status: number | string): string {
-    const normStatus = this.normalizeStatus(status);
-    const labels: { [key: number]: string } = {
-      0: 'New Order',
-      1: 'In Preparation',
-      2: 'Ready',
-      3: 'Completed'
-    };
-    return labels[normStatus] || 'Unknown';
+  doNextAction(order: PartnerOrderResponseDTO): void {
+    const action = this.getNextAction(order.status);
+    if (!action || !this.selectedRestaurant) return;
+    this.updateStatus(order.subOrderId, { status: action.nextStatus });
   }
 
-  getProgressWidth(status: number | string): number {
-    const normStatus = this.normalizeStatus(status);
-    return (normStatus / 3) * 100;
+  openReasonModal(subOrderId: string, status: RestaurantOrderStatus): void {
+    this.pendingAction = { subOrderId, status };
+    this.reasonInput = '';
+    this.showReasonModal = true;
   }
 
-  isStageCompleted(orderStatus: number | string, stageValue: number): boolean {
-    const normStatus = this.normalizeStatus(orderStatus);
-    return normStatus >= stageValue;
-  }
-
-  isStagePassed(orderStatus: number | string, stageValue: number): boolean {
-    const normStatus = this.normalizeStatus(orderStatus);
-    return normStatus > stageValue;
-  }
-
-  updateOrderStatus(orderId: string, newStatus: number): void {
-    this.partnerService.updateOrderStatus(orderId, newStatus).subscribe({
-      next: () => {
-        const idx = this.orders.findIndex(o => o.id === orderId);
-        if (idx > -1) {
-          this.orders = [
-            ...this.orders.slice(0, idx),
-            { ...this.orders[idx], status: newStatus, updatedAt: new Date() },
-            ...this.orders.slice(idx + 1)
-          ];
-          this.updateFilterCounts();
-        }
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error updating order status:', error);
-        this.errorMessage = 'Failed to update order status. Please try again.';
-        this.cdr.markForCheck();
-      }
+  confirmWithReason(): void {
+    if (!this.pendingAction || !this.selectedRestaurant || !this.reasonInput.trim()) return;
+    this.updateStatus(this.pendingAction.subOrderId, {
+      status: this.pendingAction.status,
+      cancellationReason: this.reasonInput.trim()
     });
+    this.showReasonModal = false;
+    this.pendingAction = null;
+  }
+
+  updateStatus(subOrderId: string, dto: UpdateRestaurantOrderStatusDTO): void {
+    if (!this.selectedRestaurant) return;
+    this.partnerService.updateSubOrderStatus(this.selectedRestaurant.id, subOrderId, dto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated) => {
+          const idx = this.orders.findIndex(o => o.subOrderId === subOrderId);
+          if (idx > -1) {
+            this.orders = [
+              ...this.orders.slice(0, idx),
+              updated,
+              ...this.orders.slice(idx + 1)
+            ];
+            this.updateFilterCounts();
+          }
+          this.cdr.markForCheck();
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to update status.';
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  // ─── UI helpers ───────────────────────────────────────────────────────────
+
+  getStatusBadgeClass(status: string): string {
+    const map: Record<string, string> = {
+      [RestaurantOrderStatus.Pending]:       'bg-zinc-500/20 border-zinc-500/40 text-zinc-300',
+      [RestaurantOrderStatus.Accepted]:      'bg-blue-500/15 border-blue-500/40 text-blue-300',
+      [RestaurantOrderStatus.Preparing]:     'bg-yellow-500/15 border-yellow-500/40 text-yellow-300',
+      [RestaurantOrderStatus.ReadyForPickup]:'bg-green-500/15 border-green-500/40 text-green-300',
+      [RestaurantOrderStatus.PickedUp]:      'bg-purple-500/15 border-purple-500/40 text-purple-300',
+      [RestaurantOrderStatus.Cancelled]:     'bg-red-500/15 border-red-500/40 text-red-300',
+      [RestaurantOrderStatus.Rejected]:      'bg-red-500/15 border-red-500/40 text-red-300',
+    };
+    return map[status] ?? 'bg-zinc-500/20 border-zinc-500/40 text-zinc-300';
   }
 
   logout(): void {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/auth/login']);
-      },
-      error: (error) => {
-        console.error('Logout error:', error);
-        this.router.navigate(['/auth/login']);
-      }
-    });
+    this.authService.logout().subscribe({ next: () => this.router.navigate(['/auth/login']) });
   }
 }

@@ -25,11 +25,10 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard],
     data: { roles: [RoleEnum.Admin] }
   },
-  // Uncomment this route when the delivery module is implemented
-  // {
-  //   path: 'delivery',
-  //   loadChildren: () => import('./features/delivery/delivery.routes').then(m => m.DELIVERY_ROUTES),
-  // },
+  {
+    path: 'delivery',
+    loadChildren: () => import('./features/delivery/delivery.routes').then(m => m.DELIVERY_ROUTES),
+  },
   {
     path: '',
     redirectTo: '/customer/dashboard',

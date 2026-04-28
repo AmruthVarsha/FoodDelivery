@@ -18,32 +18,42 @@ namespace OrderService.API.Controllers
             _orderService = orderService;
         }
 
-        [HttpPost]
+        /// <summary>
+        /// Customer: place order from ALL active carts at once.
+        /// </summary>
+        [HttpPost("checkout")]
         [Authorize(Roles = "Customer")]
-        public async Task<IActionResult> PlaceOrder([FromBody] PlaceOrderDTO dto)
+        public async Task<IActionResult> Checkout([FromBody] CheckoutDTO dto)
         {
-            var emailConfirmedClaim = User.FindFirstValue("EmailConfirmed");
-            if (emailConfirmedClaim == null || emailConfirmedClaim.ToLower() != "true")
-            {
-                return StatusCode(403, new { message = "Please confirm your email first before placing an order." });
-            }
+            var emailConfirmed = User.FindFirstValue("EmailConfirmed");
+            if (emailConfirmed == null || emailConfirmed.ToLower() != "true")
+                return StatusCode(403, new { message = "Please confirm your email before placing an order." });
 
-            var token = Request.Headers["Authorization"].ToString();
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _orderService.PlaceOrderAsync(dto, customerId,token);
+            var customerName = User.FindFirstValue(ClaimTypes.Name)
+                            ?? User.FindFirstValue("name")
+                            ?? "Customer";
+            var token = Request.Headers["Authorization"].ToString();
+
+            var result = await _orderService.CheckoutAsync(dto, customerId, customerName, token);
             return CreatedAtAction(nameof(GetOrderById), new { id = result.Id }, result);
         }
 
-        [HttpGet]
-        [Authorize(Roles = "Customer,Partner")]
-        public async Task<IActionResult> GetOrderHistory()
+        /// <summary>
+        /// Customer: get full order history (all restaurants grouped).
+        /// </summary>
+        [HttpGet("my")]
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> GetMyOrders()
         {
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var userRole = User.FindFirstValue(ClaimTypes.Role)!;
-            var result = await _orderService.GetOrderHistoryAsync(userId, userRole);
+            var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _orderService.GetOrderHistoryAsync(customerId);
             return Ok(result);
         }
 
+        /// <summary>
+        /// Customer: get a specific order by ID.
+        /// </summary>
         [HttpGet("{id:guid}")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetOrderById(Guid id)
@@ -53,21 +63,16 @@ namespace OrderService.API.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// Customer: cancel their order (within 10 min, before any restaurant accepts).
+        /// </summary>
         [HttpPut("{id:guid}/cancel")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> CancelOrder(Guid id, [FromBody] CancelOrderDTO dto)
         {
             var customerId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
             await _orderService.CancelOrderAsync(id, customerId, dto);
-            return Ok("Order cancel succesfully");
-        }
-
-        [HttpPut("{id:guid}/status")]
-        [Authorize(Roles = "Partner,Admin")]
-        public async Task<IActionResult> UpdateOrderStatus(Guid id, [FromBody] UpdateOrderStatusDTO dto)
-        {
-            await _orderService.UpdateOrderStatusAsync(id, dto);
-            return NoContent();
+            return Ok(new { message = "Order cancelled successfully." });
         }
     }
 }

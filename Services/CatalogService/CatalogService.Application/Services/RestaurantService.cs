@@ -205,6 +205,27 @@ namespace CatalogService.Application.Services
                 restaurant.IsActive, restaurant.IsApproved, "Updated");
         }
 
+        public async Task PatchStatusAsync(Guid id, bool isOpen, string requestorId)
+        {
+            var restaurant = await _restaurantRepo.GetByIdAsync(id)
+                ?? throw new NotFoundException(nameof(Restaurant), id);
+
+            if (restaurant.OwnerId != requestorId)
+                throw new ForbiddenException("You do not own this restaurant.");
+
+            if (!restaurant.IsApproved)
+                throw new ForbiddenException("Restaurant is not approved yet. Cannot update status.");
+
+            restaurant.IsActive = isOpen;
+
+            await _restaurantRepo.UpdateAsync(restaurant);
+
+            await _dataSyncPublisher.PublishRestaurantDataSync(
+                restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
+                restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
+                restaurant.IsActive, restaurant.IsApproved, "StatusPatched");
+        }
+
         public async Task DeleteAsync(Guid id, string requestorId, bool isAdmin = false)
         {
             var restaurant = await _restaurantRepo.GetByIdAsync(id)
@@ -232,6 +253,7 @@ namespace CatalogService.Application.Services
             TotalRatings = r.TotalRatings,
             PrepTimeMinutes = r.PrepTimeMinutes,
             IsActive = r.IsActive,
+            IsApproved = r.IsApproved,
             City = r.Address?.City ?? string.Empty,
             Pincode = r.Address?.Pincode ?? string.Empty,
             OpeningTime = r.OpeningTime.ToString("HH:mm"),

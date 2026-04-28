@@ -1,8 +1,10 @@
+import { PartnerSidebarComponent } from '../../../shared/components/partner-sidebar/partner-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+
 import { PartnerService, Restaurant } from '../../../core/services/partner.service';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
@@ -10,11 +12,12 @@ import { takeUntil, filter } from 'rxjs/operators';
 @Component({
   selector: 'app-partner-settings',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PartnerSidebarComponent],
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.css']
 })
 export class PartnerSettingsComponent implements OnInit, OnDestroy {
+  get restaurantName(): string { return this.selectedRestaurant?.name || ''; }
 
   isLoading = false;
   errorMessage = '';
@@ -32,7 +35,8 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
     address: '',
     phoneNumber: '',
     email: '',
-    isOpen: true
+    isOpen: true,
+    isApproved: false
   };
 
   private destroy$ = new Subject<void>();
@@ -42,7 +46,7 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
     private partnerService: PartnerService,
     private router: Router,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.partnerService.getMyRestaurants().pipe(takeUntil(this.destroy$)).subscribe({

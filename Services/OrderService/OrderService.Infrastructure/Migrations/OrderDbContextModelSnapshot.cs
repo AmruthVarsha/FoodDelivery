@@ -82,6 +82,39 @@ namespace OrderService.Infrastructure.Migrations
                     b.ToTable("CartItems", (string)null);
                 });
 
+            modelBuilder.Entity("OrderService.Domain.Entities.DeliveryAgentProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AgentUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentPincode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AgentUserId")
+                        .IsUnique();
+
+                    b.ToTable("DeliveryAgentProfiles", (string)null);
+                });
+
             modelBuilder.Entity("OrderService.Domain.Entities.DeliveryAssignment", b =>
                 {
                     b.Property<Guid>("Id")
@@ -127,7 +160,8 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -137,16 +171,19 @@ namespace OrderService.Infrastructure.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("DeliveryInstructions")
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
                     b.Property<string>("Pincode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uniqueidentifier");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("ScheduledSlot")
                         .HasMaxLength(100)
@@ -154,7 +191,8 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -163,7 +201,8 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.Property<string>("Street")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
@@ -190,11 +229,11 @@ namespace OrderService.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<Guid>("OrderId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("RestaurantOrderId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
@@ -204,7 +243,7 @@ namespace OrderService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("RestaurantOrderId");
 
                     b.ToTable("OrderItems", (string)null);
                 });
@@ -249,6 +288,53 @@ namespace OrderService.Infrastructure.Migrations
                     b.ToTable("Payments", (string)null);
                 });
 
+            modelBuilder.Entity("OrderService.Domain.Entities.RestaurantOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("OrderId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RestaurantAddress")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RestaurantName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("SubTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("RestaurantOrders", (string)null);
+                });
+
             modelBuilder.Entity("OrderService.Domain.Entities.CartItem", b =>
                 {
                     b.HasOne("OrderService.Domain.Entities.Cart", "Cart")
@@ -273,13 +359,13 @@ namespace OrderService.Infrastructure.Migrations
 
             modelBuilder.Entity("OrderService.Domain.Entities.OrderItem", b =>
                 {
-                    b.HasOne("OrderService.Domain.Entities.Order", "Order")
+                    b.HasOne("OrderService.Domain.Entities.RestaurantOrder", "RestaurantOrder")
                         .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("RestaurantOrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Order");
+                    b.Navigation("RestaurantOrder");
                 });
 
             modelBuilder.Entity("OrderService.Domain.Entities.Payment", b =>
@@ -287,6 +373,17 @@ namespace OrderService.Infrastructure.Migrations
                     b.HasOne("OrderService.Domain.Entities.Order", "Order")
                         .WithOne("Payment")
                         .HasForeignKey("OrderService.Domain.Entities.Payment", "OrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("OrderService.Domain.Entities.RestaurantOrder", b =>
+                {
+                    b.HasOne("OrderService.Domain.Entities.Order", "Order")
+                        .WithMany("RestaurantOrders")
+                        .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -302,9 +399,14 @@ namespace OrderService.Infrastructure.Migrations
                 {
                     b.Navigation("DeliveryAssignment");
 
-                    b.Navigation("OrderItems");
-
                     b.Navigation("Payment");
+
+                    b.Navigation("RestaurantOrders");
+                });
+
+            modelBuilder.Entity("OrderService.Domain.Entities.RestaurantOrder", b =>
+                {
+                    b.Navigation("OrderItems");
                 });
 #pragma warning restore 612, 618
         }

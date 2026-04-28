@@ -1,19 +1,5 @@
-<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-16 bg-black/80 backdrop-blur-[40px] border-b border-white/10">
-  <span class="text-xl font-black text-emerald-400">QuickBites</span>
-  <button class="material-symbols-outlined text-gray-400">person</button>
-</nav>
-
-<aside class="fixed left-0 top-0 h-full w-64 bg-black/90 backdrop-blur-[40px] border-r border-white/10 pt-20 z-40 hidden md:flex flex-col">
-  <div class="px-6 mb-8"><p class="text-emerald-400 font-bold text-sm uppercase">System Admin</p></div>
-  <nav class="flex-1 px-4 space-y-1">
-    <a routerLink="/admin/dashboard" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">dashboard</span> Dashboard</a>
-    <a routerLink="/admin/pending-approvals" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">verified_user</span> Pending Approvals</a>
-    <a routerLink="/admin/user-management" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">group</span> User Management</a>
-    <a routerLink="/admin/restaurant-management" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">restaurant</span> Restaurant Management</a>
-    <a routerLink="/admin/order-management" class="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400 flex items-center px-6 py-4"><span class="material-symbols-outlined mr-4">receipt_long</span> Order Management</a>
-    <a routerLink="/admin/reports" class="flex items-center px-6 py-4 text-gray-500 hover:bg-white/5 hover:text-emerald-200 transition-colors"><span class="material-symbols-outlined mr-4">analytics</span> Reports</a>
-  </nav>
-</aside>
+<!-- Shared Admin Sidebar -->
+<app-admin-sidebar></app-admin-sidebar>
 
 <main class="ml-64 p-6 pt-24 min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
   <header class="mb-8">
@@ -30,8 +16,17 @@
 
   <!-- Error State -->
   @if (errorMessage) {
-    <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6">
+    <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+      <span class="material-symbols-outlined text-sm">error</span>
       {{ errorMessage }}
+    </div>
+  }
+
+  <!-- Success State -->
+  @if (successMessage) {
+    <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
+      <span class="material-symbols-outlined text-sm">check_circle</span>
+      {{ successMessage }}
     </div>
   }
 
@@ -68,12 +63,27 @@
               <td class="px-6 py-4 text-gray-400">{{ order.customerName }}</td>
               <td class="px-6 py-4 text-white font-bold">₹{{ order.totalAmount }}</td>
               <td class="px-6 py-4">
-                <span class="px-3 py-1 rounded-full text-[10px] uppercase font-bold border" [class.border-emerald-400/30]="getStatusLabel(order.status) === 'Completed' || getStatusLabel(order.status) === 'Delivered'" [class.text-emerald-400]="getStatusLabel(order.status) === 'Completed' || getStatusLabel(order.status) === 'Delivered'" [class.bg-emerald-400/10]="getStatusLabel(order.status) === 'Completed' || getStatusLabel(order.status) === 'Delivered'" [class.border-yellow-400/30]="getStatusLabel(order.status) === 'Pending'" [class.text-yellow-400]="getStatusLabel(order.status) === 'Pending'" [class.bg-yellow-400/10]="getStatusLabel(order.status) === 'Pending'" [class.border-red-400/30]="getStatusLabel(order.status) === 'Cancelled'" [class.text-red-400]="getStatusLabel(order.status) === 'Cancelled'" [class.bg-red-400/10]="getStatusLabel(order.status) === 'Cancelled'">{{ getStatusLabel(order.status) }}</span>
+                <span class="px-3 py-1 rounded-full text-[10px] uppercase font-bold border" [ngClass]="getStatusColorClasses(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
               </td>
               <td class="px-6 py-4 text-gray-400">{{ order.placedAt | date:'MMM d, y' }}</td>
               <td class="px-6 py-4 rounded-r-xl text-right">
-                <button (click)="viewOrder(order)" class="p-2 rounded-lg bg-gray-900 hover:bg-emerald-400/20 transition-all">
-                  <span class="material-symbols-outlined text-emerald-400 text-sm">visibility</span>
+                <!-- Update Status button -->
+                <button
+                  (click)="openStatusModal(order)"
+                  [disabled]="updatingOrderId === order.orderId"
+                  class="p-2 rounded-lg bg-gray-900 hover:bg-emerald-400/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Update order status"
+                >
+                  @if (updatingOrderId === order.orderId) {
+                    <svg class="animate-spin h-4 w-4 text-emerald-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                  } @else {
+                    <span class="material-symbols-outlined text-emerald-400 text-sm">edit</span>
+                  }
                 </button>
               </td>
             </tr>
@@ -84,4 +94,89 @@
   </div>
 </main>
 
+<!-- ─── Update Order Status Modal ───────────────────────────────────────────── -->
+@if (showStatusModal && updatingOrder) {
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center" (click)="cancelStatusUpdate()">
+    <div class="bg-[#111] border border-white/10 rounded-2xl p-8 w-full max-w-md shadow-2xl" (click)="$event.stopPropagation()">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-white">Update Order Status</h2>
+        <button (click)="cancelStatusUpdate()" class="text-gray-500 hover:text-white transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
 
+      <!-- Order info -->
+      <div class="p-4 bg-white/5 rounded-xl mb-6 space-y-2">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Order ID</span>
+          <span class="font-mono text-emerald-400 font-bold">{{ updatingOrder.orderId.substring(0,8).toUpperCase() }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Restaurant</span>
+          <span class="text-white">{{ updatingOrder.restaurantName }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Customer</span>
+          <span class="text-white">{{ updatingOrder.customerName }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-400">Current Status</span>
+          <span class="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border" [ngClass]="getStatusColorClasses(updatingOrder.status)">
+            {{ getStatusLabel(updatingOrder.status) }}
+          </span>
+        </div>
+      </div>
+
+      @if (statusUpdateError) {
+        <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 text-sm">
+          {{ statusUpdateError }}
+        </div>
+      }
+
+      <!-- Status selector -->
+      <div class="mb-6">
+        <label class="block text-xs text-gray-500 uppercase mb-2">New Status</label>
+        <div class="grid grid-cols-2 gap-2">
+          @for (opt of statusOptions; track opt.value) {
+            <button
+              (click)="selectedNewStatus = opt.value"
+              class="py-2 px-3 rounded-lg border text-sm font-medium transition-all text-left"
+              [class.border-emerald-400]="selectedNewStatus === opt.value"
+              [class.bg-emerald-400/10]="selectedNewStatus === opt.value"
+              [class.text-emerald-400]="selectedNewStatus === opt.value"
+              [class.border-white/10]="selectedNewStatus !== opt.value"
+              [class.text-gray-400]="selectedNewStatus !== opt.value"
+              [class.hover:bg-white/5]="selectedNewStatus !== opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="flex gap-3">
+        <button
+          (click)="cancelStatusUpdate()"
+          class="flex-1 py-3 rounded-xl border border-white/10 text-gray-400 hover:bg-white/5 transition-all"
+        >
+          Cancel
+        </button>
+        <button
+          (click)="saveStatusUpdate()"
+          [disabled]="isUpdatingStatus"
+          class="flex-1 py-3 rounded-xl bg-emerald-400 text-black font-bold hover:bg-emerald-300 transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          @if (isUpdatingStatus) {
+            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Updating…
+          } @else {
+            Update Status
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

@@ -121,19 +121,30 @@ export class RestaurantDetailComponent implements OnInit {
     }
   }
 
+  addingItemId: string | null = null;
+  addError = '';
+
   addToCart(menuItem: MenuItem): void {
-    if (!this.restaurant) return;
-    
-    this.cartService.addItem(
-      menuItem,
-      this.restaurantId,
-      this.restaurant.name
-    );
+    if (!this.restaurant || this.addingItemId === menuItem.id) return;
+    this.addingItemId = menuItem.id;
+    this.addError = '';
+
+    this.cartService.addItem(menuItem, this.restaurantId, this.restaurant.name)
+      .subscribe({
+        next: () => {
+          this.addingItemId = null;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.addingItemId = null;
+          this.addError = err?.error?.message || err?.error?.error || 'Failed to add item. Please try again.';
+          this.cdr.detectChanges();
+        }
+      });
   }
 
   updateQuantity(cartItem: CartItem, change: number): void {
-    const newQuantity = cartItem.quantity + change;
-    this.cartService.updateQuantity(cartItem.menuItem.id, newQuantity);
+    this.cartService.updateQuantity(cartItem.menuItem.id, cartItem.quantity + change);
   }
 
   removeFromCart(cartItem: CartItem): void {

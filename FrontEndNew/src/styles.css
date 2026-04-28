@@ -1,5 +1,9 @@
-/* Google Fonts - Plus Jakarta Sans */
+/* Google Fonts - Plus Jakarta Sans & Inter */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+/* Material Symbols Outlined */
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 /* Tailwind CSS */
 @tailwind base;
@@ -18,4 +22,26 @@ body {
   background-color: #0b1326;
   color: #ffffff;
   overflow-x: hidden;
+}
+
+/* Delivery Agent Specific Classes */
+.agent-glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 10px 10px 30px rgba(0, 0, 0, 0.4), -2px -2px 10px rgba(255, 255, 255, 0.02);
+}
+.agent-neomorphic-inset {
+  background: #1a1a1a;
+  box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.6), inset -2px -2px 8px rgba(255, 255, 255, 0.02);
+}
+.agent-neon-glow {
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+}
+.agent-neon-border {
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.1);
+}
+.agent-progress-glow {
+  box-shadow: 0 0 12px rgba(0, 255, 136, 0.6);
 }

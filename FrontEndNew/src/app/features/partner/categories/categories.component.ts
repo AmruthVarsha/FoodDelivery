@@ -1,8 +1,10 @@
+import { PartnerSidebarComponent } from '../../../shared/components/partner-sidebar/partner-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+
 import { PartnerService, Category, Restaurant } from '../../../core/services/partner.service';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
@@ -10,7 +12,7 @@ import { takeUntil, filter } from 'rxjs/operators';
 @Component({
   selector: 'app-partner-categories',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, PartnerSidebarComponent],
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.css']
 })
@@ -26,16 +28,26 @@ export class PartnerCategoriesComponent implements OnInit, OnDestroy {
   selectedRestaurant: Restaurant | null = null;
   categories: Category[] = [];
 
+  showCategoryModal = false;
+  isEditing = false;
+  currentCategoryId: string | null = null;
+  categoryForm!: FormGroup;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
     private partnerService: PartnerService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.categoryForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(50)]],
+      displayOrder: [0, [Validators.required, Validators.min(0)]]
+    });
     this.partnerService.getMyRestaurants().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => { this.restaurants = list; this.cdr.markForCheck(); },
       error: () => { this.errorMessage = 'Failed to load restaurants.'; this.cdr.markForCheck(); }
@@ -105,7 +117,14 @@ export class PartnerCategoriesComponent implements OnInit, OnDestroy {
   }
 
   editCategory(category: Category): void {
-    console.log('Edit category:', category.id);
+    this.isEditing = true;
+    this.currentCategoryId = category.id;
+    this.categoryForm.patchValue({
+      name: category.name,
+      displayOrder: category.displayOrder
+    });
+    this.showCategoryModal = true;
+    this.cdr.markForCheck();
   }
 
   deleteCategory(categoryId: string): void {
@@ -125,7 +144,65 @@ export class PartnerCategoriesComponent implements OnInit, OnDestroy {
   }
 
   addNewCategory(): void {
-    console.log('Add new category');
+    this.isEditing = false;
+    this.currentCategoryId = null;
+    this.categoryForm.reset({ displayOrder: this.categories.length });
+    this.showCategoryModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeModal(): void {
+    this.showCategoryModal = false;
+    this.cdr.markForCheck();
+  }
+
+  saveCategory(): void {
+    if (this.categoryForm.invalid || !this.restaurantId) return;
+
+    this.isLoading = true;
+    const formValue = this.categoryForm.value;
+
+    if (this.isEditing && this.currentCategoryId) {
+      const categoryToUpdate = this.categories.find(c => c.id === this.currentCategoryId);
+      if (!categoryToUpdate) return;
+
+      const updatedCategory: Category = {
+        ...categoryToUpdate,
+        ...formValue
+      };
+
+      this.partnerService.updateCategory(this.currentCategoryId, updatedCategory).subscribe({
+        next: () => {
+          this.loadCategories();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMessage = 'Failed to update category';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      const newCategory = {
+        restaurantId: this.restaurantId,
+        isActive: true,
+        ...formValue
+      };
+
+      this.partnerService.createCategory(newCategory).subscribe({
+        next: () => {
+          this.loadCategories();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMessage = 'Failed to create category';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    }
   }
 
   logout(): void {

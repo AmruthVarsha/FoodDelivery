@@ -4,7 +4,8 @@ namespace OrderService.Application.Interfaces
 {
     public interface IDeliveryService
     {
-        Task<IEnumerable<DeliveryAssignmentResponseDTO>> GetAssignmentsAsync(string agentId);
-        Task<DeliveryAssignmentResponseDTO> UpdateDeliveryStatusAsync(Guid id, string agentId, UpdateDeliveryStatusDTO dto);
+        Task<IEnumerable<DeliveryOrderResponseDTO>> GetAssignmentsAsync(string agentId);
+        Task<DeliveryOrderResponseDTO> UpdateDeliveryStatusAsync(Guid assignmentId, string agentId, UpdateDeliveryStatusDTO dto);
     }
 }
+

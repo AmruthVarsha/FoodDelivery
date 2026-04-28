@@ -1,48 +1,50 @@
 /**
- * Order Models
- * 
- * TypeScript interfaces for order-related data matching backend DTOs.
+ * Order Models — Updated for Multi-Vendor Backend
+ * Matches OrderService backend DTOs exactly.
  */
 
-/**
- * Order Status Enum (matches backend)
- */
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
 export enum OrderStatus {
-  Pending = 0,
-  RestaurantAccepted = 1,
-  RestaurantRejected = 2,
-  Preparing = 3,
-  ReadyForPickup = 4,
-  PickedUp = 5,
-  OutForDelivery = 6,
-  Delivered = 7,
-  CancelledByCustomer = 8,
-  CancelledByRestaurant = 9
+  Placed = 'Placed',
+  Paid = 'Paid',
+  InProgress = 'InProgress',
+  OutForDelivery = 'OutForDelivery',
+  Delivered = 'Delivered',
+  CancelledByCustomer = 'CancelledByCustomer',
+  CancelledBySystem = 'CancelledBySystem'
 }
 
-/**
- * Payment Status Enum
- */
-export enum PaymentStatus {
-  Pending = 0,
-  Completed = 1,
-  Failed = 2,
-  Refunded = 3
+export enum RestaurantOrderStatus {
+  Pending = 'Pending',
+  Accepted = 'Accepted',
+  Rejected = 'Rejected',
+  Preparing = 'Preparing',
+  ReadyForPickup = 'ReadyForPickup',
+  PickedUp = 'PickedUp',
+  Cancelled = 'Cancelled'
 }
 
-/**
- * Payment Method Enum
- */
 export enum PaymentMethod {
-  CashOnDelivery = 0,
-  Card = 1,
-  UPI = 2,
-  Wallet = 3
+  COD = 'COD',
+  Online = 'Online'
 }
 
-/**
- * Order Item Response DTO
- */
+export enum PaymentStatus {
+  Pending = 'Pending',
+  Completed = 'Completed',
+  Failed = 'Failed',
+  Refunded = 'Refunded'
+}
+
+export enum DeliveryStatus {
+  Assigned = 'Assigned',
+  PickedUp = 'PickedUp',
+  Delivered = 'Delivered'
+}
+
+// ─── Customer DTOs ────────────────────────────────────────────────────────────
+
 export interface OrderItemResponseDTO {
   id: string;
   menuItemId: string;
@@ -52,14 +54,30 @@ export interface OrderItemResponseDTO {
   totalPrice: number;
 }
 
-/**
- * Order Response DTO
- */
+export interface RestaurantOrderSummaryDTO {
+  id: string;
+  restaurantId: string;
+  restaurantName: string;
+  status: string;
+  subTotal: number;
+  cancellationReason?: string;
+  items: OrderItemResponseDTO[];
+}
+
+export interface OrderPaymentDTO {
+  id: string;
+  method: string;
+  status: string;
+  amount: number;
+  transactionReference?: string;
+}
+
+/** Full order response (customer view) — all restaurants grouped */
 export interface OrderResponseDTO {
   id: string;
   customerId: string;
-  restaurantId: string;
-  status: string; // OrderStatus as string
+  customerName: string;
+  status: string;
   street: string;
   city: string;
   state: string;
@@ -68,43 +86,95 @@ export interface OrderResponseDTO {
   scheduledSlot?: string;
   totalAmount: number;
   cancellationReason?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  items: OrderItemResponseDTO[];
+  createdAt: string;
+  updatedAt: string;
+  payment?: OrderPaymentDTO;
+  restaurantOrders: RestaurantOrderSummaryDTO[];
 }
 
-/**
- * Order Summary DTO (for order history list)
- */
-export interface OrderSummaryDTO {
-  id: string;
-  status: string;
-  totalAmount: number;
-  itemCount: number;
-  createdAt: Date;
-}
-
-/**
- * Place Order DTO
- */
-export interface PlaceOrderDTO {
-  cartId: string;
+/** Input for checkout — no cartId needed, backend discovers all active carts */
+export interface CheckoutDTO {
   addressId: string;
+  paymentMethod: PaymentMethod;
   deliveryInstructions?: string;
   scheduledSlot?: string;
-  paymentMethod: PaymentMethod;
 }
 
-/**
- * Cancel Order DTO
- */
 export interface CancelOrderDTO {
   cancellationReason: string;
 }
 
-/**
- * Update Order Status DTO
- */
-export interface UpdateOrderStatusDTO {
-  status: OrderStatus;
+// ─── Partner DTOs ─────────────────────────────────────────────────────────────
+
+/** Partner view of a sub-order — only their restaurant's items */
+export interface PartnerOrderResponseDTO {
+  subOrderId: string;
+  parentOrderId: string;
+  status: string;
+  subTotal: number;
+  cancellationReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  customerName: string;
+  deliveryStreet: string;
+  deliveryCity: string;
+  deliveryPincode: string;
+  deliveryInstructions?: string;
+  items: OrderItemResponseDTO[];
+}
+
+export interface UpdateRestaurantOrderStatusDTO {
+  status: RestaurantOrderStatus;
+  cancellationReason?: string;
+}
+
+// ─── Delivery Agent DTOs ──────────────────────────────────────────────────────
+
+export interface DeliveryItemDTO {
+  menuItemName: string;
+  quantity: number;
+}
+
+export interface DeliveryRestaurantStopDTO {
+  subOrderId: string;
+  restaurantName: string;
+  restaurantAddress: string;
+  subOrderStatus: string;
+  subTotal: number;
+  items: DeliveryItemDTO[];
+}
+
+/** Delivery agent view of an assigned order — all restaurant stops + drop-off */
+export interface DeliveryOrderResponseDTO {
+  orderId: string;
+  customerName: string;
+  overallStatus: string;
+  totalAmount: number;
+  dropoffStreet: string;
+  dropoffCity: string;
+  dropoffState: string;
+  dropoffPincode: string;
+  deliveryInstructions?: string;
+  assignmentId: string;
+  assignmentStatus: string;
+  pickedUpAt?: string;
+  deliveredAt?: string;
+  restaurantStops: DeliveryRestaurantStopDTO[];
+}
+
+export interface UpdateDeliveryStatusDTO {
+  status: DeliveryStatus;
+}
+
+export interface UpsertAgentProfileDTO {
+  currentPincode: string;
+  isActive: boolean;
+}
+
+export interface AgentProfileResponseDTO {
+  id: string;
+  agentUserId: string;
+  isActive: boolean;
+  currentPincode: string;
+  lastUpdated: string;
 }

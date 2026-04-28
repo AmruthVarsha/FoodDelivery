@@ -80,6 +80,15 @@ namespace CatalogService.API.Controllers
             return Ok("Update Successfully");
         }
 
+        [Authorize(Roles = "Partner")]
+        [HttpPatch("restaurant/{id}/status")]
+        public async Task<IActionResult> PatchRestaurantStatus([FromRoute] Guid id, [FromBody] PatchRestaurantStatusDto dto)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            await restaurantService.PatchStatusAsync(id, dto.IsOpen, userId!);
+            return Ok(new { message = "Restaurant status updated successfully." });
+        }
+
         [Authorize(Roles = "Partner,Admin")]
         [HttpDelete("restaurant/{id}")]
         public async Task<IActionResult> DeleteRestaurant([FromRoute] Guid id)

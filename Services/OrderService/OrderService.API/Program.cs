@@ -48,7 +48,15 @@ namespace OrderService.API
                 });
             });
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    // Accept and serialize enums as strings (e.g. "COD", "Pending")
+                    options.JsonSerializerOptions.Converters.Add(
+                        new System.Text.Json.Serialization.JsonStringEnumConverter());
+                    options.JsonSerializerOptions.PropertyNamingPolicy =
+                        System.Text.Json.JsonNamingPolicy.CamelCase;
+                });
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddHttpClient();
@@ -123,12 +131,15 @@ namespace OrderService.API
             builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IDeliveryAssignmentRepository, DeliveryAssignmentRepository>();
+            builder.Services.AddScoped<IRestaurantOrderRepository, RestaurantOrderRepository>();
+            builder.Services.AddScoped<IDeliveryAgentProfileRepository, DeliveryAgentProfileRepository>();
 
             builder.Services.AddScoped<ICartService, CartService>();
-            builder.Services.AddScoped<ICheckoutService, CheckoutService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IOrderService, OrderManagementService>();
+            builder.Services.AddScoped<IRestaurantOrderService, RestaurantOrderService>();
             builder.Services.AddScoped<IDeliveryService, DeliveryService>();
+            builder.Services.AddScoped<IDeliveryAgentProfileService, DeliveryAgentProfileService>();
             builder.Services.AddScoped<IOrderStatusPublisher, OrderStatusPublisher>();
 
             builder.Services.AddHttpClient<ICatalogRepository, CatalogRepository>(client =>

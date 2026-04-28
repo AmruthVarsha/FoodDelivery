@@ -14,6 +14,10 @@ export const CUSTOMER_ROUTES: Routes = [
     loadComponent: () => import('./checkout/checkout.component').then(m => m.CheckoutComponent)
   },
   {
+    path: 'orders',
+    loadComponent: () => import('./orders/orders.component').then(m => m.OrdersComponent)
+  },
+  {
     path: 'order-tracking/:id',
     loadComponent: () => import('./order-tracking/order-tracking.component').then(m => m.OrderTrackingComponent)
   },

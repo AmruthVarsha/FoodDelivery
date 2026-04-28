@@ -1,11 +1,14 @@
+import { PartnerSidebarComponent } from '../../../shared/components/partner-sidebar/partner-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { PartnerService, Order, Restaurant } from '../../../core/services/partner.service';
+
+import { PartnerService, Restaurant } from '../../../core/services/partner.service';
+import { PartnerOrderResponseDTO } from '../../../shared/models/order.model';
 import { forkJoin, Subject, EMPTY } from 'rxjs';
-import { switchMap, catchError, finalize, takeUntil, filter } from 'rxjs/operators';
+import { catchError, finalize, takeUntil, filter } from 'rxjs/operators';
 
 interface DashboardStats {
   totalOrdersToday: number;
@@ -17,7 +20,7 @@ interface DashboardStats {
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PartnerSidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -25,6 +28,7 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
   restaurantName = '';
   restaurantId: string | null = null;
   isLoading = true;
+  isTogglingStatus = false;
   errorMessage = '';
   showRestaurantDropdown = false;
 
@@ -38,7 +42,7 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
     restaurantStatus: true
   };
 
-  recentOrders: Order[] = [];
+  recentOrders: PartnerOrderResponseDTO[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -54,6 +58,9 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
     this.partnerService.getMyRestaurants().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => {
         this.restaurants = list;
+        if (list.length === 0) {
+          this.isLoading = false;
+        }
         this.cdr.markForCheck();
       },
       error: () => {
@@ -95,7 +102,7 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
 
     forkJoin({
       menuItems: this.partnerService.getMenuItems(restaurantId),
-      orders: this.partnerService.getRestaurantOrders()
+      orders: this.partnerService.getRestaurantSubOrders(restaurantId)
     }).pipe(
       catchError(error => {
         console.error('Dashboard load error:', error);
@@ -110,23 +117,19 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
     ).subscribe(data => {
       if (!data) return;
       this.stats.menuItems = data.menuItems.length;
-
-      // Filter orders for this specific restaurant
-      const myOrders = data.orders.filter(o => o.restaurantId === restaurantId);
-      this.recentOrders = myOrders.slice(0, 5);
+      this.recentOrders = data.orders.slice(0, 5);
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayOrders = myOrders.filter(order => {
+      const todayOrders = data.orders.filter((order: PartnerOrderResponseDTO) => {
         const d = new Date(order.createdAt);
         d.setHours(0, 0, 0, 0);
         return d.getTime() === today.getTime();
       });
       this.stats.totalOrdersToday = todayOrders.length;
-      this.stats.activeOrders = myOrders.filter(o =>
-        o.status === 0 || o.status === 1 || o.status === 2 ||
-        o.status === 'Pending' || o.status === 'Preparing' ||
-        o.status === 'ReadyForPickup' || o.status === 'RestaurantAccepted'
+      this.stats.activeOrders = data.orders.filter((o: PartnerOrderResponseDTO) =>
+        o.status === 'Pending' || o.status === 'Accepted' ||
+        o.status === 'Preparing' || o.status === 'ReadyForPickup'
       ).length;
 
       this.cdr.markForCheck();
@@ -158,8 +161,8 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
     return statusClasses[status] || statusClasses[0];
   }
 
-  getItemsSummary(order: Order): string {
-    return order.items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+  getItemsSummary(order: PartnerOrderResponseDTO): string {
+    return order.items.map(item => `${item.quantity}x ${item.menuItemName}`).join(', ');
   }
 
   getTimeAgo(date: Date): string {
@@ -175,38 +178,42 @@ export class PartnerDashboardComponent implements OnInit, OnDestroy {
   }
 
   toggleRestaurantStatus(): void {
-    if (!this.restaurantId) {
-      this.errorMessage = 'Restaurant ID not found.';
-      return;
-    }
-    
+    if (!this.restaurantId || !this.selectedRestaurant || this.isTogglingStatus) return;
+
     const newStatus = !this.stats.restaurantStatus;
-    
-    this.partnerService.getRestaurantProfile(this.restaurantId).subscribe({
-      next: (restaurant) => {
-        restaurant.isOpen = newStatus;
-        this.partnerService.updateRestaurant(this.restaurantId!, restaurant).subscribe({
-          next: () => {
-            this.stats.restaurantStatus = newStatus;
-            this.cdr.markForCheck();
-          },
-          error: (error) => {
-            console.error('Error updating restaurant status:', error);
-            this.errorMessage = 'Failed to update restaurant status.';
-            this.cdr.markForCheck();
-          }
-        });
+    this.isTogglingStatus = true;
+    this.errorMessage = '';
+    this.cdr.markForCheck();
+
+    // PATCH only { isOpen } — the new dedicated status endpoint.
+    this.partnerService.patchRestaurantStatus(this.restaurantId, newStatus).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: () => {
+        this.stats.restaurantStatus = newStatus;
+        this.isTogglingStatus = false;
+
+        // Sync the BehaviorSubject so selectedRestaurant$ doesn't overwrite
+        // stats.restaurantStatus back to the old value on its next emission.
+        const synced = { ...this.selectedRestaurant!, isOpen: newStatus };
+        this.selectedRestaurant = synced;
+        // Update the subject directly without re-triggering loadDashboardData:
+        // patch just the in-memory object; setSelectedRestaurant would re-fire
+        // the ngOnInit subscription and call loadDashboardData unnecessarily.
+        this.partnerService.patchSelectedRestaurant(synced);
+        this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error loading restaurant:', error);
-        this.errorMessage = 'Failed to load restaurant data.';
+        console.error('Error updating restaurant status:', error);
+        this.errorMessage = 'Failed to update restaurant status.';
+        this.isTogglingStatus = false;
         this.cdr.markForCheck();
       }
     });
   }
 
-  viewOrderDetails(order: Order): void {
-    this.router.navigate(['/partner/orders'], { queryParams: { orderId: order.id } });
+  viewOrderDetails(order: PartnerOrderResponseDTO): void {
+    this.router.navigate(['/partner/orders'], { queryParams: { orderId: order.subOrderId } });
   }
 
   navigateToOrders(): void { this.router.navigate(['/partner/orders']); }

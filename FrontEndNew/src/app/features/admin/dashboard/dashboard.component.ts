@@ -1,8 +1,10 @@
+import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar/admin-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
+
 import { AdminService, AdminDashboardDto } from '../../../core/services/admin.service';
 import { Subject, EMPTY } from 'rxjs';
 import { catchError, finalize, takeUntil } from 'rxjs/operators';
@@ -10,7 +12,7 @@ import { catchError, finalize, takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminSidebarComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

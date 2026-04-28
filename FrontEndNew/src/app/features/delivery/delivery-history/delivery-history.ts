@@ -1,0 +1,101 @@
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { DeliveryService } from '../../../core/services/delivery.service';
+import { DeliveryOrderResponseDTO, DeliveryStatus } from '../../../shared/models/order.model';
+
+@Component({
+  selector: 'app-delivery-history',
+  standalone: true,
+  imports: [CommonModule, DatePipe],
+  templateUrl: './delivery-history.html',
+  styleUrl: './delivery-history.css',
+})
+export class DeliveryHistory implements OnInit, OnDestroy {
+
+  allAssignments: DeliveryOrderResponseDTO[] = [];
+  isLoading = true;
+  errorMessage = '';
+
+  // Filter: 'all' | 'today' | 'week'
+  selectedFilter: 'all' | 'today' | 'week' = 'all';
+
+  readonly DeliveryStatus = DeliveryStatus;
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private deliveryService: DeliveryService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.loadHistory();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadHistory(): void {
+    this.isLoading = true;
+    this.deliveryService.getAssignments()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (list) => {
+          // Show all assignments (including delivered ones) as history
+          this.allAssignments = list;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load delivery history.';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+  }
+
+  setFilter(f: 'all' | 'today' | 'week'): void {
+    this.selectedFilter = f;
+    this.cdr.markForCheck();
+  }
+
+  get filteredAssignments(): DeliveryOrderResponseDTO[] {
+    const now = new Date();
+    return this.allAssignments.filter(a => {
+      const date = a.deliveredAt ? new Date(a.deliveredAt) : null;
+      if (this.selectedFilter === 'today') {
+        return date && date.toDateString() === now.toDateString();
+      }
+      if (this.selectedFilter === 'week') {
+        if (!date) return false;
+        const weekAgo = new Date(now);
+        weekAgo.setDate(now.getDate() - 7);
+        return date >= weekAgo;
+      }
+      return true; // 'all'
+    });
+  }
+
+  get deliveredCount(): number {
+    return this.filteredAssignments.filter(a => a.assignmentStatus === DeliveryStatus.Delivered).length;
+  }
+
+  get totalFilteredEarnings(): number {
+    return this.filteredAssignments
+      .filter(a => a.assignmentStatus === DeliveryStatus.Delivered)
+      .reduce((sum, a) => sum + a.totalAmount, 0);
+  }
+
+  getStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      [DeliveryStatus.Delivered]: 'border-[#00ff88]/30 bg-[#00ff88]/10 text-[#00ff88]',
+      [DeliveryStatus.PickedUp]: 'border-purple-500/30 bg-purple-500/10 text-purple-300',
+      [DeliveryStatus.Assigned]: 'border-blue-500/30 bg-blue-500/10 text-blue-300',
+    };
+    return map[status] ?? 'border-zinc-500/30 bg-zinc-500/10 text-zinc-300';
+  }
+}

@@ -1,16 +1,18 @@
+import { PartnerSidebarComponent } from '../../../shared/components/partner-sidebar/partner-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
-import { PartnerService, MenuItem, Restaurant } from '../../../core/services/partner.service';
+
+import { PartnerService, MenuItem, Restaurant, Category } from '../../../core/services/partner.service';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-partner-menu-items',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, ReactiveFormsModule, PartnerSidebarComponent],
   templateUrl: './menu-items.component.html',
   styleUrls: ['./menu-items.component.css']
 })
@@ -26,6 +28,12 @@ export class PartnerMenuItemsComponent implements OnInit, OnDestroy {
   restaurants: Restaurant[] = [];
   selectedRestaurant: Restaurant | null = null;
   menuItems: MenuItem[] = [];
+  categories: Category[] = [];
+
+  showItemModal = false;
+  isEditing = false;
+  currentItemId: string | null = null;
+  itemForm!: FormGroup;
 
   private destroy$ = new Subject<void>();
 
@@ -33,10 +41,21 @@ export class PartnerMenuItemsComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private partnerService: PartnerService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
+    this.itemForm = this.fb.group({
+      name: ['', [Validators.required, Validators.maxLength(100)]],
+      description: ['', [Validators.maxLength(300)]],
+      price: [0, [Validators.required, Validators.min(0.01)]],
+      categoryName: ['', [Validators.required]],
+      imageUrl: [''],
+      isVeg: [true],
+      prepTimeMinutes: [15, [Validators.required, Validators.min(1), Validators.max(120)]],
+      isAvailable: [true]
+    });
     this.partnerService.getMyRestaurants().pipe(takeUntil(this.destroy$)).subscribe({
       next: (list) => { this.restaurants = list; this.cdr.markForCheck(); },
       error: () => { this.errorMessage = 'Failed to load restaurants.'; this.cdr.markForCheck(); }
@@ -50,6 +69,7 @@ export class PartnerMenuItemsComponent implements OnInit, OnDestroy {
       this.restaurantId = restaurant!.id;
       this.restaurantName = restaurant!.name;
       this.cdr.markForCheck();
+      this.loadCategories();
       this.loadMenuItems();
     });
   }
@@ -63,6 +83,17 @@ export class PartnerMenuItemsComponent implements OnInit, OnDestroy {
     this.partnerService.setSelectedRestaurant(restaurant);
     this.showRestaurantDropdown = false;
     this.cdr.markForCheck();
+  }
+
+  loadCategories(): void {
+    if (!this.restaurantId) return;
+    this.partnerService.getCategories(this.restaurantId).subscribe({
+      next: (cats) => {
+        this.categories = cats;
+        this.cdr.markForCheck();
+      },
+      error: (err) => console.error('Error loading categories', err)
+    });
   }
 
   loadMenuItems(): void {
@@ -138,13 +169,93 @@ export class PartnerMenuItemsComponent implements OnInit, OnDestroy {
   }
 
   openAddItemDialog(): void {
-    // TODO: Open dialog/modal to add new item
-    console.log('Open add item dialog');
+    this.isEditing = false;
+    this.currentItemId = null;
+    this.itemForm.reset({
+      price: 0,
+      isVeg: true,
+      prepTimeMinutes: 15,
+      isAvailable: true
+    });
+    this.showItemModal = true;
+    this.cdr.markForCheck();
   }
 
   editItem(item: MenuItem): void {
-    // TODO: Open dialog/modal to edit item
-    console.log('Edit item:', item.id);
+    this.isEditing = true;
+    this.currentItemId = item.id;
+    
+    // Find category name by id to pre-select dropdown
+    const category = this.categories.find(c => c.id === item.categoryId);
+    
+    this.itemForm.patchValue({
+      name: item.name,
+      description: item.description,
+      price: item.price,
+      categoryName: category?.name || '',
+      imageUrl: item.imageUrl,
+      isVeg: item.isVegetarian,
+      prepTimeMinutes: item.preparationTime,
+      isAvailable: item.isAvailable
+    });
+    
+    this.showItemModal = true;
+    this.cdr.markForCheck();
+  }
+
+  closeModal(): void {
+    this.showItemModal = false;
+    this.cdr.markForCheck();
+  }
+
+  saveItem(): void {
+    if (this.itemForm.invalid || !this.restaurantId) return;
+
+    this.isLoading = true;
+    const formValue = this.itemForm.value;
+
+    const dto = {
+      restaurantId: this.restaurantId,
+      name: formValue.name,
+      description: formValue.description,
+      price: formValue.price,
+      categoryName: formValue.categoryName,
+      imageUrl: formValue.imageUrl,
+      isVeg: formValue.isVeg,
+      prepTimeMinutes: formValue.prepTimeMinutes,
+      isAvailable: formValue.isAvailable
+    };
+
+    if (this.isEditing && this.currentItemId) {
+      // Backend UPDATE expects:
+      // string Name, string? Description, string? ImageUrl, decimal Price, bool IsVeg, int PrepTimeMinutes, bool IsAvailable
+      // We will send standard update DTO
+      this.partnerService.updateMenuItem(this.currentItemId, dto as any).subscribe({
+        next: () => {
+          this.loadMenuItems();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMessage = 'Failed to update menu item';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    } else {
+      this.partnerService.createMenuItem(dto).subscribe({
+        next: () => {
+          this.loadMenuItems();
+          this.closeModal();
+        },
+        error: (err) => {
+          console.error(err);
+          this.errorMessage = 'Failed to create menu item';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
+    }
   }
 
   deleteItem(itemId: string): void {

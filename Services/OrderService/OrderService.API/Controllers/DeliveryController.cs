@@ -18,6 +18,7 @@ namespace OrderService.API.Controllers
             _deliveryService = deliveryService;
         }
 
+        /// <summary>Agent: get their currently assigned orders with full pickup/dropoff details.</summary>
         [HttpGet("assignments")]
         public async Task<IActionResult> GetAssignments()
         {
@@ -26,11 +27,16 @@ namespace OrderService.API.Controllers
             return Ok(result);
         }
 
-        [HttpPut("assignments/{id:guid}/status")]
-        public async Task<IActionResult> UpdateDeliveryStatus(Guid id, [FromBody] UpdateDeliveryStatusDTO dto)
+        /// <summary>
+        /// Agent: update delivery status.
+        /// Allowed transitions: Assigned → PickedUp → Delivered.
+        /// </summary>
+        [HttpPut("assignments/{assignmentId:guid}/status")]
+        public async Task<IActionResult> UpdateDeliveryStatus(
+            Guid assignmentId, [FromBody] UpdateDeliveryStatusDTO dto)
         {
             var agentId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-            var result = await _deliveryService.UpdateDeliveryStatusAsync(id, agentId, dto);
+            var result = await _deliveryService.UpdateDeliveryStatusAsync(assignmentId, agentId, dto);
             return Ok(result);
         }
     }

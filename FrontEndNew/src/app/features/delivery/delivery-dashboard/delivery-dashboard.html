@@ -1,0 +1,248 @@
+<main class="ml-64 pt-16 p-container-margin">
+
+<div class="max-w-7xl mx-auto space-y-stack-lg">
+
+  <!-- Header Section -->
+  <div class="flex justify-between items-end">
+    <div>
+      <h1 class="font-display-lg text-display-lg text-agent-primary mb-2">Welcome back, {{ agentName }}</h1>
+      <p class="text-agent-on-surface-variant">Here's your operational overview for today.</p>
+    </div>
+    <div class="flex gap-stack-md">
+      <div class="px-4 py-2 agent-neomorphic-inset rounded-lg text-zinc-400 text-xs flex items-center gap-2">
+        <span class="material-symbols-outlined text-sm">calendar_today</span>
+        {{ today | date:'MMM d, y' }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bento Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+
+    <!-- Stat Card 1: Deliveries Today -->
+    <div class="agent-glass-card p-card-padding rounded-2xl flex flex-col justify-between h-40">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-[#00ff88]">local_shipping</span>
+        @if (isLoadingAssignments) {
+          <span class="text-[10px] text-zinc-500">Loading...</span>
+        }
+      </div>
+      <div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">DELIVERIES TODAY</p>
+        @if (isLoadingAssignments) {
+          <div class="h-8 w-16 bg-zinc-700/50 animate-pulse rounded"></div>
+        } @else {
+          <h3 class="font-display-md text-display-md text-white">{{ deliveriesToday }}</h3>
+        }
+      </div>
+    </div>
+
+    <!-- Stat Card 2: Total Earnings Today -->
+    <div class="agent-glass-card p-card-padding rounded-2xl flex flex-col justify-between h-40">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-[#00ff88]">payments</span>
+        <span class="text-[10px] font-bold text-zinc-400">Today's Earnings</span>
+      </div>
+      <div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">TOTAL EARNINGS</p>
+        @if (isLoadingAssignments) {
+          <div class="h-8 w-24 bg-zinc-700/50 animate-pulse rounded"></div>
+        } @else {
+          <h3 class="font-display-md text-display-md text-white">₹{{ totalEarningsToday }}</h3>
+        }
+      </div>
+    </div>
+
+    <!-- Stat Card 3: Active Assignments -->
+    <div class="agent-glass-card p-card-padding rounded-2xl flex flex-col justify-between h-40">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-[#00ff88]">directions_bike</span>
+        @if (!isLoadingAssignments && activeAssignment) {
+          <span class="text-[10px] font-bold text-[#00ff88] agent-neon-border px-2 py-0.5 rounded-full">ACTIVE</span>
+        }
+      </div>
+      <div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">ACTIVE DELIVERY</p>
+        @if (isLoadingAssignments) {
+          <div class="h-8 w-12 bg-zinc-700/50 animate-pulse rounded"></div>
+        } @else {
+          <h3 class="font-display-md text-display-md text-white">{{ activeAssignment ? '1' : '0' }}</h3>
+        }
+      </div>
+    </div>
+
+    <!-- Stat Card 4: Completion Rate -->
+    <div class="agent-glass-card p-card-padding rounded-2xl flex flex-col justify-between h-40">
+      <div class="flex justify-between items-start">
+        <span class="material-symbols-outlined text-[#00ff88]">verified</span>
+        <span class="material-symbols-outlined text-zinc-600">info</span>
+      </div>
+      <div>
+        <p class="text-zinc-400 font-label-caps text-label-caps mb-1">COMPLETION RATE</p>
+        @if (isLoadingAssignments) {
+          <div class="h-8 w-16 bg-zinc-700/50 animate-pulse rounded"></div>
+        } @else {
+          <h3 class="font-display-md text-display-md text-white">{{ completionRate }}%</h3>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Live Active Delivery Panel -->
+  @if (isLoadingAssignments) {
+    <div class="agent-glass-card rounded-3xl p-8 flex items-center justify-center h-48">
+      <div class="flex flex-col items-center gap-3">
+        <span class="material-symbols-outlined text-4xl text-[#00ff88] animate-spin">progress_activity</span>
+        <p class="text-zinc-400 text-sm">Loading active delivery...</p>
+      </div>
+    </div>
+  } @else if (activeAssignment) {
+    <div class="agent-glass-card rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[360px]">
+      <!-- Left Info Panel -->
+      <div class="lg:col-span-5 p-card-padding flex flex-col h-full border-r border-white/5">
+        <div class="flex items-center gap-3 mb-6">
+          <span class="material-symbols-outlined text-[#00ff88] animate-pulse">radio_button_checked</span>
+          <h2 class="font-display-md text-display-md text-white">Live Active Delivery</h2>
+          <span class="text-xs text-zinc-500 font-mono ml-auto">#{{ activeAssignment.orderId.substring(0,8).toUpperCase() }}</span>
+        </div>
+
+        <!-- Status badge -->
+        <div class="mb-6">
+          <span class="px-3 py-1 rounded-full text-xs font-bold border"
+            [class]="activeAssignment.assignmentStatus === DeliveryStatus.PickedUp
+              ? 'bg-purple-500/15 border-purple-500/40 text-purple-300'
+              : 'bg-blue-500/15 border-blue-500/40 text-blue-300'">
+            {{ activeAssignment.assignmentStatus }}
+          </span>
+          <span class="ml-3 text-sm text-zinc-400">Customer: {{ activeAssignment.customerName }}</span>
+        </div>
+
+        <div class="space-y-6 flex-grow">
+          <!-- Pickup Stops -->
+          @for (stop of activeAssignment.restaurantStops; track stop.subOrderId) {
+            <div class="relative pl-8">
+              <div class="absolute left-0 top-1 w-4 h-4 rounded-full border-2 border-[#00ff88] bg-agent-background flex items-center justify-center">
+                <div class="w-1.5 h-1.5 rounded-full bg-[#00ff88]"></div>
+              </div>
+              <p class="text-zinc-500 text-xs font-label-caps mb-1">PICK-UP FROM</p>
+              <h4 class="text-lg font-bold text-white mb-1">{{ stop.restaurantName }}</h4>
+              <p class="text-zinc-400 text-sm">{{ stop.restaurantAddress }}</p>
+              <div class="mt-2 inline-flex items-center gap-2 px-2 py-1 rounded bg-white/5 text-[10px] font-bold"
+                [class]="stop.subOrderStatus === 'ReadyForPickup' ? 'text-[#00ff88]' : 'text-yellow-400'">
+                <span class="material-symbols-outlined text-xs">timer</span>
+                {{ stop.subOrderStatus }}
+              </div>
+            </div>
+          }
+
+          <!-- Drop-off -->
+          <div class="relative pl-8">
+            <div class="absolute left-0 top-1 w-4 h-4 rounded-full border-2 border-zinc-600 bg-agent-background flex items-center justify-center">
+              <div class="w-1.5 h-1.5 rounded-full bg-zinc-600"></div>
+            </div>
+            <p class="text-zinc-500 text-xs font-label-caps mb-1">DELIVERY TO</p>
+            <h4 class="text-lg font-bold text-white mb-1">{{ activeAssignment.dropoffCity }}</h4>
+            <p class="text-zinc-400 text-sm">{{ activeAssignment.dropoffStreet }}, {{ activeAssignment.dropoffPincode }}</p>
+            @if (activeAssignment.deliveryInstructions) {
+              <p class="text-zinc-500 text-xs mt-1 italic">"{{ activeAssignment.deliveryInstructions }}"</p>
+            }
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="mt-auto pt-6">
+          @if (canPickUp(activeAssignment)) {
+            <button (click)="updateStatus(activeAssignment, DeliveryStatus.PickedUp)"
+              [disabled]="updatingId === activeAssignment.assignmentId"
+              class="w-full py-5 bg-purple-500 text-white font-black text-lg rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3">
+              @if (updatingId === activeAssignment.assignmentId) {
+                <span class="material-symbols-outlined animate-spin">progress_activity</span> Updating...
+              } @else {
+                <span class="material-symbols-outlined font-bold">directions_bike</span> Mark as Picked Up
+              }
+            </button>
+          } @else if (canDeliver(activeAssignment)) {
+            <button (click)="updateStatus(activeAssignment, DeliveryStatus.Delivered)"
+              [disabled]="updatingId === activeAssignment.assignmentId"
+              class="w-full py-5 bg-[#00ff88] text-zinc-950 font-black text-lg rounded-2xl hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(0,255,136,0.3)] flex items-center justify-center gap-3">
+              @if (updatingId === activeAssignment.assignmentId) {
+                <span class="material-symbols-outlined animate-spin">progress_activity</span> Updating...
+              } @else {
+                <span class="material-symbols-outlined font-bold">check_circle</span> Mark as Delivered
+              }
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Right: Order Items Panel -->
+      <div class="lg:col-span-7 p-card-padding">
+        <h3 class="font-bold text-white text-lg mb-4">Order Details
+          <span class="text-zinc-500 text-xs ml-2 font-normal">₹{{ activeAssignment.totalAmount }}</span>
+        </h3>
+        @for (stop of activeAssignment.restaurantStops; track stop.subOrderId) {
+          <div class="mb-4">
+            <p class="text-[10px] text-zinc-500 uppercase tracking-widest mb-2">{{ stop.restaurantName }}</p>
+            <div class="space-y-2">
+              @for (item of stop.items; track item.menuItemName) {
+                <div class="flex items-center justify-between p-3 agent-neomorphic-inset rounded-xl">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                      <span class="material-symbols-outlined text-sm text-zinc-400">restaurant</span>
+                    </div>
+                    <p class="text-white text-sm font-semibold">{{ item.menuItemName }}</p>
+                  </div>
+                  <span class="text-zinc-400 text-sm">× {{ item.quantity }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  } @else {
+    <!-- No active delivery -->
+    <div class="agent-glass-card rounded-3xl p-8 flex flex-col items-center justify-center h-48 text-center">
+      <span class="material-symbols-outlined text-5xl text-zinc-600 mb-3">delivery_dining</span>
+      <p class="text-zinc-400 text-lg font-semibold mb-1">No active delivery</p>
+      <p class="text-zinc-600 text-sm">
+        @if (profile && profile.isActive) {
+          You're online and waiting for new assignments.
+        } @else if (profile && !profile.isActive) {
+          Go online from your <a routerLink="/delivery/profile" class="text-[#00ff88] hover:underline">Profile</a> to start receiving orders.
+        } @else {
+          Set up your <a routerLink="/delivery/profile" class="text-[#00ff88] hover:underline">Agent Profile</a> to start receiving orders.
+        }
+      </p>
+    </div>
+  }
+
+  <!-- Recent Activity -->
+  @if (!isLoadingAssignments && recentDeliveries.length > 0) {
+    <div class="agent-glass-card rounded-2xl p-card-padding pb-stack-lg">
+      <h3 class="font-bold text-white text-lg mb-6">Recent Deliveries</h3>
+      <div class="space-y-4">
+        @for (a of recentDeliveries; track a.assignmentId) {
+          <div class="flex items-start gap-4 p-4 agent-neomorphic-inset rounded-xl">
+            <div class="w-2 h-2 rounded-full bg-[#00ff88] mt-2 shadow-[0_0_8px_#00ff88] flex-shrink-0"></div>
+            <div class="flex-1">
+              <p class="text-white text-sm font-semibold">
+                Delivered to {{ a.dropoffCity }}
+                <span class="text-zinc-500 font-mono ml-2 text-xs">#{{ a.orderId.substring(0,8).toUpperCase() }}</span>
+              </p>
+              <p class="text-zinc-500 text-xs mt-0.5">
+                @if (a.deliveredAt) { {{ a.deliveredAt | date:'h:mm a' }} · }
+                {{ a.restaurantStops[0]?.restaurantName || 'Multiple Restaurants' }}
+                · ₹{{ a.totalAmount }}
+              </p>
+            </div>
+            <span class="text-[#00ff88] text-xs font-bold px-2 py-0.5 border border-[#00ff88]/30 rounded-full bg-[#00ff88]/10">Delivered</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>
+</main>

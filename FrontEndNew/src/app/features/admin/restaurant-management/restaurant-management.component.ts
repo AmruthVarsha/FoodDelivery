@@ -1,3 +1,4 @@
+import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar/admin-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -18,10 +19,11 @@ export interface Restaurant {
   isApproved: boolean;
 }
 
+
 @Component({
   selector: 'app-admin-restaurant-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminSidebarComponent],
   templateUrl: './restaurant-management.component.html',
   styleUrls: ['./restaurant-management.component.css']
 })
@@ -30,8 +32,11 @@ export class AdminRestaurantManagementComponent implements OnInit, OnDestroy {
   searchQuery = '';
   isLoading = false;
   errorMessage = '';
-  
+  successMessage = '';
+
   restaurants: Restaurant[] = [];
+
+  deletingRestaurantId: string | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -54,7 +59,7 @@ export class AdminRestaurantManagementComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = '';
     this.cdr.markForCheck();
-    
+
     this.adminService.getAllRestaurants().pipe(
       takeUntil(this.destroy$),
       catchError(err => {
@@ -79,42 +84,47 @@ export class AdminRestaurantManagementComponent implements OnInit, OnDestroy {
     if (!this.searchQuery.trim()) {
       return this.restaurants;
     }
-    
+
     const query = this.searchQuery.toLowerCase();
-    return this.restaurants.filter(r => 
-      (r.name && r.name.toLowerCase().includes(query)) || 
+    return this.restaurants.filter(r =>
+      (r.name && r.name.toLowerCase().includes(query)) ||
       (r.email && r.email.toLowerCase().includes(query)) ||
       (r.phoneNumber && r.phoneNumber.toLowerCase().includes(query))
     );
   }
 
-  viewRestaurant(restaurant: Restaurant): void {
-    console.log('View restaurant:', restaurant.restaurantId);
-  }
-
-  toggleRestaurantStatus(restaurant: Restaurant): void {
-    // Call API here if available, ignoring for now since it wasn't implemented
-    restaurant.isActive = !restaurant.isActive;
-    console.log(`Restaurant ${restaurant.restaurantId} status updated to ${restaurant.isActive}`);
-  }
-
   deleteRestaurant(restaurantId: string): void {
-    if (confirm('Are you sure you want to delete this restaurant?')) {
-      this.adminService.deleteRestaurant(restaurantId).subscribe({
-        next: () => {
-          this.restaurants = this.restaurants.filter(r => r.restaurantId !== restaurantId);
-          this.cdr.markForCheck();
-          console.log('Restaurant deleted:', restaurantId);
-        },
-        error: (err) => {
-          console.error('Failed to delete restaurant', err);
-        }
-      });
-    }
+    const restaurant = this.restaurants.find(r => r.restaurantId === restaurantId);
+    if (!restaurant) return;
+
+    if (!confirm(`Delete "${restaurant.name}"?\nThis action cannot be undone.`)) return;
+
+    this.deletingRestaurantId = restaurantId;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.cdr.markForCheck();
+
+    this.adminService.deleteRestaurant(restaurantId).pipe(
+      takeUntil(this.destroy$),
+      catchError(err => {
+        console.error('Failed to delete restaurant', err);
+        this.errorMessage = `Failed to delete "${restaurant.name}".`;
+        this.cdr.markForCheck();
+        return EMPTY;
+      }),
+      finalize(() => {
+        this.deletingRestaurantId = null;
+        this.cdr.markForCheck();
+      })
+    ).subscribe(() => {
+      this.restaurants = this.restaurants.filter(r => r.restaurantId !== restaurantId);
+      this.successMessage = `"${restaurant.name}" was deleted.`;
+      this.cdr.markForCheck();
+      setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
+    });
   }
 
   goBack(): void {
     this.router.navigate(['/admin/dashboard']);
   }
 }
-

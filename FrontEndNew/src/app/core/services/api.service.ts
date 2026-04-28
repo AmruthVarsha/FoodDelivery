@@ -92,9 +92,23 @@ export class ApiService {
    * @param body - Request body
    * @returns Observable of type T
    */
-  put<T>(endpoint: string, body: any): Observable<T> {
+  put<T>(endpoint: string, body: any, options?: { responseType?: 'json' | 'text' }): Observable<T> {
     const url = `${this.baseUrl}${endpoint}`;
-    return this.http.put<T>(url, body)
+    
+    const headers = { 'Content-Type': 'application/json' };
+    
+    if (options?.responseType === 'text') {
+      return this.http.put(url, body, { 
+        responseType: 'text',
+        headers: headers
+      })
+        .pipe(
+          timeout(this.apiTimeout),
+          catchError(this.handleError)
+        ) as any;
+    }
+
+    return this.http.put<T>(url, body, { headers: headers })
       .pipe(
         timeout(this.apiTimeout),
         catchError(this.handleError)

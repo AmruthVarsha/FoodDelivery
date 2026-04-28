@@ -99,11 +99,12 @@ export class RegisterComponent implements OnInit {
       'Admin': 3
     };
 
-    const registerData = {
-      name: this.registerForm.value.fullName,
+    const registerData: any = {
+      fullName: this.registerForm.value.fullName,
       email: this.registerForm.value.email,
-      phoneNumber: this.registerForm.value.phoneNumber,
+      phoneNo: this.registerForm.value.phoneNumber,
       password: this.registerForm.value.password,
+      confirmPassword: this.registerForm.value.confirmPassword,
       role: roleMap[this.selectedRole]
     };
 

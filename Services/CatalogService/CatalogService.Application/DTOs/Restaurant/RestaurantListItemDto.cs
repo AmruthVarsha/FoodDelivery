@@ -13,6 +13,7 @@ namespace CatalogService.Application.DTOs.Restaurant
         public int TotalRatings { get; set; }
         public int PrepTimeMinutes { get; set; }
         public bool IsActive { get; set; }
+        public bool IsApproved { get; set; }
         public string City { get; set; } = string.Empty;
         public string Pincode { get; set; } = string.Empty;
 

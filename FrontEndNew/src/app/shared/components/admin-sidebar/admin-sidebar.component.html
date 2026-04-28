@@ -1,0 +1,62 @@
+<!-- Admin Sidebar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-20 w-64 bg-gray-950/60 backdrop-blur-2xl border-r border-white/10 shadow-[10px_0_30px_rgba(0,0,0,0.5)] z-40 hidden md:flex">
+  <div class="px-6 mb-8">
+    <div class="flex items-center gap-3">
+      <div class="h-10 w-10 rounded-xl bg-emerald-400/10 flex items-center justify-center border border-emerald-400/20">
+        <span class="material-symbols-outlined text-emerald-400">admin_panel_settings</span>
+      </div>
+      <div>
+        <p class="font-inter text-xs uppercase tracking-widest font-semibold text-emerald-400">System Admin</p>
+        <p class="text-[10px] text-gray-500 font-medium">Terminal Access</p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="flex-1">
+    <a routerLink="/admin/dashboard"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       [routerLinkActiveOptions]="{exact: true}"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">dashboard</span>
+      Dashboard
+    </a>
+    <a routerLink="/admin/pending-approvals"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">verified_user</span>
+      Pending Approvals
+    </a>
+    <a routerLink="/admin/user-management"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">group</span>
+      User Management
+    </a>
+    <a routerLink="/admin/restaurant-management"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">restaurant</span>
+      Restaurant Management
+    </a>
+    <a routerLink="/admin/order-management"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">receipt_long</span>
+      Order Management
+    </a>
+    <a routerLink="/admin/reports"
+       routerLinkActive="bg-emerald-400/10 text-emerald-400 border-r-4 border-emerald-400"
+       class="flex items-center px-6 py-4 text-gray-500 font-inter text-xs uppercase tracking-widest font-semibold hover:bg-white/5 hover:text-emerald-200 transition-colors duration-300">
+      <span class="material-symbols-outlined mr-4">analytics</span>
+      Reports
+    </a>
+  </nav>
+
+  <div class="mt-auto p-6 border-t border-white/5">
+    <button (click)="logout()"
+            class="w-full flex items-center gap-4 text-red-400 hover:text-red-300 transition-colors font-inter text-xs uppercase tracking-widest font-semibold">
+      <span class="material-symbols-outlined">logout</span>
+      Logout
+    </button>
+  </div>
+</aside>

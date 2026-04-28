@@ -1,4 +1,4 @@
-﻿using OrderService.Domain.ExternalDTO;
+using OrderService.Domain.ExternalDTO;
 using OrderService.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -53,6 +53,12 @@ namespace OrderService.Infrastructure.Repositories
             
             var restaurants = await response.Content.ReadFromJsonAsync<IEnumerable<RestaurantDTO>>();
             return restaurants ?? new List<RestaurantDTO>();
+        }
+
+        public async Task<bool> IsRestaurantOwnedByPartner(Guid restaurantId, string partnerId)
+        {
+            var restaurant = await GetRestaurantById(restaurantId);
+            return restaurant != null && restaurant.OwnerId == partnerId;
         }
     }
 

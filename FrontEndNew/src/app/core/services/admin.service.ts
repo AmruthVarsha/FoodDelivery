@@ -62,6 +62,10 @@ export class AdminService {
     return this.apiService.get<any[]>(API_ENDPOINTS.ADMIN.USERS);
   }
 
+  updateUser(id: string, dto: { fullName: string; phoneNo: string; isActive: boolean }): Observable<any> {
+    return this.apiService.put<any>(API_ENDPOINTS.ADMIN.UPDATE_USER(id), dto);
+  }
+
   deleteUser(id: string): Observable<any> {
     return this.apiService.delete<any>(API_ENDPOINTS.ADMIN.DELETE_USER(id));
   }

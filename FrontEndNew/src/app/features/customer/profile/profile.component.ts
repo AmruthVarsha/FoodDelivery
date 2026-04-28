@@ -7,7 +7,7 @@ import { UserService } from '../../../core/services/user.service';
 import { OrderService } from '../../../core/services/order.service';
 import { ProfileDTO, UpdateProfileDTO, AddressResponseDTO, AddressDTO, UpdateAddressDTO } from '../../../shared/models/user.model';
 import { ChangePasswordDTO } from '../../../shared/models/auth.model';
-import { OrderSummaryDTO } from '../../../shared/models/order.model';
+import { OrderResponseDTO } from '../../../shared/models/order.model';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
 
 type TabType = 'personal' | 'security' | 'addresses' | 'orders';
@@ -49,7 +49,7 @@ export class ProfileComponent implements OnInit {
   editingAddressId: string | null = null;
 
   // Orders
-  orders: OrderSummaryDTO[] = [];
+  orders: OrderResponseDTO[] = [];
 
   constructor(
     private authService: AuthService,
@@ -444,13 +444,13 @@ export class ProfileComponent implements OnInit {
 
   loadOrders(): void {
     this.isLoadingOrders = true;
-    this.orderService.getOrderHistory().subscribe({
-      next: (orders) => {
+    this.orderService.getMyOrders().subscribe({
+      next: (orders: OrderResponseDTO[]) => {
         this.orders = orders;
         this.isLoadingOrders = false;
         this.cdr.detectChanges();
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error loading orders:', error);
         this.errorMessage = 'Failed to load order history';
         this.isLoadingOrders = false;

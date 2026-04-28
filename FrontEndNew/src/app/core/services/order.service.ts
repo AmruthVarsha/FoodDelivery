@@ -1,19 +1,13 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
-import { 
-  OrderResponseDTO, 
-  OrderSummaryDTO, 
-  PlaceOrderDTO, 
-  CancelOrderDTO, 
-  UpdateOrderStatusDTO 
+import { API_ENDPOINTS } from '../constants/api-endpoints';
+import {
+  OrderResponseDTO,
+  CheckoutDTO,
+  CancelOrderDTO
 } from '../../shared/models/order.model';
 
-/**
- * Order Service
- * 
- * Manages order operations using backend APIs.
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -22,50 +16,34 @@ export class OrderService {
   constructor(private api: ApiService) {}
 
   /**
-   * Place a new order
-   * POST /gateway/order/orders
+   * Customer: checkout — compiles ALL active carts into one order.
+   * POST /gateway/order/orders/checkout
    */
-  placeOrder(dto: PlaceOrderDTO): Observable<OrderResponseDTO> {
-    return this.api.post<OrderResponseDTO>('/gateway/order/orders', dto);
+  checkout(dto: CheckoutDTO): Observable<OrderResponseDTO> {
+    return this.api.post<OrderResponseDTO>(API_ENDPOINTS.ORDER.CHECKOUT, dto);
   }
 
   /**
-   * Get order by ID
+   * Customer: get full order history (grouped by restaurant).
+   * GET /gateway/order/orders/my
+   */
+  getMyOrders(): Observable<OrderResponseDTO[]> {
+    return this.api.get<OrderResponseDTO[]>(API_ENDPOINTS.ORDER.MY_ORDERS);
+  }
+
+  /**
+   * Customer: get a specific order by ID.
    * GET /gateway/order/orders/{id}
    */
   getOrderById(id: string): Observable<OrderResponseDTO> {
-    return this.api.get<OrderResponseDTO>(`/gateway/order/orders/${id}`);
+    return this.api.get<OrderResponseDTO>(API_ENDPOINTS.ORDER.ORDER_BY_ID(id));
   }
 
   /**
-   * Get order history for current user
-   * GET /gateway/order/orders/history
-   */
-  getOrderHistory(): Observable<OrderSummaryDTO[]> {
-    return this.api.get<OrderSummaryDTO[]>('/gateway/order/orders/history');
-  }
-
-  /**
-   * Get my orders (active orders)
-   * GET /gateway/order/orders/my-orders
-   */
-  getMyOrders(): Observable<OrderResponseDTO[]> {
-    return this.api.get<OrderResponseDTO[]>('/gateway/order/orders/my-orders');
-  }
-
-  /**
-   * Cancel order
-   * POST /gateway/order/orders/{id}/cancel
+   * Customer: cancel an order (within 10 min, before any restaurant accepts).
+   * PUT /gateway/order/orders/{id}/cancel
    */
   cancelOrder(id: string, dto: CancelOrderDTO): Observable<void> {
-    return this.api.post<void>(`/gateway/order/orders/${id}/cancel`, dto);
-  }
-
-  /**
-   * Update order status (Partner/Admin only)
-   * PUT /gateway/order/orders/{id}/status
-   */
-  updateOrderStatus(id: string, dto: UpdateOrderStatusDTO): Observable<void> {
-    return this.api.put<void>(`/gateway/order/orders/${id}/status`, dto);
+    return this.api.put<void>(API_ENDPOINTS.ORDER.CANCEL_ORDER(id), dto);
   }
 }

@@ -35,10 +35,11 @@ export interface RefreshTokenDTO {
  * Registration Request DTO
  */
 export interface RegistrationDTO {
-  name: string;
+  fullName: string;
   email: string;
+  phoneNo: string;
   password: string;
-  phoneNumber: string;
+  confirmPassword: string;
   role: RoleEnum;
 }
 
@@ -86,6 +87,7 @@ export interface ResetPasswordDTO {
   email: string;
   token: string;
   newPassword: string;
+  confirmNewPassword: string;
 }
 
 /**

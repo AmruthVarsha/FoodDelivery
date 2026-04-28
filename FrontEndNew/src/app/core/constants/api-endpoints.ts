@@ -73,7 +73,11 @@ export const API_ENDPOINTS = {
     RESTAURANT_BY_CUISINE: (cuisineId: string) => `/gateway/catalog/Restaurant/restaurant/cuisine/${cuisineId}`,
     CREATE_RESTAURANT: '/gateway/catalog/Restaurant/restaurant',
     UPDATE_RESTAURANT: (id: string) => `/gateway/catalog/Restaurant/restaurant/${id}`,
+    PATCH_RESTAURANT_STATUS: (id: string) => `/gateway/catalog/Restaurant/restaurant/${id}/status`,
     DELETE_RESTAURANT: (id: string) => `/gateway/catalog/Restaurant/restaurant/${id}`,
+    
+    // Cuisines
+    CUISINES: '/gateway/catalog/Cuisine',
     
     // Categories
     CATEGORIES_BY_RESTAURANT: (restaurantId: string) => `/gateway/catalog/Category/restaurant/${restaurantId}`,
@@ -90,18 +94,59 @@ export const API_ENDPOINTS = {
     CREATE_MENU_ITEM: '/gateway/catalog/MenuItem',
     UPDATE_MENU_ITEM: (id: string) => `/gateway/catalog/MenuItem/${id}`,
     DELETE_MENU_ITEM: (id: string) => `/gateway/catalog/MenuItem/${id}`,
+
+    // Service Areas
+    SERVICE_AREAS_BY_RESTAURANT: (restaurantId: string) => `/gateway/catalog/ServiceArea/${restaurantId}`,
+    ADD_SERVICE_AREA: '/gateway/catalog/ServiceArea',
+    REMOVE_SERVICE_AREA: (id: string) => `/gateway/catalog/ServiceArea/${id}`,
+    IS_PINCODE_SERVICEABLE: (restaurantId: string, pincode: string) =>
+      `/gateway/catalog/ServiceArea/${restaurantId}/serviceable/${pincode}`,
   },
 
   // ============================================
   // ORDER SERVICE ENDPOINTS
   // ============================================
   ORDER: {
-    // Orders (uses role-based filtering)
-    ORDERS: '/gateway/order/orders', // GET returns orders based on user role (Customer or Partner)
+    // Customer
+    CHECKOUT: '/gateway/order/orders/checkout',            // POST — place order from all carts
+    MY_ORDERS: '/gateway/order/orders/my',                 // GET — customer order history
     ORDER_BY_ID: (id: string) => `/gateway/order/orders/${id}`,
-    CREATE_ORDER: '/gateway/order/orders',
-    UPDATE_ORDER_STATUS: (id: string) => `/gateway/order/orders/${id}/status`,
     CANCEL_ORDER: (id: string) => `/gateway/order/orders/${id}/cancel`,
+  },
+
+  // ============================================
+  // CART ENDPOINTS (Customer only)
+  // ============================================
+  CART: {
+    CREATE: '/gateway/order/carts',                                          // POST { restaurantId }
+    ADD_ITEM: '/gateway/order/carts/items',                                  // POST { cartId, menuItemId, quantity }
+    UPDATE_ITEM: '/gateway/order/carts/items',                               // PUT  { id, quantity }
+    DELETE_ITEM: (itemId: string, cartId: string) =>
+      `/gateway/order/carts/items/${itemId}/${cartId}`,                      // DELETE
+    GET_ACTIVE: '/gateway/order/carts/user/active',                          // GET → CartResponseDTO[]
+    GET_ITEMS: (cartId: string) => `/gateway/order/carts/${cartId}/items`,   // GET → DisplayCartDTO[]
+  },
+
+  // ============================================
+  // RESTAURANT ORDER ENDPOINTS (Partner only)
+  // ============================================
+  RESTAURANT_ORDER: {
+    BY_RESTAURANT: (restaurantId: string) =>
+      `/gateway/order/restaurant-orders/${restaurantId}`,
+    SUB_ORDER_BY_ID: (restaurantId: string, subOrderId: string) =>
+      `/gateway/order/restaurant-orders/${restaurantId}/sub-orders/${subOrderId}`,
+    UPDATE_STATUS: (restaurantId: string, subOrderId: string) =>
+      `/gateway/order/restaurant-orders/${restaurantId}/sub-orders/${subOrderId}/status`,
+  },
+
+  // ============================================
+  // DELIVERY AGENT ENDPOINTS
+  // ============================================
+  DELIVERY: {
+    ASSIGNMENTS: '/gateway/order/delivery/assignments',
+    UPDATE_STATUS: (assignmentId: string) =>
+      `/gateway/order/delivery/assignments/${assignmentId}/status`,
+    PROFILE: '/gateway/order/delivery/profile',
   },
 
   // ============================================

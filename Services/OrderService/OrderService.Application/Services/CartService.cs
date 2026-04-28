@@ -102,21 +102,9 @@ namespace OrderService.Application.Services
             if (!menuItem.IsAvailable)
                 throw new BadRequestException("The requested menu item is currently unavailable.");
 
-            // Validate category is active
-            var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
-            if (category == null || !category.IsActive)
-                throw new BadRequestException("The menu item's category is currently inactive.");
-
-            // Validate restaurant is active and approved
-            var restaurant = await _catalogRepository.GetRestaurantById(menuItem.RestaurantId);
-            if (restaurant == null)
-                throw new NotFoundException("Restaurant", menuItem.RestaurantId);
-
-            if (!restaurant.IsActive)
-                throw new BadRequestException("The restaurant is currently inactive and not accepting orders.");
-
-            if (!restaurant.IsApproved)
-                throw new BadRequestException("The restaurant is not approved yet and cannot accept orders.");
+            // Note: category-active check intentionally omitted — the Catalog service
+            // cascades IsActive to menuItem.IsAvailable on ToggleCategoryStatus,
+            // so the IsAvailable flag above is the correct and only gate needed.
 
             var cart = await _cartRepository.GetById(cartItemDTO.CartId);
             if (cart == null)

@@ -17,9 +17,14 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getAccessToken();
 
-  // If token exists, clone the request and add Authorization header
+  // Always clone with credentials to allow cookies (like refresh token) to be sent
+  let modifiedReq = req.clone({
+    withCredentials: true
+  });
+
+  // If token exists, add Authorization header
   if (token) {
-    req = req.clone({
+    modifiedReq = modifiedReq.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
       }
@@ -27,5 +32,5 @@ export const jwtInterceptor: HttpInterceptorFn = (req, next) => {
   }
 
   // Pass the request to the next handler
-  return next(req);
+  return next(modifiedReq);
 };

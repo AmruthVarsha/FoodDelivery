@@ -17,6 +17,14 @@ namespace CatalogService.API.Controllers
             _categoryService = categoryService;
         }
 
+        /// <summary>Returns a single category by its ID. Public (used by Order service for validation).</summary>
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById([FromRoute] Guid id)
+        {
+            var category = await _categoryService.GetByIdAsync(id);
+            return Ok(category);
+        }
+
         /// <summary>Returns all categories for a restaurant's menu sidebar. Public.</summary>
         [HttpGet("restaurant/{restaurantId:guid}")]
         public async Task<IActionResult> GetByRestaurant([FromRoute] Guid restaurantId)

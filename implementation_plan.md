@@ -1,15 +1,43 @@
 # Cart, Checkout, Order & Payment Redesign - Implementation Plan
 
-## Open Questions (User Review Required)
+## User Decisions & Strategy
 
-> [!IMPORTANT]
-> **1. Payment Gateway**: Do you want to integrate a real payment gateway (e.g. Razorpay, Stripe) or keep a simulation? If simulation, I'll design a clean mock that properly simulates pending → success/failure without two separate API calls.
->
-> **2. Delivery Agent Assignment**: Should the system auto-assign a delivery agent from the `UserSummaries` table (randomly picking an available DeliveryAgent), or should it remain manual (admin/partner assigns)?
->
-> **3. Cart Conflict on Restaurant Switch**: When a user adds an item from a different restaurant, should we:
-> - **A)** Auto-clear the cart and add the new item (with a 200 response that includes a `cartCleared: true` flag)
-> - **B)** Return a 409 Conflict and let the frontend ask the user
+### 1. Payment Gateway (COD & Online)
+- **Status**: Real Razorpay integration planned for later.
+- **Approach**: Implement a `PaymentMethod` abstraction with two modes:
+  - `COD` (Cash on Delivery): Immediate success simulation.
+  - `Online` (Razorpay-ready): Designed to handle gateway callbacks/responses.
+- **Implementation**: Use an `IPaymentGateway` interface to decouple the `PaymentService` from specific providers.
+
+### 2. Delivery Agent Assignment
+- **Status**: Auto-assignment based on activity and location (pincode).
+- **Alternative (Agent Profiles)**: Instead of modifying the core `User` model, we will create a `DeliveryAgentProfile` entity within the `OrderService`.
+- **Fields**: `UserId`, `IsActive`, `CurrentPincode`, `LastSeenAt`.
+- **Logic**: When an order is placed, the system finds an active agent in the restaurant's pincode area.
+
+### 3. Multi-Restaurant Cart & Sub-Order Strategy
+- **Status**: Cart per restaurant.
+- **Approach**: **Backend-driven Carts**. The `Cart` table will support multiple active entries per user (one per `RestaurantId`).
+- **Grouped Checkout**: When placing an order, the system will:
+  1. Compile all active carts for the user.
+  2. Create a single **Main Order** (Parent) for tracking payment and overall delivery.
+  3. Create individual **Restaurant Orders** (Sub-Orders) for each restaurant involved.
+- **Benefits**: 
+  - **Privacy**: Restaurants only see their own `RestaurantOrder` and its items.
+  - **Granular Status**: Restaurant A can be "Ready for Pickup" while Restaurant B is still "Preparing".
+  - **Delivery Agent View**: Agents see the "Entire Order" (all Sub-Orders) to coordinate pickups.
+
+### 4. Role-Based Order Handling
+- **Restaurants (Partners)**: 
+  - Access only their `RestaurantOrder`.
+  - Update status: `Accepted` → `Preparing` → `ReadyForPickup`.
+  - Customer info (Name/ID) is pulled from the Order snapshot (initially from JWT).
+- **Delivery Agents**: 
+  - Access the `Main Order` and all linked `RestaurantOrders`.
+  - View all pickup locations (Restaurant addresses).
+  - Update status: `PickedUp` (per sub-order) and `Delivered` (overall).
+- **Customers**: 
+  - View the unified `Main Order` with status tracking for each sub-restaurant.
 
 ---
 
@@ -36,10 +64,10 @@
 `Add to Cart (upsert) → View Checkout Summary → Place Order → Process Payment → Fulfillment`
 
 ### Key Principles
-1. **One active cart per user** — Always.
-2. **Item-first** — Restaurant is derived from items.
-3. **Implicit Cart** — Created on first item add.
-4. **Decoupled Payment** — Separate step after order placement.
+1. **Cart per Restaurant** — Users can have multiple carts, one for each restaurant they've added items from.
+2. **Backend-First** — Carts are stored in the database to ensure multi-device synchronization.
+3. **Agent Profiles** — Delivery-specific data is kept in a separate profile to keep the User model clean.
+4. **Decoupled Payment** — Abstracted gateway logic to support COD and future Razorpay.
 5. **Simplified Statuses** — Clean transition from Pending to Delivered.
 
 ---
@@ -47,15 +75,19 @@
 ## Proposed Changes
 
 ### 1. Domain Layer (`OrderService.Domain`)
-- **Cart**: Remove `RestaurantId` (derive from items), simplify status.
-- **Order**: Add `RestaurantName`, `PaymentMethod`, `PaymentStatus` (snapshots).
-- **Payment**: Add `FailureReason`, `PaidAt`, `GatewayResponse`.
+- **Cart**: Keep `RestaurantId`, simplify status.
+- **Order (Parent)**: Contains `CustomerId`, `TotalAmount`, `OverallStatus`, `DeliveryAddress`.
+- **RestaurantOrder (Sub-Order)** [NEW]: Contains `RestaurantId`, `SubTotal`, `Status`, `ICollection<OrderItem>`.
+- **OrderItem**: Linked to `RestaurantOrder`.
+- **Payment**: Add `PaymentMethod` (COD/Online).
+- **DeliveryAgentProfile** [NEW]: Linked to `UserId`, contains `IsActive`, `CurrentPincode`.
 
 ### 2. Application Layer (`OrderService.Application`)
-- **CartService**: Support `UpsertCartItemAsync`, `GetCartSummaryAsync`.
-- **OrderManagementService**: Refactor `PlaceOrderAsync` to decouple payment.
-- **PaymentService**: New single-step process (Initiate/Process).
-- **DeliveryService**: Add `AutoAssignDeliveryAgent` logic.
+- **CartService**: Support `UpsertCartItemAsync`, `GetCartByRestaurantAsync`, `GetAllActiveCartsAsync`.
+- **OrderManagementService**: 
+  - `CreateOrderFromCartsAsync`: Compiles all active carts into one Parent Order + N Sub-Orders.
+- **PaymentService**: Support `COD` and `Online` gateways via `IPaymentGateway`.
+- **DeliveryService**: Implement `AutoAssignDeliveryAgent` using `DeliveryAgentProfile` lookups.
 
 ### 3. API Layer (`OrderService.API`)
 - **CartController**: GET/POST/DELETE on `/api/cart`.

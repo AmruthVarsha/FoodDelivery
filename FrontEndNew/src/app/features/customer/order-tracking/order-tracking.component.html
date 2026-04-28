@@ -1,183 +1,160 @@
-<div class="min-h-screen bg-background">
-  <!-- Decorative Blobs -->
-  <div class="fixed top-20 right-0 w-[500px] h-[500px] bg-primary-container/10 blur-[120px] -z-10 rounded-full"></div>
-  <div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-secondary/5 blur-[120px] -z-10 rounded-full"></div>
+<app-navbar></app-navbar>
 
-  <!-- Shared Navbar -->
-  <app-navbar></app-navbar>
+<div class="min-h-screen bg-zinc-950 text-white pt-20 pb-12">
+  <div class="max-w-4xl mx-auto px-4">
 
-  <main class="max-w-[1440px] mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-12 gap-8 relative">
-    <!-- Left Column: Map & Delivery Agent (8 columns) -->
-    <div class="md:col-span-8 space-y-8">
-      <!-- Map Container -->
-      <div class="glass-card rounded-[24px] neomorph-outset overflow-hidden h-[500px] relative">
-        <img 
-          class="w-full h-full object-cover opacity-60" 
-          src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=500&fit=crop" 
-          alt="Map view"
-        />
-        <div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
-        
-        <!-- Floating Info Overlay -->
-        <div class="absolute bottom-6 left-6 right-6 flex justify-between items-end flex-wrap gap-4">
-          <div class="glass-card p-6 rounded-2xl neomorph-outset border-l-4 border-secondary">
-            <p class="text-xs font-bold tracking-wider text-secondary mb-1">CURRENT LOCATION</p>
-            <h3 class="text-2xl font-bold text-white">{{ currentLocation }}</h3>
-            <p class="text-sm text-slate-400">{{ distanceFromLocation }} from your location</p>
-          </div>
-          <div class="glass-card p-6 rounded-2xl neomorph-outset flex flex-col items-center min-w-[160px]">
-            <span class="text-xs font-bold tracking-wider text-primary-container mb-2">ARRIVING IN</span>
-            <span class="text-5xl font-extrabold text-primary-container" style="text-shadow: 0 0 15px rgba(255, 107, 53, 0.5);">{{ estimatedArrival }}</span>
-          </div>
+    <!-- Loading -->
+    @if (isLoading) {
+      <div class="flex items-center justify-center py-32">
+        <span class="material-symbols-outlined text-5xl text-green-400 animate-spin">progress_activity</span>
+      </div>
+    }
+
+    <!-- Error -->
+    @if (!isLoading && errorMessage) {
+      <div class="p-6 rounded-2xl bg-red-500/10 border border-red-500/30 text-center">
+        <span class="material-symbols-outlined text-4xl text-red-400 mb-2">error</span>
+        <p class="text-red-300">{{ errorMessage }}</p>
+      </div>
+    }
+
+    @if (!isLoading && order) {
+
+      <!-- Header -->
+      <div class="mb-8 flex items-start justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-white mb-1">Order Tracking</h1>
+          <p class="text-zinc-400 text-sm font-mono">#{{ order.id.substring(0, 8).toUpperCase() }}</p>
+        </div>
+        <div class="text-right">
+          <p class="text-2xl font-bold text-green-400">₹{{ order.totalAmount }}</p>
+          <p class="text-xs text-zinc-500">{{ order.createdAt | date:'dd MMM yyyy, h:mm a' }}</p>
         </div>
       </div>
 
-      <!-- Delivery Agent & Order Details Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Delivery Agent Card -->
-        @if (deliveryAgent) {
-          <div class="glass-card p-6 rounded-[24px] neomorph-outset">
-            <div class="flex items-center gap-4 mb-6">
-              <div class="w-16 h-16 rounded-2xl overflow-hidden neomorph-outset p-1 bg-surface-container-high">
-                <img 
-                  class="w-full h-full object-cover rounded-xl" 
-                  [src]="deliveryAgent.imageUrl" 
-                  [alt]="deliveryAgent.name"
-                />
-              </div>
-              <div>
-                <h4 class="text-2xl font-bold text-white">{{ deliveryAgent.name }}</h4>
-                <div class="flex items-center gap-2 text-secondary">
-                  <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">stars</span>
-                  <span class="text-sm font-bold">{{ deliveryAgent.rating }} • {{ deliveryAgent.totalDeliveries }} Deliveries</span>
-                </div>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div class="neomorph-inset bg-slate-900/60 p-4 rounded-xl flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-slate-400">electric_moped</span>
-                  <span class="text-base text-white">{{ deliveryAgent.vehicle }}</span>
-                </div>
-                <span class="text-xs bg-slate-800 px-2 py-1 rounded font-bold text-slate-300">{{ deliveryAgent.licensePlate }}</span>
-              </div>
-              <div class="flex gap-3">
-                <button 
-                  (click)="callDeliveryAgent()"
-                  class="flex-1 bg-primary-container text-white font-bold py-3 rounded-xl neomorph-outset primary-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                >
-                  <span class="material-symbols-outlined">call</span>
-                  Call {{ deliveryAgent.name.split(' ')[0] }}
-                </button>
-                <button 
-                  (click)="chatWithAgent()"
-                  class="w-14 h-14 glass-card flex items-center justify-center rounded-xl neomorph-outset text-secondary hover:text-white transition-colors"
-                >
-                  <span class="material-symbols-outlined">chat_bubble</span>
-                </button>
-              </div>
-            </div>
-          </div>
+      <!-- Overall Status Banner -->
+      <div class="bg-zinc-900 border border-white/8 rounded-2xl p-5 mb-6">
+        <p class="text-lg font-semibold text-white mb-1">{{ getOverallStatusLabel(order.status) }}</p>
+        <p class="text-sm text-zinc-400">Deliver to: {{ order.street }}, {{ order.city }}, {{ order.pincode }}</p>
+        @if (order.deliveryInstructions) {
+          <p class="text-xs text-zinc-500 mt-1">📝 {{ order.deliveryInstructions }}</p>
         }
 
-        <!-- Order Detail Summary -->
-        <div class="glass-card p-6 rounded-[24px] neomorph-outset">
-          <div class="flex justify-between items-start mb-6">
-            <div>
-              <p class="text-xs font-bold tracking-wider text-slate-400 mb-1">ORDER #{{ orderNumber }}</p>
-              <h4 class="text-2xl font-bold text-white">{{ restaurantName }}</h4>
-            </div>
-            <span class="material-symbols-outlined text-primary-container">receipt_long</span>
-          </div>
-          <div class="space-y-3 mb-6">
-            @for (item of orderItems; track item.name) {
-              <div class="flex justify-between text-base">
-                <span class="text-slate-400">{{ item.quantity }}x {{ item.name }}</span>
-                <span class="text-white">₹{{ item.price }}</span>
-              </div>
-            }
-            <div class="flex justify-between text-base">
-              <span class="text-slate-400">Delivery Fee</span>
-              <span class="text-secondary font-bold">{{ deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee }}</span>
-            </div>
-          </div>
-          <div class="pt-4 border-t border-white/5 flex justify-between items-center">
-            <span class="font-bold text-lg text-white">Total Amount</span>
-            <span class="text-2xl font-bold text-white">₹{{ total }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Right Column: Order Status Stepper (4 columns) -->
-    <div class="md:col-span-4">
-      <div class="glass-card p-6 rounded-[24px] neomorph-outset sticky top-[104px]">
-        <h3 class="text-2xl font-bold text-white mb-8">Order Status</h3>
-        <div class="relative space-y-12">
-          <!-- Progress Line -->
-          <div class="absolute left-[23px] top-4 bottom-4 w-1 bg-slate-800 rounded-full overflow-hidden">
-            <div 
-              class="w-full bg-primary-container shadow-[0_0_10px_#ff6b35] transition-all duration-500"
-              [style.height.%]="getProgressPercentage()"
-            ></div>
-          </div>
-
-          <!-- Status Steps -->
-          @for (status of orderStatuses; track status.step) {
-            <div class="relative flex items-start gap-6 pl-1">
-              <div 
-                class="w-12 h-12 rounded-full flex items-center justify-center neomorph-outset ring-4 ring-background z-10"
-                [class.bg-primary-container]="status.completed"
-                [class.border-2]="status.active && !status.completed"
-                [class.border-primary-container]="status.active && !status.completed"
-                [class.bg-slate-800]="!status.completed && !status.active"
-                [class.neomorph-inset]="!status.completed && !status.active"
-              >
-                <span 
-                  class="material-symbols-outlined"
-                  [class.text-white]="status.completed"
-                  [class.text-primary-container]="status.active && !status.completed"
-                  [class.text-slate-600]="!status.completed && !status.active"
-                >
-                  {{ status.icon }}
-                </span>
-              </div>
-              <div>
-                <h5 
-                  class="text-lg font-bold"
-                  [class.text-white]="status.completed || status.active"
-                  [class.text-primary-container]="status.active && !status.completed"
-                  [class.text-slate-500]="!status.completed && !status.active"
-                >
-                  {{ status.title }}
-                </h5>
-                <p 
-                  class="text-sm"
-                  [class.text-slate-400]="status.completed || status.active"
-                  [class.text-slate-600]="!status.completed && !status.active"
-                >
-                  @if (status.time) {
-                    <span>{{ status.time }} • </span>
+        <!-- Progress bar -->
+        <div class="mt-5 flex items-center gap-0">
+          @for (step of orderSteps; track step.status; let i = $index; let last = $last) {
+            <div class="flex items-center" [class]="last ? '' : 'flex-1'">
+              <div class="flex flex-col items-center">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                  [class]="isStepCompleted(step.status)
+                    ? 'bg-green-500 text-black'
+                    : 'bg-zinc-800 text-zinc-500 border border-zinc-700'">
+                  @if (isStepCompleted(step.status)) {
+                    <span class="material-symbols-outlined text-sm">check</span>
+                  } @else {
+                    {{ i + 1 }}
                   }
-                  {{ status.description }}
+                </div>
+                <p class="text-[10px] mt-1 text-center w-20"
+                  [class]="isStepCompleted(step.status) ? 'text-green-400' : 'text-zinc-500'">
+                  {{ step.label }}
                 </p>
               </div>
+              @if (!last) {
+                <div class="flex-1 h-0.5 mb-5 mx-1 rounded-full"
+                  [class]="isStepCompleted(step.status) ? 'bg-green-500' : 'bg-zinc-800'">
+                </div>
+              }
             </div>
           }
         </div>
-
-        <!-- Action Button -->
-        <div class="mt-12 pt-8 border-t border-white/5 space-y-4">
-          <p class="text-sm text-center text-slate-400 italic">Need to change something?</p>
-          <button 
-            (click)="contactSupport()"
-            class="w-full glass-card border border-secondary/30 text-secondary font-bold py-3 rounded-xl neomorph-outset hover:bg-secondary/10 transition-all flex items-center justify-center gap-2"
-          >
-            <span class="material-symbols-outlined">support_agent</span>
-            Contact Support
-          </button>
-        </div>
       </div>
-    </div>
-  </main>
+
+      <!-- Per-Restaurant Sub-Orders -->
+      <div class="space-y-4 mb-6">
+        @for (ro of order.restaurantOrders; track ro.id) {
+          <div class="bg-zinc-900 border border-white/8 rounded-2xl overflow-hidden">
+            <div class="px-5 py-4 border-b border-white/8 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-green-400">restaurant</span>
+                <div>
+                  <p class="font-bold text-white">{{ ro.restaurantName }}</p>
+                  <p class="text-xs text-zinc-500">Subtotal: ₹{{ ro.subTotal }}</p>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-bold border"
+                [class]="getSubStatusClass(ro.status)">
+                <span class="material-symbols-outlined text-xs mr-1" style="vertical-align:middle">{{ getSubStatusIcon(ro.status) }}</span>
+                {{ ro.status }}
+              </span>
+            </div>
+            <div class="px-5 py-3 space-y-2">
+              @for (item of ro.items; track item.id) {
+                <div class="flex justify-between text-sm">
+                  <span class="text-zinc-300">{{ item.menuItemName }} × {{ item.quantity }}</span>
+                  <span class="text-white font-medium">₹{{ item.totalPrice }}</span>
+                </div>
+              }
+            </div>
+            @if (ro.cancellationReason) {
+              <div class="px-5 pb-4">
+                <p class="text-xs text-red-400">Reason: {{ ro.cancellationReason }}</p>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Payment Info -->
+      @if (order.payment) {
+        <div class="bg-zinc-900 border border-white/8 rounded-2xl p-5 mb-6">
+          <h2 class="font-bold text-white mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-green-400">payments</span>
+            Payment
+          </h2>
+          <div class="flex justify-between text-sm text-zinc-400 mb-1">
+            <span>Method</span><span class="text-white">{{ order.payment.method }}</span>
+          </div>
+          <div class="flex justify-between text-sm text-zinc-400 mb-1">
+            <span>Status</span>
+            <span [class]="order.payment.status === 'Completed' ? 'text-green-400 font-bold' : 'text-yellow-400'">
+              {{ order.payment.status }}
+            </span>
+          </div>
+          <div class="flex justify-between text-sm text-zinc-400">
+            <span>Amount</span><span class="text-white font-bold">₹{{ order.payment.amount }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Cancel Button -->
+      @if (canCancel) {
+        @if (!showCancelConfirm) {
+          <button (click)="showCancelConfirm = true"
+            class="w-full py-3 rounded-xl border border-red-500/50 text-red-400 font-semibold text-sm hover:bg-red-500/10 transition-all">
+            Cancel Order
+          </button>
+        } @else {
+          <div class="bg-red-500/10 border border-red-500/30 rounded-2xl p-5 text-center space-y-3">
+            <p class="text-red-300 font-semibold">Are you sure you want to cancel?</p>
+            <p class="text-xs text-zinc-500">This cannot be undone. Cancellation is only possible if no restaurant has started preparing.</p>
+            @if (cancelErrorMessage) {
+              <p class="text-red-400 text-xs">{{ cancelErrorMessage }}</p>
+            }
+            <div class="flex gap-3 justify-center">
+              <button (click)="showCancelConfirm = false"
+                class="px-6 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-sm hover:bg-zinc-700 transition-all">
+                Keep Order
+              </button>
+              <button (click)="cancelOrder()" [disabled]="isCancelling"
+                class="px-6 py-2 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-400 transition-all">
+                @if (isCancelling) { Cancelling... } @else { Yes, Cancel }
+              </button>
+            </div>
+          </div>
+        }
+      }
+
+    }
+  </div>
 </div>

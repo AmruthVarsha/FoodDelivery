@@ -19,6 +19,7 @@ export class ResetPasswordComponent implements OnInit {
   isLoading = false;
   errorMessage = '';
   successMessage = '';
+  email = '';
   token = '';
 
   constructor(
@@ -29,12 +30,15 @@ export class ResetPasswordComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.email = this.route.snapshot.queryParams['email'] || '';
     this.token = this.route.snapshot.queryParams['token'] || '';
     this.initializeForm();
   }
 
   initializeForm(): void {
     this.resetPasswordForm = this.fb.group({
+      email: [this.email, [Validators.required, Validators.email]],
+      token: [this.token, [Validators.required, Validators.minLength(6), Validators.maxLength(6)]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmPassword: ['', [Validators.required]]
     }, { validators: this.passwordMatchValidator });
@@ -70,12 +74,13 @@ export class ResetPasswordComponent implements OnInit {
     this.successMessage = '';
 
     const resetData: ResetPasswordDTO = {
-      email: '', // Email will be extracted from token on backend
-      token: this.token,
-      newPassword: this.resetPasswordForm.value.password
+      email: this.resetPasswordForm.value.email,
+      token: this.resetPasswordForm.value.token,
+      newPassword: this.resetPasswordForm.value.password,
+      confirmNewPassword: this.resetPasswordForm.value.confirmPassword
     };
 
-    console.log('Resetting password with token:', this.token);
+    console.log('Resetting password for email:', resetData.email);
 
     this.authService.resetPassword(resetData).subscribe({
       next: (response) => {

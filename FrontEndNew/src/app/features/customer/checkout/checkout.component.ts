@@ -1,25 +1,16 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { CartService, CartItem } from '../../../core/services/cart.service';
+import { OrderService } from '../../../core/services/order.service';
+import { UserService } from '../../../core/services/user.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-
-interface DeliveryAddress {
-  line1: string;
-  line2: string;
-  city: string;
-  state: string;
-  pincode: string;
-}
-
-interface PaymentMethod {
-  id: string;
-  type: 'card' | 'upi' | 'cod';
-  name: string;
-  details: string;
-  icon: string;
-}
+import { PaymentMethod, CheckoutDTO } from '../../../shared/models/order.model';
+import { AddressResponseDTO } from '../../../shared/models/user.model';
 
 @Component({
   selector: 'app-checkout',
@@ -28,74 +19,32 @@ interface PaymentMethod {
   templateUrl: './checkout.component.html',
   styleUrls: ['./checkout.component.css']
 })
-export class CheckoutComponent implements OnInit {
+export class CheckoutComponent implements OnInit, OnDestroy {
+
   cartItems: CartItem[] = [];
-  deliveryAddress: DeliveryAddress = {
-    line1: 'Apt 402, Skyline Heights',
-    line2: '88 Market Street',
-    city: 'Phagwara',
-    state: 'Punjab',
-    pincode: '144411'
-  };
+  addresses: AddressResponseDTO[] = [];
+  selectedAddressId: string = '';
+  selectedPaymentMethod: PaymentMethod = PaymentMethod.COD;
+  deliveryInstructions: string = '';
+  scheduledSlot: string = '';
 
-  paymentMethods: PaymentMethod[] = [
-    {
-      id: '1',
-      type: 'card',
-      name: 'Credit/Debit Card',
-      details: '**** **** **** 4242',
-      icon: 'credit_card'
-    },
-    {
-      id: '2',
-      type: 'upi',
-      name: 'UPI',
-      details: 'Pay via UPI',
-      icon: 'payments'
-    },
-    {
-      id: '3',
-      type: 'cod',
-      name: 'Cash on Delivery',
-      details: 'Pay when you receive',
-      icon: 'local_atm'
-    }
-  ];
+  isLoadingAddresses = false;
+  isPlacingOrder = false;
+  errorMessage = '';
 
-  selectedPaymentMethod: string = '1';
-  promoCode: string = '';
-  isProcessing: boolean = false;
-
-  // Expose Math to template
+  readonly PaymentMethod = PaymentMethod;
   Math = Math;
 
-  constructor(
-    private router: Router,
-    private cartService: CartService,
-    private cdr: ChangeDetectorRef
-  ) {}
-
-  ngOnInit(): void {
-    this.loadCartItems();
-    
-    // Subscribe to cart changes
-    this.cartService.cartItems$.subscribe(items => {
-      this.cartItems = items;
-      this.cdr.detectChanges();
-    });
-  }
-
-  loadCartItems(): void {
-    this.cartItems = this.cartService.getCartItems();
-  }
-
-  updateQuantity(item: CartItem, change: number): void {
-    const newQuantity = item.quantity + change;
-    this.cartService.updateQuantity(item.menuItem.id, newQuantity);
-  }
-
-  removeItem(item: CartItem): void {
-    this.cartService.removeItem(item.menuItem.id);
+  /** Cart items grouped by restaurant for display */
+  get restaurantGroups(): { restaurantId: string; restaurantName: string; items: CartItem[] }[] {
+    const map = new Map<string, { restaurantId: string; restaurantName: string; items: CartItem[] }>();
+    for (const item of this.cartItems) {
+      if (!map.has(item.restaurantId)) {
+        map.set(item.restaurantId, { restaurantId: item.restaurantId, restaurantName: item.restaurantName, items: [] });
+      }
+      map.get(item.restaurantId)!.items.push(item);
+    }
+    return Array.from(map.values());
   }
 
   get subtotal(): number {
@@ -107,37 +56,92 @@ export class CheckoutComponent implements OnInit {
   }
 
   get taxes(): number {
-    return Math.round(this.subtotal * 0.05); // 5% GST
+    return Math.round(this.subtotal * 0.05);
   }
 
   get total(): number {
     return this.subtotal + this.deliveryFee + this.taxes;
   }
 
-  applyPromoCode(): void {
-    // TODO: Implement promo code logic
-    console.log('Applying promo code:', this.promoCode);
+  get selectedAddress(): AddressResponseDTO | undefined {
+    return this.addresses.find(a => a.id === this.selectedAddressId);
   }
 
-  editAddress(): void {
-    // TODO: Navigate to address edit page
-    console.log('Edit address');
+  get canPlaceOrder(): boolean {
+    return this.cartItems.length > 0 && !!this.selectedAddressId && !this.isPlacingOrder;
+  }
+
+  private destroy$ = new Subject<void>();
+
+  constructor(
+    private router: Router,
+    private cartService: CartService,
+    private orderService: OrderService,
+    private userService: UserService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.cartService.cartItems$.pipe(takeUntil(this.destroy$)).subscribe(items => {
+      this.cartItems = items;
+      this.cdr.detectChanges();
+    });
+    this.cartItems = this.cartService.getCartItems();
+    this.loadAddresses();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadAddresses(): void {
+    this.isLoadingAddresses = true;
+    this.userService.getAddresses().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (addrs) => {
+        this.addresses = addrs;
+        if (addrs.length > 0) this.selectedAddressId = addrs[0].id;
+        this.isLoadingAddresses = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingAddresses = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  updateQuantity(item: CartItem, change: number): void {
+    this.cartService.updateQuantity(item.menuItem.id, item.quantity + change);
+  }
+
+  removeItem(item: CartItem): void {
+    this.cartService.removeItem(item.menuItem.id);
   }
 
   placeOrder(): void {
-    if (this.cartItems.length === 0) {
-      return;
-    }
+    if (!this.canPlaceOrder) return;
 
-    this.isProcessing = true;
+    this.isPlacingOrder = true;
+    this.errorMessage = '';
 
-    // TODO: Call order service to create order
-    setTimeout(() => {
-      this.isProcessing = false;
-      // Clear cart after successful order
-      this.cartService.clearCart();
-      // Navigate to order tracking
-      this.router.navigate(['/customer/order-tracking', '12345']);
-    }, 2000);
+    const dto: CheckoutDTO = {
+      addressId: this.selectedAddressId,
+      paymentMethod: this.selectedPaymentMethod,
+      deliveryInstructions: this.deliveryInstructions || undefined,
+      scheduledSlot: this.scheduledSlot || undefined
+    };
+
+    this.orderService.checkout(dto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (order) => {
+        this.cartService.clearCart();
+        this.router.navigate(['/customer/order-tracking', order.id]);
+      },
+      error: (err) => {
+        this.errorMessage = err?.error?.message || 'Failed to place order. Please try again.';
+        this.isPlacingOrder = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

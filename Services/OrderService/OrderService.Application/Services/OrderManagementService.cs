@@ -11,43 +11,44 @@ namespace OrderService.Application.Services
     public class OrderManagementService : IOrderService
     {
         private readonly IOrderRepository _orderRepository;
+        private readonly IRestaurantOrderRepository _restaurantOrderRepository;
         private readonly ICartRepository _cartRepository;
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IDeliveryAssignmentRepository _deliveryAssignmentRepository;
+        private readonly IDeliveryAgentProfileRepository _agentProfileRepository;
         private readonly IAuthRepository _authRepository;
         private readonly IOrderStatusPublisher _orderStatusPublisher;
         private readonly ICatalogRepository _catalogRepository;
 
         public OrderManagementService(
             IOrderRepository orderRepository,
+            IRestaurantOrderRepository restaurantOrderRepository,
             ICartRepository cartRepository,
             IPaymentRepository paymentRepository,
+            IDeliveryAssignmentRepository deliveryAssignmentRepository,
+            IDeliveryAgentProfileRepository agentProfileRepository,
             IAuthRepository authRepository,
             IOrderStatusPublisher orderStatusPublisher,
             ICatalogRepository catalogRepository)
         {
             _orderRepository = orderRepository;
+            _restaurantOrderRepository = restaurantOrderRepository;
             _cartRepository = cartRepository;
             _paymentRepository = paymentRepository;
+            _deliveryAssignmentRepository = deliveryAssignmentRepository;
+            _agentProfileRepository = agentProfileRepository;
             _authRepository = authRepository;
             _orderStatusPublisher = orderStatusPublisher;
             _catalogRepository = catalogRepository;
         }
 
-        public async Task<OrderResponseDTO> PlaceOrderAsync(PlaceOrderDTO dto, string customerId, string token)
+        // ─────────────────────────────────────────────────────────────────────
+        // CHECKOUT: compile all active carts → parent Order + N sub-orders
+        // ─────────────────────────────────────────────────────────────────────
+        public async Task<OrderResponseDTO> CheckoutAsync(
+            CheckoutDTO dto, string customerId, string customerName, string token)
         {
-            var cart = await _cartRepository.GetById(dto.CartId);
-            if (cart == null)
-                throw new NotFoundException("Cart", dto.CartId);
-
-            if (cart.CustomerId != customerId)
-                throw new ForbiddenException("You do not have access to this cart.");
-
-            if (cart.Status != CartStatus.Active)
-                throw new BadRequestException("Cart is not active and cannot be used to place an order.");
-
-            if (!cart.CartItems.Any())
-                throw new BadRequestException("Cart has no items.");
-
+            // 1. Validate address
             var address = await _authRepository.GetAddressById(dto.AddressId, token);
             if (address == null)
                 throw new NotFoundException("Address", dto.AddressId);
@@ -55,130 +56,191 @@ namespace OrderService.Application.Services
             if (address.UserId != customerId)
                 throw new ForbiddenException("The selected address does not belong to you.");
 
-            // Get restaurant details for validation
-            var restaurant = await _catalogRepository.GetRestaurantById(cart.RestaurantId);
-            if (restaurant == null)
-                throw new NotFoundException("Restaurant", cart.RestaurantId);
+            // 2. Load all active carts for this customer
+            var allCarts = await _cartRepository.GetByCustomerId(customerId);
+            var activeCarts = allCarts
+                .Where(c => c.Status == CartStatus.Active && c.CartItems.Any())
+                .ToList();
 
-            if (!restaurant.IsActive)
-                throw new BadRequestException("The restaurant is currently inactive and not accepting orders.");
+            if (!activeCarts.Any())
+                throw new BadRequestException("You have no active carts with items to checkout.");
 
-            if (!restaurant.IsApproved)
-                throw new BadRequestException("The restaurant is not approved yet and cannot accept orders.");
+            // 3. Validate each cart (restaurant active, approved, open, service area, items)
+            var restaurantOrders = new List<RestaurantOrder>();
+            decimal grandTotal = 0;
 
-            // SERVICE AREA VALIDATION: Check if delivery address pincode is serviceable
-            var isServiceable = await _catalogRepository.IsServiceAreaAvailable(cart.RestaurantId, address.Pincode);
-            if (!isServiceable)
+            foreach (var cart in activeCarts)
             {
-                throw new BadRequestException(
-                    $"Sorry, the restaurant does not deliver to pincode {address.Pincode}. Please select a different address or restaurant.");
+                var restaurant = await _catalogRepository.GetRestaurantById(cart.RestaurantId);
+                if (restaurant == null)
+                    throw new NotFoundException("Restaurant", cart.RestaurantId);
+
+                if (!restaurant.IsActive)
+                    throw new BadRequestException($"Restaurant '{restaurant.Name}' is currently inactive.");
+
+                if (!restaurant.IsApproved)
+                    throw new BadRequestException($"Restaurant '{restaurant.Name}' is not yet approved.");
+
+                var currentTime = TimeOnly.FromDateTime(DateTime.Now);
+                if (currentTime < restaurant.OpeningTime || currentTime > restaurant.ClosingTime)
+                    throw new BadRequestException(
+                        $"Restaurant '{restaurant.Name}' is currently closed " +
+                        $"({restaurant.OpeningTime:HH:mm} – {restaurant.ClosingTime:HH:mm}).");
+
+                var isServiceable = await _catalogRepository.IsServiceAreaAvailable(cart.RestaurantId, address.Pincode);
+                if (!isServiceable)
+                    throw new BadRequestException(
+                        $"Restaurant '{restaurant.Name}' does not deliver to pincode {address.Pincode}.");
+
+                // Validate every cart item is still live
+                decimal subTotal = 0;
+                var orderItems = new List<OrderItem>();
+
+                foreach (var cartItem in cart.CartItems)
+                {
+                    var menuItem = await _catalogRepository.GetItemById(cartItem.MenuItemId);
+                    if (menuItem == null)
+                        throw new BadRequestException(
+                            $"'{cartItem.MenuItemName}' from '{restaurant.Name}' is no longer available.");
+
+                    if (!menuItem.IsAvailable)
+                        throw new BadRequestException(
+                            $"'{cartItem.MenuItemName}' from '{restaurant.Name}' is currently unavailable.");
+
+                    var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
+                    if (category == null || !category.IsActive)
+                        throw new BadRequestException(
+                            $"'{cartItem.MenuItemName}' belongs to an inactive category.");
+
+                    var lineTotal = cartItem.UnitPrice * cartItem.Quantity;
+                    subTotal += lineTotal;
+
+                    orderItems.Add(new OrderItem
+                    {
+                        Id = Guid.NewGuid(),
+                        MenuItemId = cartItem.MenuItemId,
+                        MenuItemName = cartItem.MenuItemName,
+                        UnitPrice = cartItem.UnitPrice,
+                        Quantity = cartItem.Quantity,
+                        TotalPrice = lineTotal
+                    });
+                }
+
+                grandTotal += subTotal;
+
+                restaurantOrders.Add(new RestaurantOrder
+                {
+                    Id = Guid.NewGuid(),
+                    RestaurantId = cart.RestaurantId,
+                    RestaurantName = restaurant.Name,
+                    // Store restaurant address so delivery agent knows where to pick up
+                    RestaurantAddress = restaurant.FormattedAddress,
+                    SubTotal = subTotal,
+                    Status = RestaurantOrderStatus.Pending,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow,
+                    OrderItems = orderItems
+                });
             }
 
-            // OPERATING HOURS VALIDATION: Check if restaurant is currently open
-            var currentTime = TimeOnly.FromDateTime(DateTime.Now);
-            if (currentTime < restaurant.OpeningTime || currentTime > restaurant.ClosingTime)
-            {
-                throw new BadRequestException(
-                    $"The restaurant is currently closed. Operating hours: {restaurant.OpeningTime:HH:mm} - {restaurant.ClosingTime:HH:mm}");
-            }
-
-            // RE-VALIDATE CART ITEMS: Ensure all items are still available and their categories are active
-            foreach (var cartItem in cart.CartItems)
-            {
-                var menuItem = await _catalogRepository.GetItemById(cartItem.MenuItemId);
-                if (menuItem == null)
-                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' is no longer available.");
-
-                if (!menuItem.IsAvailable)
-                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' is currently unavailable.");
-
-                var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
-                if (category == null || !category.IsActive)
-                    throw new BadRequestException($"Menu item '{cartItem.MenuItemName}' belongs to an inactive category.");
-            }
-
-            var totalAmount = cart.CartItems.Sum(ci => ci.UnitPrice * ci.Quantity);
-
+            // 4. Create parent Order
             var order = new Order
             {
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
-                RestaurantId = cart.RestaurantId,
-                Status = OrderStatus.Pending,
+                CustomerName = customerName,
                 Street = address.Street,
                 City = address.City,
                 State = address.State,
                 Pincode = address.Pincode,
                 DeliveryInstructions = dto.DeliveryInstructions,
                 ScheduledSlot = dto.ScheduledSlot,
-                TotalAmount = totalAmount,
+                TotalAmount = grandTotal,
+                Status = OrderStatus.Placed,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                OrderItems = cart.CartItems.Select(ci => new OrderItem
-                {
-                    Id = Guid.NewGuid(),
-                    MenuItemId = ci.MenuItemId,
-                    MenuItemName = ci.MenuItemName,
-                    UnitPrice = ci.UnitPrice,
-                    Quantity = ci.Quantity,
-                    TotalPrice = ci.UnitPrice * ci.Quantity
-                }).ToList()
+                RestaurantOrders = restaurantOrders
             };
 
             await _orderRepository.AddAsync(order);
 
+            // 5. Create Payment record
             var payment = new Payment
             {
                 Id = Guid.NewGuid(),
                 OrderId = order.Id,
                 Method = dto.PaymentMethod,
-                Amount = totalAmount,
+                Amount = grandTotal,
+                // COD stays Pending until delivery; Online stays Pending until gateway confirms
                 Status = PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-
             await _paymentRepository.AddAsync(payment);
 
-            await _orderStatusPublisher.PublishOrderStatus(order.Id, order.CustomerId, restaurant.Name, order.TotalAmount, order.Status.ToString(), order.CreatedAt);
+            // 6. Auto-assign delivery agent (use delivery address pincode)
+            await TryAutoAssignAgentAsync(order, address.Pincode);
 
-            cart.Status = CartStatus.Ordered;
-            cart.UpdatedAt = DateTime.UtcNow;
-            await _cartRepository.UpdateAsync(cart);
+            // 7. Mark all carts as Ordered
+            foreach (var cart in activeCarts)
+            {
+                cart.Status = CartStatus.Ordered;
+                cart.UpdatedAt = DateTime.UtcNow;
+                await _cartRepository.UpdateAsync(cart);
+            }
 
-            return MapToResponse(order, null);
+            // 8. Publish event
+            await _orderStatusPublisher.PublishOrderStatus(
+                order.Id, order.CustomerId,
+                string.Join(", ", restaurantOrders.Select(ro => ro.RestaurantName)),
+                order.TotalAmount, order.Status.ToString(), order.CreatedAt);
+
+            // 9. Return full order with fresh data (includes navigation properties)
+            var saved = await _orderRepository.GetByIdWithDetails(order.Id);
+            return MapToOrderResponse(saved!, payment);
         }
 
-        public async Task<IEnumerable<OrderResponseDTO>> GetOrderHistoryAsync(string userId, string userRole)
+        // ─────────────────────────────────────────────────────────────────────
+        // Auto-assign delivery agent by pincode
+        // ─────────────────────────────────────────────────────────────────────
+        private async Task TryAutoAssignAgentAsync(Order order, string deliveryPincode)
         {
-            IEnumerable<Order> orders;
+            var availableAgents = await _agentProfileRepository.GetActiveByPincode(deliveryPincode);
+            var agent = availableAgents.FirstOrDefault();
 
-            if (userRole == "Customer")
+            if (agent == null)
             {
-                // Get orders placed by the customer
-                orders = await _orderRepository.GetByCustomerId(userId);
-            }
-            else if (userRole == "Partner")
-            {
-                // Get all restaurants owned by the partner
-                var restaurants = await _catalogRepository.GetRestaurantsByOwnerId(userId);
-                var restaurantIds = restaurants.Select(r => r.Id).ToList();
-
-                // Get all orders for those restaurants
-                var allOrders = new List<Order>();
-                foreach (var restaurantId in restaurantIds)
-                {
-                    var restaurantOrders = await _orderRepository.GetByRestaurantId(restaurantId);
-                    allOrders.AddRange(restaurantOrders);
-                }
-                orders = allOrders.OrderByDescending(o => o.CreatedAt);
-            }
-            else
-            {
-                orders = new List<Order>();
+                // No agent available — order still proceeds; admin can assign manually later
+                return;
             }
 
-            return orders.Select(o => MapToResponse(o, null));
+            var assignment = new DeliveryAssignment
+            {
+                Id = Guid.NewGuid(),
+                OrderId = order.Id,
+                DeliveryAgentId = agent.AgentUserId,
+                Status = DeliveryStatus.Assigned
+            };
+
+            await _deliveryAssignmentRepository.AddAsync(assignment);
+
+            // Mark agent as inactive to avoid double-assignment until they finish
+            agent.IsActive = false;
+            agent.LastUpdated = DateTime.UtcNow;
+            await _agentProfileRepository.UpdateAsync(agent);
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // HISTORY & DETAIL
+        // ─────────────────────────────────────────────────────────────────────
+        public async Task<IEnumerable<OrderResponseDTO>> GetOrderHistoryAsync(string customerId)
+        {
+            var orders = await _orderRepository.GetByCustomerId(customerId);
+            return orders.Select(o =>
+            {
+                var payment = o.Payment;
+                return MapToOrderResponse(o, payment);
+            });
         }
 
         public async Task<OrderResponseDTO> GetOrderByIdAsync(Guid id, string customerId)
@@ -190,23 +252,28 @@ namespace OrderService.Application.Services
             if (order.CustomerId != customerId)
                 throw new ForbiddenException("You do not have access to this order.");
 
-            var payment = await _paymentRepository.GetByOrderId(id);
-            var paymentDto = payment == null ? null : MapPaymentToDTO(payment);
-
-            return MapToResponse(order, paymentDto);
+            return MapToOrderResponse(order, order.Payment);
         }
 
+        // ─────────────────────────────────────────────────────────────────────
+        // CANCEL (customer-only, within 10 mins, before any restaurant accepts)
+        // ─────────────────────────────────────────────────────────────────────
         public async Task CancelOrderAsync(Guid id, string customerId, CancelOrderDTO dto)
         {
-            var order = await _orderRepository.GetById(id);
+            var order = await _orderRepository.GetByIdWithDetails(id);
             if (order == null)
                 throw new NotFoundException("Order", id);
 
             if (order.CustomerId != customerId)
                 throw new ForbiddenException("You do not have access to this order.");
 
-            if (!CanCancelOrder(order.Status))
-                throw new BadRequestException($"Order cannot be cancelled in status '{order.Status}'.");
+            // Only cancellable if no restaurant has accepted yet
+            bool anyAccepted = order.RestaurantOrders
+                .Any(ro => ro.Status != RestaurantOrderStatus.Pending);
+
+            if (anyAccepted)
+                throw new BadRequestException(
+                    "Cannot cancel — at least one restaurant has already started processing your order.");
 
             if (DateTime.UtcNow - order.CreatedAt > TimeSpan.FromMinutes(10))
                 throw new BadRequestException("Cancellation window of 10 minutes has passed.");
@@ -214,58 +281,46 @@ namespace OrderService.Application.Services
             order.Status = OrderStatus.CancelledByCustomer;
             order.CancellationReason = dto.CancellationReason;
             order.UpdatedAt = DateTime.UtcNow;
-            await _orderRepository.UpdateAsync(order);
 
-            var restaurant = await _catalogRepository.GetRestaurantById(order.RestaurantId);
-
-            await _orderStatusPublisher.PublishOrderStatus(order.Id, order.CustomerId, restaurant.Name, order.TotalAmount, order.Status.ToString(), order.CreatedAt);
-        }
-
-        public async Task UpdateOrderStatusAsync(Guid id, UpdateOrderStatusDTO dto)
-        {
-            var order = await _orderRepository.GetById(id);
-            if (order == null)
-                throw new NotFoundException("Order", id);
-
-            if (!IsValidTransition(order.Status, dto.Status))
-                throw new BadRequestException($"Cannot transition from '{order.Status}' to '{dto.Status}'.");
-
-            order.Status = dto.Status;
-            order.UpdatedAt = DateTime.UtcNow;
-            await _orderRepository.UpdateAsync(order);
-
-            var restaurant = await _catalogRepository.GetRestaurantById(order.RestaurantId);
-
-            await _orderStatusPublisher.PublishOrderStatus(order.Id, order.CustomerId, restaurant.Name, order.TotalAmount, order.Status.ToString(), order.CreatedAt);
-        }
-
-        private static bool CanCancelOrder(OrderStatus status)
-        {
-            return status == OrderStatus.Pending;
-        }
-
-        private static bool IsValidTransition(OrderStatus from, OrderStatus to)
-        {
-            return (from, to) switch
+            // Cancel all sub-orders
+            foreach (var ro in order.RestaurantOrders)
             {
-                (OrderStatus.Pending, OrderStatus.RestaurantAccepted) => true,
-                (OrderStatus.Pending, OrderStatus.RestaurantRejected) => true,
-                (OrderStatus.RestaurantAccepted, OrderStatus.Preparing) => true,
-                (OrderStatus.Preparing, OrderStatus.ReadyForPickup) => true,
-                (OrderStatus.ReadyForPickup, OrderStatus.PickedUp) => true,
-                (OrderStatus.PickedUp, OrderStatus.OutForDelivery) => true,
-                (OrderStatus.OutForDelivery, OrderStatus.Delivered) => true,
-                _ => false
-            };
+                ro.Status = RestaurantOrderStatus.Cancelled;
+                ro.CancellationReason = "Order cancelled by customer.";
+                ro.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _orderRepository.UpdateAsync(order);
+
+            // Free up the delivery agent if one was assigned
+            if (order.DeliveryAssignment != null)
+            {
+                var agentProfile = await _agentProfileRepository
+                    .GetByAgentUserId(order.DeliveryAssignment.DeliveryAgentId);
+                if (agentProfile != null)
+                {
+                    agentProfile.IsActive = true;
+                    agentProfile.LastUpdated = DateTime.UtcNow;
+                    await _agentProfileRepository.UpdateAsync(agentProfile);
+                }
+            }
+
+            await _orderStatusPublisher.PublishOrderStatus(
+                order.Id, order.CustomerId,
+                string.Join(", ", order.RestaurantOrders.Select(ro => ro.RestaurantName)),
+                order.TotalAmount, order.Status.ToString(), order.CreatedAt);
         }
 
-        private static OrderResponseDTO MapToResponse(Order order, PaymentResponseDTO? payment)
+        // ─────────────────────────────────────────────────────────────────────
+        // MAPPING HELPERS
+        // ─────────────────────────────────────────────────────────────────────
+        private static OrderResponseDTO MapToOrderResponse(Order order, Payment? payment)
         {
             return new OrderResponseDTO
             {
                 Id = order.Id,
                 CustomerId = order.CustomerId,
-                RestaurantId = order.RestaurantId,
+                CustomerName = order.CustomerName,
                 Status = order.Status.ToString(),
                 Street = order.Street,
                 City = order.City,
@@ -277,31 +332,32 @@ namespace OrderService.Application.Services
                 CancellationReason = order.CancellationReason,
                 CreatedAt = order.CreatedAt,
                 UpdatedAt = order.UpdatedAt,
-                Items = order.OrderItems.Select(oi => new OrderItemResponseDTO
+                Payment = payment == null ? null : new OrderPaymentDTO
                 {
-                    Id = oi.Id,
-                    MenuItemId = oi.MenuItemId,
-                    MenuItemName = oi.MenuItemName,
-                    UnitPrice = oi.UnitPrice,
-                    Quantity = oi.Quantity,
-                    TotalPrice = oi.TotalPrice
-                }).ToList(),
-             
-            };
-        }
-
-        private static PaymentResponseDTO MapPaymentToDTO(Payment payment)
-        {
-            return new PaymentResponseDTO
-            {
-                Id = payment.Id,
-                OrderId = payment.OrderId,
-                Method = payment.Method.ToString(),
-                Status = payment.Status.ToString(),
-                Amount = payment.Amount,
-                TransactionReference = payment.TransactionReference,
-                CreatedAt = payment.CreatedAt,
-                UpdatedAt = payment.UpdatedAt
+                    Id = payment.Id,
+                    Method = payment.Method.ToString(),
+                    Status = payment.Status.ToString(),
+                    Amount = payment.Amount,
+                    TransactionReference = payment.TransactionReference
+                },
+                RestaurantOrders = order.RestaurantOrders.Select(ro => new RestaurantOrderSummaryDTO
+                {
+                    Id = ro.Id,
+                    RestaurantId = ro.RestaurantId,
+                    RestaurantName = ro.RestaurantName,
+                    Status = ro.Status.ToString(),
+                    SubTotal = ro.SubTotal,
+                    CancellationReason = ro.CancellationReason,
+                    Items = ro.OrderItems.Select(oi => new OrderItemResponseDTO
+                    {
+                        Id = oi.Id,
+                        MenuItemId = oi.MenuItemId,
+                        MenuItemName = oi.MenuItemName,
+                        UnitPrice = oi.UnitPrice,
+                        Quantity = oi.Quantity,
+                        TotalPrice = oi.TotalPrice
+                    }).ToList()
+                }).ToList()
             };
         }
     }

@@ -1,3 +1,4 @@
+import { AdminSidebarComponent } from '../../../shared/components/admin-sidebar/admin-sidebar.component';
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -6,10 +7,11 @@ import { AdminService, AdminDashboardDto } from '../../../core/services/admin.se
 import { Subject, EMPTY } from 'rxjs';
 import { takeUntil, finalize, catchError } from 'rxjs/operators';
 
+
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AdminSidebarComponent],
   templateUrl: './reports.component.html',
   styleUrl: './reports.component.css'
 })

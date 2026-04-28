@@ -1,32 +1,18 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
+import { OrderService } from '../../../core/services/order.service';
 import { NavbarComponent } from '../../../shared/components/navbar/navbar.component';
-
-interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
-
-interface OrderStatus {
-  step: number;
-  title: string;
-  description: string;
-  time: string;
-  icon: string;
-  completed: boolean;
-  active: boolean;
-}
-
-interface DeliveryAgent {
-  name: string;
-  rating: number;
-  totalDeliveries: string;
-  vehicle: string;
-  licensePlate: string;
-  imageUrl: string;
-}
+import {
+  OrderResponseDTO,
+  RestaurantOrderSummaryDTO,
+  OrderStatus,
+  RestaurantOrderStatus,
+  CancelOrderDTO
+} from '../../../shared/models/order.model';
 
 @Component({
   selector: 'app-order-tracking',
@@ -35,82 +21,136 @@ interface DeliveryAgent {
   templateUrl: './order-tracking.component.html',
   styleUrls: ['./order-tracking.component.css']
 })
-export class OrderTrackingComponent implements OnInit {
-  orderId!: string;
-  orderNumber: string = 'QB-8829';
-  restaurantName: string = 'The Burger Theory';
-  
-  orderItems: OrderItem[] = [];
-  orderStatuses: OrderStatus[] = [];
-  deliveryAgent: DeliveryAgent | null = null;
-  
-  subtotal: number = 0;
-  deliveryFee: number = 0;
-  total: number = 0;
-  
-  estimatedArrival: string = '12:45';
-  currentLocation: string = 'Sunset Boulevard, 42';
-  distanceFromLocation: string = '2.4 miles';
-  
-  isLoading: boolean = false;
+export class OrderTrackingComponent implements OnInit, OnDestroy {
+
+  order: OrderResponseDTO | null = null;
+  isLoading = true;
+  errorMessage = '';
+  isCancelling = false;
+  cancelErrorMessage = '';
+  showCancelConfirm = false;
+
+  private orderId: string = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
+    private orderService: OrderService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
-      this.orderId = params['id'];
-      this.loadOrderDetails();
+    this.orderId = this.route.snapshot.paramMap.get('id') || '';
+    if (this.orderId) {
+      this.loadOrder();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadOrder(): void {
+    this.isLoading = true;
+    this.orderService.getOrderById(this.orderId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (order) => {
+        this.order = order;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load order details.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
-  loadOrderDetails(): void {
-    this.isLoading = true;
-
-    // TODO: Implement actual API call to fetch order details
-    // For now, showing empty state
-    this.isLoading = false;
-    this.cdr.detectChanges();
-    
-    // Example of what the API call should look like:
-    // this.orderService.getOrderById(this.orderId).subscribe({
-    //   next: (order) => {
-    //     this.orderItems = order.items;
-    //     this.subtotal = order.subtotal;
-    //     this.deliveryFee = order.deliveryFee;
-    //     this.total = order.totalAmount;
-    //     this.deliveryAgent = order.deliveryAgent;
-    //     this.orderStatuses = this.mapOrderStatus(order.status);
-    //     this.isLoading = false;
-    //     this.cdr.detectChanges();
-    //   },
-    //   error: (error) => {
-    //     console.error('Error loading order:', error);
-    //     this.isLoading = false;
-    //     this.cdr.detectChanges();
-    //   }
-    // });
+  get canCancel(): boolean {
+    if (!this.order) return false;
+    const isEarlyEnough = (Date.now() - new Date(this.order.createdAt).getTime()) < 10 * 60 * 1000;
+    const allPending = this.order.restaurantOrders.every(
+      ro => ro.status === RestaurantOrderStatus.Pending
+    );
+    return isEarlyEnough && allPending && !this.isCancelling;
   }
 
-  callDeliveryAgent(): void {
-    // TODO: Implement call functionality
-    console.log('Calling delivery agent...');
+  cancelOrder(): void {
+    if (!this.order || !this.canCancel) return;
+    this.isCancelling = true;
+    this.cancelErrorMessage = '';
+    const dto: CancelOrderDTO = { cancellationReason: 'Cancelled by customer.' };
+    this.orderService.cancelOrder(this.order.id, dto).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.showCancelConfirm = false;
+        this.loadOrder(); // refresh status
+      },
+      error: (err) => {
+        this.cancelErrorMessage = err?.error?.message || 'Failed to cancel order.';
+        this.isCancelling = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  chatWithAgent(): void {
-    // TODO: Implement chat functionality
-    console.log('Opening chat with agent...');
+  /** Overall order status steps for the progress bar */
+  readonly orderSteps = [
+    { label: 'Order Placed', status: OrderStatus.Placed },
+    { label: 'In Progress', status: OrderStatus.InProgress },
+    { label: 'Out for Delivery', status: OrderStatus.OutForDelivery },
+    { label: 'Delivered', status: OrderStatus.Delivered }
+  ];
+
+  readonly statusOrder = [
+    OrderStatus.Placed,
+    OrderStatus.InProgress,
+    OrderStatus.OutForDelivery,
+    OrderStatus.Delivered
+  ];
+
+  isStepCompleted(stepStatus: OrderStatus): boolean {
+    const orderIdx = this.statusOrder.indexOf(this.order?.status as OrderStatus);
+    const stepIdx = this.statusOrder.indexOf(stepStatus);
+    return orderIdx >= stepIdx;
   }
 
-  contactSupport(): void {
-    // TODO: Implement support contact
-    console.log('Contacting support...');
+  /** Per-restaurant status colour */
+  getSubStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      [RestaurantOrderStatus.Pending]:       'bg-zinc-500/20 text-zinc-300 border-zinc-500/40',
+      [RestaurantOrderStatus.Accepted]:      'bg-blue-500/15 text-blue-300 border-blue-500/40',
+      [RestaurantOrderStatus.Preparing]:     'bg-yellow-500/15 text-yellow-300 border-yellow-500/40',
+      [RestaurantOrderStatus.ReadyForPickup]:'bg-orange-500/15 text-orange-300 border-orange-500/40',
+      [RestaurantOrderStatus.PickedUp]:      'bg-purple-500/15 text-purple-300 border-purple-500/40',
+      [RestaurantOrderStatus.Cancelled]:     'bg-red-500/15 text-red-300 border-red-500/40',
+      [RestaurantOrderStatus.Rejected]:      'bg-red-500/15 text-red-300 border-red-500/40',
+    };
+    return map[status] ?? 'bg-zinc-500/20 text-zinc-300 border-zinc-500/40';
   }
 
-  getProgressPercentage(): number {
-    const completedSteps = this.orderStatuses.filter(s => s.completed).length;
-    return (completedSteps / this.orderStatuses.length) * 100;
+  getSubStatusIcon(status: string): string {
+    const map: Record<string, string> = {
+      [RestaurantOrderStatus.Pending]:       'schedule',
+      [RestaurantOrderStatus.Accepted]:      'thumb_up',
+      [RestaurantOrderStatus.Preparing]:     'cooking',
+      [RestaurantOrderStatus.ReadyForPickup]:'inventory_2',
+      [RestaurantOrderStatus.PickedUp]:      'directions_bike',
+      [RestaurantOrderStatus.Cancelled]:     'cancel',
+      [RestaurantOrderStatus.Rejected]:      'cancel',
+    };
+    return map[status] ?? 'schedule';
+  }
+
+  getOverallStatusLabel(status: string): string {
+    const map: Record<string, string> = {
+      [OrderStatus.Placed]:              '🕐 Waiting for restaurants',
+      [OrderStatus.InProgress]:          '👨‍🍳 Restaurants are preparing',
+      [OrderStatus.OutForDelivery]:      '🛵 Out for delivery',
+      [OrderStatus.Delivered]:           '✅ Delivered',
+      [OrderStatus.CancelledByCustomer]: '❌ Cancelled by you',
+      [OrderStatus.CancelledBySystem]:   '❌ Cancelled',
+    };
+    return map[status] ?? status;
   }
 }

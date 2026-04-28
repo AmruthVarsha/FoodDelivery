@@ -2,8 +2,8 @@ namespace OrderService.Domain.Enums
 {
     public enum PaymentMethod
     {
-        Card,
-        Wallet,
-        COD
+        COD,    // Cash on Delivery — confirmed on delivery
+        Online  // Online gateway (Razorpay-ready) — pre-paid
     }
 }
+

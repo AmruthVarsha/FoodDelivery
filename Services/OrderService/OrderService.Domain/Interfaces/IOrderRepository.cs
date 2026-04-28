@@ -5,12 +5,15 @@ namespace OrderService.Domain.Interfaces
     public interface IOrderRepository
     {
         Task<Order?> GetById(Guid id);
+
+        /// <summary>Includes RestaurantOrders + their OrderItems + Payment + DeliveryAssignment</summary>
         Task<Order?> GetByIdWithDetails(Guid id);
+
         Task<IEnumerable<Order>> GetByCustomerId(string customerId);
-        Task<IEnumerable<Order>> GetByRestaurantId(Guid restaurantId);
         Task<IEnumerable<Order>> GetAll();
         Task AddAsync(Order order);
         Task UpdateAsync(Order order);
         Task DeleteAsync(Guid id);
     }
 }
+
