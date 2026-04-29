@@ -23,6 +23,9 @@ namespace OrderService.Application.DTOs.Order
         public string DeliveryPincode { get; set; } = string.Empty;
         public string? DeliveryInstructions { get; set; }
 
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+
         // Only this restaurant's items
         public List<OrderItemResponseDTO> Items { get; set; } = new();
     }

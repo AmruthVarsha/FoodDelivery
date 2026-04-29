@@ -171,8 +171,8 @@ namespace OrderService.Application.Services
                 OrderId = order.Id,
                 Method = dto.PaymentMethod,
                 Amount = grandTotal,
-                // COD stays Pending until delivery; Online stays Pending until gateway confirms
-                Status = PaymentStatus.Pending,
+                // COD stays Pending until delivery; Online is marked as Completed immediately (per requirements)
+                Status = dto.PaymentMethod == PaymentMethod.Online ? PaymentStatus.Completed : PaymentStatus.Pending,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -193,7 +193,8 @@ namespace OrderService.Application.Services
             await _orderStatusPublisher.PublishOrderStatus(
                 order.Id, order.CustomerId,
                 string.Join(", ", restaurantOrders.Select(ro => ro.RestaurantName)),
-                order.TotalAmount, order.Status.ToString(), order.CreatedAt);
+                order.TotalAmount, order.Status.ToString(), order.CreatedAt,
+                payment.Method.ToString(), payment.Status.ToString());
 
             // 9. Return full order with fresh data (includes navigation properties)
             var saved = await _orderRepository.GetByIdWithDetails(order.Id);
@@ -305,10 +306,13 @@ namespace OrderService.Application.Services
                 }
             }
 
+            var payment = await _paymentRepository.GetByOrderId(order.Id);
+
             await _orderStatusPublisher.PublishOrderStatus(
                 order.Id, order.CustomerId,
                 string.Join(", ", order.RestaurantOrders.Select(ro => ro.RestaurantName)),
-                order.TotalAmount, order.Status.ToString(), order.CreatedAt);
+                order.TotalAmount, order.Status.ToString(), order.CreatedAt,
+                payment?.Method.ToString() ?? "Unknown", payment?.Status.ToString() ?? "Unknown");
         }
 
         // ─────────────────────────────────────────────────────────────────────

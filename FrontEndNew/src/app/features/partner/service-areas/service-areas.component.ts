@@ -91,14 +91,17 @@ export class PartnerServiceAreasComponent implements OnInit, OnDestroy {
     const trimmed = this.newPincode.trim();
     if (!trimmed) {
       this.pincodeError = 'Pincode is required.';
+      this.cdr.markForCheck();
       return false;
     }
     if (!/^\d{6}$/.test(trimmed)) {
       this.pincodeError = 'Pincode must be exactly 6 digits.';
+      this.cdr.markForCheck();
       return false;
     }
     if (this.serviceAreas.some(a => a.pincode === trimmed)) {
       this.pincodeError = 'This pincode is already in your service area.';
+      this.cdr.markForCheck();
       return false;
     }
     return true;
@@ -118,7 +121,9 @@ export class PartnerServiceAreasComponent implements OnInit, OnDestroy {
           this.successMessage = `Pincode ${this.newPincode.trim()} added successfully.`;
           this.newPincode = '';
           this.isAdding = false;
+          this.cdr.markForCheck();
           this.loadServiceAreas(this.selectedRestaurant!.id);
+          setTimeout(() => { this.successMessage = ''; this.cdr.markForCheck(); }, 3000);
         },
         error: (err) => {
           this.errorMessage = err?.error?.message || 'Failed to add pincode.';

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -11,6 +11,8 @@ namespace OrderService.Domain.Interfaces
         string restaurantName,
         decimal totalAmount,
         string status,
-        DateTime placedAt);
+        DateTime placedAt,
+        string paymentMethod,
+        string paymentStatus);
     }
 }

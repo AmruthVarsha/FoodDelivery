@@ -120,6 +120,8 @@ export interface PartnerOrderResponseDTO {
   deliveryCity: string;
   deliveryPincode: string;
   deliveryInstructions?: string;
+  paymentMethod: string;
+  paymentStatus: string;
   items: OrderItemResponseDTO[];
 }
 
@@ -150,6 +152,8 @@ export interface DeliveryOrderResponseDTO {
   customerName: string;
   overallStatus: string;
   totalAmount: number;
+  paymentMethod: string;
+  paymentStatus: string;
   dropoffStreet: string;
   dropoffCity: string;
   dropoffState: string;
@@ -157,9 +161,13 @@ export interface DeliveryOrderResponseDTO {
   deliveryInstructions?: string;
   assignmentId: string;
   assignmentStatus: string;
-  pickedUpAt?: string;
-  deliveredAt?: string;
+  pickedUpAt?: Date;
+  deliveredAt?: Date;
   restaurantStops: DeliveryRestaurantStopDTO[];
+}
+
+export interface UpdatePaymentStatusDTO {
+  status: PaymentStatus;
 }
 
 export interface UpdateDeliveryStatusDTO {

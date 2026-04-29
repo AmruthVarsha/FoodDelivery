@@ -1,4 +1,4 @@
-﻿using AuthService.Domain.Entities;
+using AuthService.Domain.Entities;
 using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Identity;
 using AuthService.Infrastructure.Persistence;
@@ -41,6 +41,7 @@ namespace AuthService.Infrastructure.Repositories
             appUser.Email = user.Email;
             appUser.EmailConfirmed = user.EmailConfirmed;
             appUser.PhoneNumber = user.PhoneNo;
+            appUser.IsActive = user.IsActive; // ← persist activation status from domain
         }
 
         public async Task<User?> GetByIdAsync(string userId)

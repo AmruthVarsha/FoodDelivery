@@ -38,7 +38,9 @@ namespace AuthService.Application.Service
                 PhoneNo = user.PhoneNo,
                 IsEmailConfirmed = user.EmailConfirmed,
                 IsTwoFactorEnabled = user.TwoFactorEnabled,
-                Role = roles != null && roles.Any() ? string.Join(",", roles) : string.Empty
+                Role = roles != null && roles.Any() ? string.Join(",", roles) : string.Empty,
+                IsActive = user.IsActive,
+                CreatedAt = null // CreatedAt not yet available in the User domain entity
             };
         }
 

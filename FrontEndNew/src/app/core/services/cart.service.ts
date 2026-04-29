@@ -110,11 +110,15 @@ export class CartService {
 
       // ── Step 2: Sync quantity update to backend (background) ─────────────
       return this.getOrCreateCart(restaurantId).pipe(
-        switchMap(cartId => {
-          if (!existing.backendItemId) return of(null); // not yet synced, skip
+        switchMap(_cartId => {
+          // Read the current quantity from the LIVE array at call time — not the
+          // stale `previousQuantity + 1` snapshot — so rapid successive increments
+          // don't overwrite each other with an outdated value.
+          const liveItem = this.cartItems.value.find(i => i.menuItem.id === menuItem.id);
+          if (!liveItem?.backendItemId) return of(null); // not yet synced, skip
           return this.api.put<BackendCartItemResponse>(API_ENDPOINTS.CART.UPDATE_ITEM, {
-            id: existing.backendItemId,
-            quantity: previousQuantity + 1
+            id: liveItem.backendItemId,
+            quantity: liveItem.quantity
           });
         }),
         catchError(err => {

@@ -44,6 +44,8 @@ namespace AdminService.Application.Services
                     RestaurantName = o.RestaurantName,
                     TotalAmount = o.TotalAmount,
                     Status = o.Status.ToString(),
+                    PaymentMethod = o.PaymentMethod,
+                    PaymentStatus = o.PaymentStatus,
                     PlacedAt = o.PlacedAt,
                     LastUpdatedAt = o.LastUpdatedAt
                 });
@@ -58,7 +60,7 @@ namespace AdminService.Application.Services
             if (order == null)
                 throw new NotFoundException("Order", orderId);
 
-            await _orderSummaryRepository.UpdateStatusAsync(orderId, dto.NewStatus, DateTime.UtcNow);
+            await _orderSummaryRepository.UpdateStatusAsync(orderId, dto.NewStatus, DateTime.UtcNow, order.PaymentMethod, order.PaymentStatus);
 
             var auditLog = new Domain.Entities.AuditLog
             {

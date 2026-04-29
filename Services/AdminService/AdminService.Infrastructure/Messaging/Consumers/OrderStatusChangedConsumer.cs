@@ -48,6 +48,8 @@ namespace AdminService.Infrastructure.Messaging.Consumers
                     RestaurantName = message.RestaurantName,
                     TotalAmount = message.TotalAmount,
                     Status = parsedStatus,
+                    PaymentMethod = message.PaymentMethod,
+                    PaymentStatus = message.PaymentStatus,
                     PlacedAt = message.PlacedAt,
                     LastUpdatedAt = DateTime.UtcNow
                 });
@@ -55,7 +57,7 @@ namespace AdminService.Infrastructure.Messaging.Consumers
             else
             {
                 await _orderSummaryRepository.UpdateStatusAsync(
-                    message.OrderId, parsedStatus, DateTime.UtcNow);
+                    message.OrderId, parsedStatus, DateTime.UtcNow, message.PaymentMethod, message.PaymentStatus);
             }
         }
     }

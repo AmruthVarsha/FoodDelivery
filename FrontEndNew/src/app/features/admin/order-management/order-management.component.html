@@ -48,6 +48,7 @@
             <th class="px-6 pb-4">Restaurant</th>
             <th class="px-6 pb-4">Customer</th>
             <th class="px-6 pb-4">Amount</th>
+            <th class="px-6 pb-4">Payment</th>
             <th class="px-6 pb-4">Status</th>
             <th class="px-6 pb-4">Date</th>
             <th class="px-6 pb-4 text-right">Actions</th>
@@ -62,6 +63,14 @@
               <td class="px-6 py-4 text-white">{{ order.restaurantName }}</td>
               <td class="px-6 py-4 text-gray-400">{{ order.customerName }}</td>
               <td class="px-6 py-4 text-white font-bold">₹{{ order.totalAmount }}</td>
+              <td class="px-6 py-4">
+                <div class="flex flex-col gap-1">
+                  <span class="text-xs text-white">{{ order.paymentMethod === 'COD' ? 'Cash' : 'Online' }}</span>
+                  <span [class]="order.paymentStatus === 'Completed' ? 'text-[10px] text-emerald-400 font-bold' : 'text-[10px] text-yellow-400 font-bold'">
+                    {{ order.paymentStatus === 'Completed' ? 'Paid' : 'Pending' }}
+                  </span>
+                </div>
+              </td>
               <td class="px-6 py-4">
                 <span class="px-3 py-1 rounded-full text-[10px] uppercase font-bold border" [ngClass]="getStatusColorClasses(order.status)">
                   {{ getStatusLabel(order.status) }}

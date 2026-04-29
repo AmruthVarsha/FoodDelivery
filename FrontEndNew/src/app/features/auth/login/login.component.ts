@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { finalize } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 import { LoginDTO } from '../../../shared/models/auth.model';
 
@@ -30,7 +31,8 @@ export class LoginComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -72,108 +74,84 @@ export class LoginComponent implements OnInit {
     
     console.log('Calling authService.login with:', { email: credentials.email, password: '***' });
 
-    this.authService.login(credentials).subscribe({
-      next: (response) => {
-        console.log('=== LOGIN SUCCESS ===');
-        console.log('Response:', response);
-        console.log('requireTwoFactor:', response.requireTwoFactor);
-        console.log('token:', response.token ? 'present' : 'null');
-        
-        // Check if 2FA is required
-        if (response.requireTwoFactor === true) {
-          console.log('✓✓✓ 2FA REQUIRED - REDIRECTING TO TWO-FACTOR PAGE ✓✓✓');
-          this.successMessage = 'Please check your email for the verification code.';
-          
-          this.router.navigate(['/auth/two-factor'], { 
-            queryParams: { email: credentials.email } 
-          }).then(success => {
-            console.log('✓ Navigation to two-factor SUCCESS:', success);
-          }).catch(err => {
-            console.error('✗ Navigation to two-factor FAILED:', err);
-          });
-          
-          return; // Exit early
-        }
-        
-        // Check if token is present (normal login)
-        if (response.token && response.token !== null) {
-          console.log('✓✓✓ TOKEN RECEIVED - Normal login successful ✓✓✓');
-          this.successMessage = 'Login successful! Redirecting...';
-          
-          // Give auth service a moment to process the token and load profile
-          setTimeout(() => {
-            const currentUser = this.authService.currentUserValue;
-            console.log('Checking current user after delay:', currentUser);
-            
-            if (currentUser) {
-              // Profile already loaded
-              console.log('✓ Profile already loaded, redirecting immediately');
-              this.redirectBasedOnRole(currentUser.role);
-            } else {
-              // Wait for profile to load
-              console.log('Profile not loaded yet, subscribing to currentUser$');
-              const userSub = this.authService.currentUser$.subscribe(user => {
-                console.log('Current user update:', user);
-                if (user) {
-                  console.log('✓ User profile loaded:', user);
-                  console.log('✓ Redirecting based on role:', user.role);
-                  this.redirectBasedOnRole(user.role);
-                  userSub.unsubscribe();
-                }
-              });
-              
-              // Fallback timeout - redirect anyway after 3 seconds
-              setTimeout(() => {
-                const user = this.authService.currentUserValue;
-                if (user) {
-                  console.log('✓ Fallback: Profile loaded, redirecting');
-                  this.redirectBasedOnRole(user.role);
-                } else {
-                  console.warn('✗ Fallback: Profile still not loaded, redirecting to customer dashboard anyway');
-                  this.router.navigate(['/customer/dashboard']);
-                }
-                userSub.unsubscribe();
-              }, 3000);
-            }
-          }, 500);
-        } else {
-          // Unexpected: no token and no 2FA flag
-          console.warn('✗ Unexpected response: no token and no 2FA flag');
-          this.errorMessage = 'Unexpected response from server. Please try again.';
-        }
-      },
-      error: (error) => {
-        console.error('=== LOGIN ERROR ===');
-        console.error('Error object:', error);
-        
-        this.isSubmitting = false;
-        // Extract error message
-        let errorMsg = 'Login failed. Please check your credentials and try again.';
-        
-        if (error.error) {
-          if (typeof error.error === 'string') {
-            errorMsg = error.error;
-          } else if (error.error.message) {
-            errorMsg = error.error.message;
-          } else if (error.error.title) {
-            errorMsg = error.error.title;
-          } else if (error.error.errors) {
-            const errors = error.error.errors;
-            const errorMessages = Object.keys(errors).map(key => errors[key].join(', '));
-            errorMsg = errorMessages.join('; ');
+    this.authService.login(credentials)
+      .pipe(
+        finalize(() => {
+          console.log('=== LOGIN REQUEST COMPLETED (Success or Error) ===');
+          this.isSubmitting = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          console.log('=== LOGIN SUCCESS ===');
+          // Check if 2FA is required
+          if (response.requireTwoFactor === true) {
+            this.successMessage = 'Please check your email for the verification code.';
+            this.router.navigate(['/auth/two-factor'], { 
+              queryParams: { email: credentials.email } 
+            });
+            return;
           }
-        } else if (error.message) {
-          errorMsg = error.message;
+          
+          // Check if token is present (normal login)
+          if (response.token) {
+            this.successMessage = 'Login successful! Redirecting...';
+            this.cdr.markForCheck();
+            
+            // Give auth service a moment to process the token and load profile
+            setTimeout(() => {
+              const currentUser = this.authService.currentUserValue;
+              if (currentUser) {
+                this.redirectBasedOnRole(currentUser.role);
+              } else {
+                const userSub = this.authService.currentUser$.subscribe(user => {
+                  if (user) {
+                    this.redirectBasedOnRole(user.role);
+                    userSub.unsubscribe();
+                  }
+                });
+                
+                // Fallback timeout
+                setTimeout(() => {
+                  const user = this.authService.currentUserValue;
+                  if (user) {
+                    this.redirectBasedOnRole(user.role);
+                  } else {
+                    this.router.navigate(['/customer/dashboard']);
+                  }
+                  userSub.unsubscribe();
+                }, 3000);
+              }
+            }, 500);
+          } else {
+            this.errorMessage = 'Unexpected response from server. Please try again.';
+            this.cdr.markForCheck();
+          }
+        },
+        error: (error) => {
+          console.error('=== LOGIN ERROR ===');
+          console.error('Error object:', error);
+          
+          // Extract error message using our robust logic
+          let errorMsg = 'Login failed. Please check your credentials and try again.';
+          
+          if (error.error) {
+            const errBody = error.error;
+            if (typeof errBody === 'string') {
+              errorMsg = errBody;
+            } else {
+              errorMsg = errBody.error || errBody.message || errBody.title;
+            }
+          } else if (error.message) {
+            errorMsg = error.message;
+          }
+          
+          this.errorMessage = errorMsg;
+          console.log('Error message set to:', this.errorMessage);
+          this.cdr.markForCheck();
         }
-        
-        this.errorMessage = errorMsg;
-        console.log('Error message set to:', this.errorMessage);
-      },
-      complete: () => {
-        console.log('=== LOGIN OBSERVABLE COMPLETED ===');
-        this.isSubmitting = false;
-      }
-    });
+      });
     
     console.log('Subscribe called, waiting for response...');
   }

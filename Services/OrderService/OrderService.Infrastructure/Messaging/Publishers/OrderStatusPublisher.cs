@@ -1,4 +1,4 @@
-﻿using OrderService.Domain.Interfaces;
+using OrderService.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,7 +17,7 @@ namespace OrderService.Infrastructure.Messaging.Publishers
             _publishEndpoint = publishEndpoint;
         }
 
-        public async Task PublishOrderStatus(Guid orderId,string customerId,string restaurantName,decimal totalAmount,string status,DateTime placedAt)
+        public async Task PublishOrderStatus(Guid orderId,string customerId,string restaurantName,decimal totalAmount,string status,DateTime placedAt,string paymentMethod,string paymentStatus)
         {
             await _publishEndpoint.Publish(new OrderStatusChangedEvent
             {
@@ -26,6 +26,8 @@ namespace OrderService.Infrastructure.Messaging.Publishers
                 RestaurantName = restaurantName,
                 TotalAmount = totalAmount,
                 Status = status,
+                PaymentMethod = paymentMethod,
+                PaymentStatus = paymentStatus,
                 PlacedAt = placedAt
             });
         }

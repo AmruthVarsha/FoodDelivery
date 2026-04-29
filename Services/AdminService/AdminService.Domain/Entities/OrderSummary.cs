@@ -26,6 +26,9 @@ namespace AdminService.Domain.Entities
         [Required]
         public OrderStatus Status { get; set; }
 
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
+
         [Required]
         public DateTime PlacedAt { get; set; }
 

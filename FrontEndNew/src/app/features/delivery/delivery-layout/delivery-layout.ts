@@ -44,19 +44,18 @@ export class DeliveryLayoutComponent implements OnInit, OnDestroy {
         this.cdr.markForCheck();
       });
 
-    // Load profile for online status
-    this.deliveryService.getProfile()
+    // Load profile for online status reactively
+    this.deliveryService.profile$
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (p) => {
           this.profile = p;
           this.cdr.markForCheck();
-        },
-        error: () => {
-          this.profile = null;
-          this.cdr.markForCheck();
         }
       });
+
+    // Initial fetch to populate the subject
+    this.deliveryService.getProfile().subscribe();
   }
 
   ngOnDestroy(): void {

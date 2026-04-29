@@ -38,12 +38,14 @@ namespace AdminService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, DateTime updatedAt)
+        public async Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, DateTime updatedAt, string paymentMethod, string paymentStatus)
         {
             var order = await _context.OrderSummaries.FirstOrDefaultAsync(o => o.OrderId == orderId);
             if (order != null)
             {
                 order.Status = newStatus;
+                if (!string.IsNullOrEmpty(paymentMethod)) order.PaymentMethod = paymentMethod;
+                if (!string.IsNullOrEmpty(paymentStatus)) order.PaymentStatus = paymentStatus;
                 order.LastUpdatedAt = updatedAt;
                 _context.OrderSummaries.Update(order);
                 await _context.SaveChangesAsync();

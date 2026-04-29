@@ -88,6 +88,13 @@
               </div>
               <div class="flex items-center gap-3">
                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
+                  [ngClass]="{
+                    'bg-green-500/15 border-green-500/40 text-green-300': order.paymentStatus === 'Completed',
+                    'bg-yellow-500/15 border-yellow-500/40 text-yellow-300': order.paymentStatus === 'Pending'
+                  }">
+                  {{ order.paymentMethod === 'COD' ? 'Cash' : 'Online' }} - {{ order.paymentStatus === 'Completed' ? 'Paid' : 'Pending' }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold border"
                   [class]="getStatusBadgeClass(order.status)">
                   {{ order.status }}
                 </span>

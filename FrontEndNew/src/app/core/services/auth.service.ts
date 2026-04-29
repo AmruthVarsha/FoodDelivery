@@ -3,6 +3,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, map, catchError } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { StorageService } from './storage.service';
+import { CartService } from './cart.service';
 import { API_ENDPOINTS } from '../constants/api-endpoints';
 import { STORAGE_KEYS } from '../constants/storage-keys';
 import { 
@@ -46,7 +47,8 @@ export class AuthService {
 
   constructor(
     private api: ApiService,
-    private storage: StorageService
+    private storage: StorageService,
+    private cartService: CartService
   ) {
     // On service initialization, check if user is already logged in
     this.loadUserFromStorage();
@@ -299,6 +301,8 @@ export class AuthService {
     this.storage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
     this.storage.removeItem(STORAGE_KEYS.USER_INFO);
     this.currentUserSubject.next(null);
+    // Clear the cart so a different user logging in doesn't see a previous session's cart
+    this.cartService.clearCart();
   }
 
   /**

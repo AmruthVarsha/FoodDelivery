@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,6 +15,7 @@ namespace AuthService.Application.DTOs
         public bool IsEmailConfirmed { get; set; }
         public bool IsTwoFactorEnabled { get; set; }
         public string Role { get; set; } = string.Empty;
-
+        public bool IsActive { get; set; }
+        public DateTime? CreatedAt { get; set; }
     }
 }

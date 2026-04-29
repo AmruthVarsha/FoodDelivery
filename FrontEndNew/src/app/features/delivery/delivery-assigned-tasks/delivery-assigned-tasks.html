@@ -40,10 +40,20 @@
                 <p class="text-xs text-zinc-400 mt-0.5">Customer: {{ a.customerName }}</p>
               </div>
               <div class="flex items-center gap-3">
-                <span class="text-lg font-bold text-[#00ff88]">₹{{ a.totalAmount }}</span>
+                <div class="flex flex-col items-end">
+                  <span class="text-lg font-bold text-[#00ff88]">₹{{ deliveryEarning(a.totalAmount) | number:'1.2-2' }}</span>
+                  <span class="text-[10px] text-zinc-500">Order: ₹{{ a.totalAmount }} (8% earning)</span>
+                </div>
                 <span class="px-3 py-1 rounded-full text-xs font-bold border"
                   [class]="getAssignmentStatusClass(a.assignmentStatus)">
                   {{ a.assignmentStatus }}
+                </span>
+                <span class="px-3 py-1 rounded-full text-xs font-bold border"
+                  [ngClass]="{
+                    'bg-green-500/15 border-green-500/40 text-green-300': a.paymentStatus === 'Completed',
+                    'bg-yellow-500/15 border-yellow-500/40 text-yellow-300': a.paymentStatus === 'Pending'
+                  }">
+                  {{ a.paymentMethod === 'COD' ? 'Cash' : 'Online' }} - {{ a.paymentStatus === 'Completed' ? 'Paid' : 'Pending' }}
                 </span>
               </div>
             </div>
@@ -85,7 +95,20 @@
             </div>
 
             <!-- Actions -->
-            <div class="px-6 py-4 flex gap-3 justify-end">
+            <div class="px-6 py-4 flex gap-3 justify-end items-center flex-wrap">
+              @if (a.paymentMethod === 'COD' && a.paymentStatus === 'Pending') {
+                <button (click)="markPaymentPaid(a)"
+                  [disabled]="updatingId === a.assignmentId"
+                  class="px-6 py-2.5 rounded-xl bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 font-bold text-sm hover:bg-yellow-500/30 active:scale-95 transition-all flex items-center gap-2">
+                  @if (updatingId === a.assignmentId) {
+                    <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+                  } @else {
+                    <span class="material-symbols-outlined text-sm">payments</span>
+                  }
+                  Collect Cash
+                </button>
+              }
+
               @if (canPickUp(a)) {
                 <button (click)="updateStatus(a, DeliveryStatus.PickedUp)"
                   [disabled]="updatingId === a.assignmentId"
@@ -100,8 +123,8 @@
               }
               @if (canDeliver(a)) {
                 <button (click)="updateStatus(a, DeliveryStatus.Delivered)"
-                  [disabled]="updatingId === a.assignmentId"
-                  class="px-6 py-2.5 rounded-xl bg-[#00ff88] text-black font-bold text-sm hover:bg-green-300 active:scale-95 transition-all flex items-center gap-2">
+                  [disabled]="updatingId === a.assignmentId || (a.paymentMethod === 'COD' && a.paymentStatus === 'Pending')"
+                  class="px-6 py-2.5 rounded-xl bg-[#00ff88] text-black font-bold text-sm hover:bg-green-300 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                   @if (updatingId === a.assignmentId) {
                     <span class="material-symbols-outlined text-sm animate-spin">progress_activity</span>
                   } @else {

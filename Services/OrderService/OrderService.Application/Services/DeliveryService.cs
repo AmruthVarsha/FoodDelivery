@@ -13,19 +13,22 @@ namespace OrderService.Application.Services
         private readonly IDeliveryAgentProfileRepository _agentProfileRepository;
         private readonly IRestaurantOrderRepository _restaurantOrderRepository;
         private readonly IOrderStatusPublisher _orderStatusPublisher;
+        private readonly IPaymentRepository _paymentRepository;
 
         public DeliveryService(
             IDeliveryAssignmentRepository deliveryRepository,
             IOrderRepository orderRepository,
             IDeliveryAgentProfileRepository agentProfileRepository,
             IRestaurantOrderRepository restaurantOrderRepository,
-            IOrderStatusPublisher orderStatusPublisher)
+            IOrderStatusPublisher orderStatusPublisher,
+            IPaymentRepository paymentRepository)
         {
             _deliveryRepository = deliveryRepository;
             _orderRepository = orderRepository;
             _agentProfileRepository = agentProfileRepository;
             _restaurantOrderRepository = restaurantOrderRepository;
             _orderStatusPublisher = orderStatusPublisher;
+            _paymentRepository = paymentRepository;
         }
 
         public async Task<IEnumerable<DeliveryOrderResponseDTO>> GetAssignmentsAsync(string agentId)
@@ -38,7 +41,8 @@ namespace OrderService.Application.Services
                 var order = await _orderRepository.GetByIdWithDetails(assignment.OrderId);
                 if (order == null) continue;
 
-                result.Add(MapToDeliveryResponse(order, assignment));
+                var payment = await _paymentRepository.GetByOrderId(assignment.OrderId);
+                result.Add(MapToDeliveryResponse(order, assignment, payment));
             }
 
             return result;
@@ -67,6 +71,7 @@ namespace OrderService.Application.Services
 
             // Publish event so AdminService (and any other subscribers) are notified
             var updatedOrder = await _orderRepository.GetByIdWithDetails(assignment.OrderId);
+            var payment = await _paymentRepository.GetByOrderId(assignment.OrderId);
             if (updatedOrder != null)
             {
                 await _orderStatusPublisher.PublishOrderStatus(
@@ -75,7 +80,9 @@ namespace OrderService.Application.Services
                     string.Join(", ", updatedOrder.RestaurantOrders.Select(ro => ro.RestaurantName)),
                     updatedOrder.TotalAmount,
                     updatedOrder.Status.ToString(),
-                    updatedOrder.CreatedAt);
+                    updatedOrder.CreatedAt,
+                    payment?.Method.ToString() ?? "Unknown",
+                    payment?.Status.ToString() ?? "Unknown");
             }
 
             // When delivered, free the agent
@@ -90,7 +97,42 @@ namespace OrderService.Application.Services
                 }
             }
 
-            return MapToDeliveryResponse(updatedOrder!, assignment);
+            return MapToDeliveryResponse(updatedOrder!, assignment, payment);
+        }
+
+        public async Task<DeliveryOrderResponseDTO> UpdateDeliveryPaymentStatusAsync(Guid assignmentId, string agentId, UpdatePaymentStatusDTO dto)
+        {
+            var assignment = await _deliveryRepository.GetById(assignmentId);
+            if (assignment == null)
+                throw new NotFoundException("DeliveryAssignment", assignmentId);
+
+            if (assignment.DeliveryAgentId != agentId)
+                throw new ForbiddenException("You are not assigned to this delivery.");
+
+            var payment = await _paymentRepository.GetByOrderId(assignment.OrderId);
+            if (payment == null)
+                throw new NotFoundException("Payment", assignment.OrderId);
+
+            payment.Status = dto.Status;
+            payment.UpdatedAt = DateTime.UtcNow;
+            await _paymentRepository.UpdateAsync(payment);
+
+            var updatedOrder = await _orderRepository.GetByIdWithDetails(assignment.OrderId);
+
+            if (updatedOrder != null)
+            {
+                await _orderStatusPublisher.PublishOrderStatus(
+                    updatedOrder.Id,
+                    updatedOrder.CustomerId,
+                    string.Join(", ", updatedOrder.RestaurantOrders.Select(ro => ro.RestaurantName)),
+                    updatedOrder.TotalAmount,
+                    updatedOrder.Status.ToString(),
+                    updatedOrder.CreatedAt,
+                    payment.Method.ToString(),
+                    payment.Status.ToString());
+            }
+
+            return MapToDeliveryResponse(updatedOrder!, assignment, payment);
         }
 
         // ─────────────────────────────────────────────────────────────────────
@@ -169,7 +211,8 @@ namespace OrderService.Application.Services
         // ─────────────────────────────────────────────────────────────────────
         private static DeliveryOrderResponseDTO MapToDeliveryResponse(
             Domain.Entities.Order order,
-            Domain.Entities.DeliveryAssignment assignment)
+            Domain.Entities.DeliveryAssignment assignment,
+            Domain.Entities.Payment? payment)
         {
             return new DeliveryOrderResponseDTO
             {
@@ -177,6 +220,8 @@ namespace OrderService.Application.Services
                 CustomerName = order.CustomerName,
                 OverallStatus = order.Status.ToString(),
                 TotalAmount = order.TotalAmount,
+                PaymentMethod = payment?.Method.ToString() ?? string.Empty,
+                PaymentStatus = payment?.Status.ToString() ?? string.Empty,
                 DropoffStreet = order.Street,
                 DropoffCity = order.City,
                 DropoffState = order.State,

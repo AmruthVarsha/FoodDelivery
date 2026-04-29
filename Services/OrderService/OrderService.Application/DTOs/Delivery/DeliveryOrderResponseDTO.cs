@@ -10,6 +10,8 @@ namespace OrderService.Application.DTOs.Delivery
         public string CustomerName { get; set; } = string.Empty;
         public string OverallStatus { get; set; } = string.Empty;
         public decimal TotalAmount { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string PaymentStatus { get; set; } = string.Empty;
 
         // Drop-off address
         public string DropoffStreet { get; set; } = string.Empty;

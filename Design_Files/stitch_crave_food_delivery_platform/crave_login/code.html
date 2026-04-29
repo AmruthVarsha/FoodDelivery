@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Crave - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&amp;family=Work+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#ebf2f4",
+                        "tertiary-fixed": "#ffe07e",
+                        "primary-container": "#dc3214",
+                        "secondary-fixed": "#6bfe9c",
+                        "surface": "#f4fafd",
+                        "on-primary": "#ffffff",
+                        "primary": "#b51c00",
+                        "surface-tint": "#ba1c00",
+                        "tertiary-fixed-dim": "#ebc31d",
+                        "surface-container": "#e8eff1",
+                        "on-primary-container": "#fffbff",
+                        "on-primary-fixed": "#3e0400",
+                        "tertiary-container": "#cca700",
+                        "tertiary": "#725c00",
+                        "inverse-surface": "#2b3234",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e2e9ec",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#4d3e00",
+                        "surface-container-low": "#eef5f7",
+                        "on-surface": "#161d1f",
+                        "secondary-container": "#6bfe9c",
+                        "on-primary-fixed-variant": "#8e1300",
+                        "inverse-primary": "#ffb4a5",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "secondary-fixed-dim": "#4ae183",
+                        "surface-container-highest": "#dde4e6",
+                        "outline-variant": "#e5bdb6",
+                        "on-secondary-fixed-variant": "#005228",
+                        "outline": "#916f69",
+                        "on-tertiary-fixed": "#231b00",
+                        "surface-variant": "#dde4e6",
+                        "on-secondary-container": "#00743a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-fixed-variant": "#564500",
+                        "surface-bright": "#f4fafd",
+                        "background": "#f4fafd",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#d4dbdd",
+                        "on-secondary-fixed": "#00210c",
+                        "on-background": "#161d1f",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#5c403a",
+                        "secondary": "#006d37",
+                        "primary-fixed": "#ffdad3",
+                        "primary-fixed-dim": "#ffb4a5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xl": "40px",
+                        "unit": "4px",
+                        "lg": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "64px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "label-sm": ["Work Sans"],
+                        "body-lg": ["Work Sans"],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "headline-lg": ["Plus Jakarta Sans"],
+                        "body-md": ["Work Sans"],
+                        "label-lg": ["Work Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styles to enforce font families if tailwind classes are missed, though they shouldn't be */
+        body { font-family: 'Work Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6 { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Main Full Screen Container -->
+<main class="min-h-screen relative flex items-center justify-center p-margin-mobile md:p-margin-desktop overflow-hidden">
+<!-- Blurred Background Image -->
+<div class="absolute inset-0 z-0 bg-cover bg-center" data-alt="close up overhead shot of vibrant appetizing gourmet pizza and fresh ingredients softly blurred out of focus in a warm softly lit restaurant setting" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSWlmCNeCz4j9xGnh7datbgkA8xv7gzieH9-bZG9EYn7fJjFhAK0svWniApkQEYj9_VbvS6bSwsDqlNuRcaURplMGZmTflWRND8NRhrD0tKiFhyPBIqB1ZQaGQmfzIEI99PNgZn7pV5RofjBZ4Fns1CUXdbka1p2CeCx2ZAYsc4gfZ6sfGIjWiU15CsxF9WNGCU4ftnC6JVQ26rDRI99-Dtp1folskMVNOkjftVXBqEIFSDQRrpqedq8ktE0V9fYAHT_uFEDZJfB0');">
+</div>
+<!-- Dark Overlay for Contrast -->
+<div class="absolute inset-0 z-0 bg-inverse-surface/60 backdrop-blur-md"></div>
+<!-- Login Card (Ambient Shadow Level 2 equivalent) -->
+<div class="relative z-10 w-full max-w-[440px] bg-surface-container-lowest rounded-xl shadow-2xl shadow-primary-fixed-variant/20 p-8 md:p-10 flex flex-col gap-lg">
+<!-- Header -->
+<div class="text-center flex flex-col gap-sm">
+<h1 class="font-headline-lg text-headline-lg text-primary tracking-tighter">Crave</h1>
+<h2 class="font-headline-md text-headline-md text-on-surface">Welcome Back</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Log in to track your recent orders and discover new cravings.</p>
+</div>
+<!-- Form -->
+<form class="flex flex-col gap-gutter">
+<!-- Email Input -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface" for="email">Email Address</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full bg-surface-container border-0 rounded-xl py-3 pl-10 pr-4 font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all outline-none" id="email" placeholder="name@example.com" required="" type="email"/>
+</div>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface" for="password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full bg-surface-container border-0 rounded-xl py-3 pl-10 pr-4 font-body-md text-body-md text-on-surface placeholder:text-outline focus:ring-2 focus:ring-primary focus:bg-surface-container-lowest transition-all outline-none" id="password" placeholder="••••••••" required="" type="password"/>
+</div>
+</div>
+<!-- Actions row -->
+<div class="flex justify-between items-center mt-xs">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="w-4 h-4 rounded text-primary border-outline focus:ring-primary focus:ring-offset-surface-container-lowest transition-colors cursor-pointer" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant group-hover:text-on-surface transition-colors">Remember me</span>
+</label>
+<a class="font-label-sm text-label-sm text-primary hover:text-surface-tint transition-colors" href="#">Forgot password?</a>
+</div>
+<!-- Primary Submit Button -->
+<button class="w-full mt-sm bg-primary text-on-primary font-label-lg text-label-lg rounded-full py-3.5 border-t border-white/20 hover:bg-surface-tint active:scale-[0.98] transition-all flex items-center justify-center gap-2" type="submit">
+                    Sign In
+                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</form>
+<!-- Divider -->
+<div class="relative flex items-center gap-4 py-xs">
+<div class="flex-grow border-t border-surface-variant"></div>
+<span class="font-label-sm text-label-sm text-outline">or continue with</span>
+<div class="flex-grow border-t border-surface-variant"></div>
+</div>
+<!-- Social Logins -->
+<div class="flex flex-col gap-sm">
+<button class="w-full flex items-center justify-center gap-3 bg-surface-container-lowest border border-surface-variant text-on-surface font-label-lg text-label-lg rounded-full py-3 hover:bg-surface-container-low active:bg-surface-container transition-colors" type="button">
+<img alt="Google Logo" class="w-5 h-5" data-alt="minimalist clean google 'G' logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtPvMONFXSiTrdgAWZ5LQIELjVBtb6BKNg6Gve4u__ZQBWQSFqnjNJVpXhA2H7j6sYgvamdQF-DFinIbcTOwjDhXfDFJRGyEj660kBqIDYPoDkGju5-JGF2rRRo0tQ2RrYy_kOiZXO45oqndo6aEXAA261LHQntJTlj7m0kmKu2LzenT_uodHlxqMZxKj3AN2YrJqR5X42OCBqiC8p1D37lE0HqbYnLpE8XLFmeXee0jYLTf5Q0AINoXqdBNA3L1nOvVEGG_9uHVM"/>
+                    Google
+                </button>
+<button class="w-full flex items-center justify-center gap-3 bg-inverse-surface text-on-tertiary font-label-lg text-label-lg rounded-full py-3 hover:bg-on-surface transition-colors" type="button">
+<img alt="Apple Logo" class="w-5 h-5 invert" data-alt="minimalist clean apple logo icon in white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDhISgSArUdESmp8HVGEn7iy_F-DSNjPUD_zQlbVos5jSLzN2aqhOHayWv8OKQZVTugzJxmZfg2S9kKIDnTVxEECTMvP0MvMmyqWjgL26smg39j_7z8MC4Uzlfu5BHnamHaWEsxlcla5DZ4Eo-ELu3L0GkMWkJnz9mhekl3uFAo0VuomQGr6of1v2TKFxsTJuNGsAoE3SDVW_w4TPBvPiXV3TzLavPSUuj1j6VBQWPU8-6z9mDOMlCWTGJ9Xt5x6kXSSbH1yvPeJoY"/>
+                    Apple
+                </button>
+</div>
+<!-- Footer Link -->
+<div class="text-center mt-xs">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                    Don't have an account? 
+                    <a class="font-label-lg text-label-lg text-primary hover:underline hover:text-surface-tint transition-colors ml-1" href="#">Sign Up</a>
+</p>
+</div>
+</div>
+</main>
+</body></html>

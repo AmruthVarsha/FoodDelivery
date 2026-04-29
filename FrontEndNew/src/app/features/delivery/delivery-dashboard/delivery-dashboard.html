@@ -179,7 +179,8 @@
       <!-- Right: Order Items Panel -->
       <div class="lg:col-span-7 p-card-padding">
         <h3 class="font-bold text-white text-lg mb-4">Order Details
-          <span class="text-zinc-500 text-xs ml-2 font-normal">₹{{ activeAssignment.totalAmount }}</span>
+          <span class="text-zinc-500 text-xs ml-2 font-normal">Order: ₹{{ activeAssignment.totalAmount }}</span>
+          <span class="text-[#00ff88] text-xs ml-2 font-semibold">Your Earning: ₹{{ deliveryEarning(activeAssignment.totalAmount) | number:'1.2-2' }}</span>
         </h3>
         @for (stop of activeAssignment.restaurantStops; track stop.subOrderId) {
           <div class="mb-4">
@@ -234,7 +235,7 @@
               <p class="text-zinc-500 text-xs mt-0.5">
                 @if (a.deliveredAt) { {{ a.deliveredAt | date:'h:mm a' }} · }
                 {{ a.restaurantStops[0]?.restaurantName || 'Multiple Restaurants' }}
-                · ₹{{ a.totalAmount }}
+                · <span class="text-[#00ff88] font-semibold">Earned ₹{{ deliveryEarning(a.totalAmount) | number:'1.2-2' }}</span>
               </p>
             </div>
             <span class="text-[#00ff88] text-xs font-bold px-2 py-0.5 border border-[#00ff88]/30 rounded-full bg-[#00ff88]/10">Delivered</span>

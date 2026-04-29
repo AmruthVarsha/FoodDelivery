@@ -159,17 +159,32 @@ export class ApiService {
       // Backend returned an unsuccessful response code
       if (error.status === 0) {
         errorMessage = 'Unable to connect to the server. Please check your internet connection.';
-      } else if (error.status === 401) {
-        errorMessage = 'Unauthorized. Please login again.';
-      } else if (error.status === 403) {
-        errorMessage = 'Access denied. You do not have permission to perform this action.';
-      } else if (error.status === 404) {
-        errorMessage = 'Resource not found.';
-      } else if (error.status === 500) {
-        errorMessage = 'Internal server error. Please try again later.';
       } else {
-        // Try to extract error message from response
-        errorMessage = error.error?.message || error.message || `Server Error: ${error.status}`;
+        // Try to extract error message from response first
+        // Our backend often returns { error: "message" } or { message: "message" }
+        const backendError = error.error;
+        if (backendError) {
+          if (typeof backendError === 'string') {
+            errorMessage = backendError;
+          } else {
+            errorMessage = backendError.error || backendError.message || backendError.title;
+          }
+        }
+
+        // If still no message, use status-based defaults
+        if (!errorMessage || errorMessage === 'An unknown error occurred') {
+          if (error.status === 401) {
+            errorMessage = 'Unauthorized. Please login again.';
+          } else if (error.status === 403) {
+            errorMessage = 'Access denied. You do not have permission to perform this action.';
+          } else if (error.status === 404) {
+            errorMessage = 'Resource not found.';
+          } else if (error.status === 500) {
+            errorMessage = 'Internal server error. Please try again later.';
+          } else {
+            errorMessage = error.message || `Server Error: ${error.status}`;
+          }
+        }
       }
     }
 

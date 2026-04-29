@@ -26,14 +26,7 @@ export class DashboardComponent implements OnInit {
   errorMessage: string = '';
   isAuthenticated: boolean = false;
   
-  cuisines: string[] = [
-    'All Cuisines',
-    'Sushi',
-    'Italian',
-    'Burgers',
-    'Vegan',
-    'Desserts'
-  ];
+  cuisines: string[] = ['All Cuisines'];
 
   restaurants: Restaurant[] = [];
   filteredRestaurants: Restaurant[] = [];
@@ -49,12 +42,10 @@ export class DashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Check authentication status
     this.checkAuthentication();
-    
+    this.loadCuisines();
     this.loadRestaurants();
     
-    // Subscribe to cart changes
     this.cartService.cartItems$.subscribe(items => {
       this.cartItems = items;
       this.cdr.detectChanges();
@@ -83,33 +74,40 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  loadRestaurants(): void {
+  loadCuisines(): void {
+    this.catalogService.getCuisines().subscribe({
+      next: (data) => {
+        this.cuisines = ['All Cuisines', ...data.map(c => c.name)];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error loading cuisines:', err)
+    });
+  }
+
+  loadRestaurants(pincode?: string): void {
     this.isLoading = true;
     this.errorMessage = '';
-    console.log('Loading restaurants...');
+    this.cdr.detectChanges();
 
-    this.catalogService.getRestaurants().subscribe({
+    const obs = pincode 
+      ? this.catalogService.getRestaurantsByPincode(pincode)
+      : this.catalogService.getRestaurants();
+
+    obs.subscribe({
       next: (data) => {
-        console.log('Raw data from API:', data);
         this.restaurants = data.map(restaurant => ({
           ...restaurant,
-          // Map backend fields to display fields
           imageUrl: restaurant.logoUrl,
           cuisineType: restaurant.cuisines?.join(', ') || 'Various',
           deliveryTime: `${restaurant.prepTimeMinutes || 20}-${(restaurant.prepTimeMinutes || 20) + 10} min`,
-          minimumOrder: 10, // Default value since backend doesn't provide this
+          minimumOrder: 10,
           isFavorite: false
         }));
-        console.log('Mapped restaurants:', this.restaurants);
-        this.filteredRestaurants = [...this.restaurants];
-        console.log('Filtered restaurants:', this.filteredRestaurants);
-        console.log('Setting isLoading to false');
+        this.filterRestaurants();
         this.isLoading = false;
-        this.cdr.detectChanges(); // Manually trigger change detection
-        console.log('Change detection triggered');
+        this.cdr.detectChanges();
       },
       error: (error) => {
-        console.error('Error in subscribe:', error);
         this.errorMessage = 'Failed to load restaurants. Please try again.';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -124,26 +122,24 @@ export class DashboardComponent implements OnInit {
   }
 
   filterRestaurants(): void {
-    if (this.selectedCuisine === 'All Cuisines') {
-      this.filteredRestaurants = [...this.restaurants];
-    } else {
-      this.filteredRestaurants = this.restaurants.filter(r => 
+    let result = [...this.restaurants];
+
+    if (this.selectedCuisine !== 'All Cuisines') {
+      result = result.filter(r => 
         r.cuisines?.some(cuisine => 
           cuisine.toLowerCase().includes(this.selectedCuisine.toLowerCase())
         ) || r.cuisineType?.toLowerCase().includes(this.selectedCuisine.toLowerCase())
       );
     }
 
-    // Apply search filter if search query exists
     if (this.searchQuery) {
-      this.filteredRestaurants = this.filteredRestaurants.filter(r =>
+      result = result.filter(r =>
         r.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        r.cuisineType?.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        r.cuisines?.some(cuisine => 
-          cuisine.toLowerCase().includes(this.searchQuery.toLowerCase())
-        )
+        r.cuisineType?.toLowerCase().includes(this.searchQuery.toLowerCase())
       );
     }
+
+    this.filteredRestaurants = result;
   }
 
   toggleFavorite(restaurant: Restaurant): void {
@@ -181,7 +177,15 @@ export class DashboardComponent implements OnInit {
   }
 
   findFood(): void {
-    this.filterRestaurants();
+    // Attempt to extract 6-digit pincode from address string
+    const pincodeMatch = this.deliveryAddress.match(/\d{6}/);
+    if (pincodeMatch) {
+      const pincode = pincodeMatch[0];
+      this.loadRestaurants(pincode);
+    } else {
+      // If no pincode, just reload all
+      this.loadRestaurants();
+    }
   }
 
   goToCheckout(): void {

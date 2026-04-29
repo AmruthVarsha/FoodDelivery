@@ -5,6 +5,9 @@ import { takeUntil } from 'rxjs/operators';
 import { DeliveryService } from '../../../core/services/delivery.service';
 import { DeliveryOrderResponseDTO, DeliveryStatus } from '../../../shared/models/order.model';
 
+/** Delivery agent earns 8% of the order total per delivery. */
+const DELIVERY_COMMISSION_RATE = 0.08;
+
 @Component({
   selector: 'app-delivery-history',
   standalone: true,
@@ -87,7 +90,12 @@ export class DeliveryHistory implements OnInit, OnDestroy {
   get totalFilteredEarnings(): number {
     return this.filteredAssignments
       .filter(a => a.assignmentStatus === DeliveryStatus.Delivered)
-      .reduce((sum, a) => sum + a.totalAmount, 0);
+      .reduce((sum, a) => sum + Math.round(a.totalAmount * DELIVERY_COMMISSION_RATE * 100) / 100, 0);
+  }
+
+  /** Returns the agent's earning for a single assignment (exposed for template). */
+  deliveryEarning(totalAmount: number): number {
+    return Math.round(totalAmount * DELIVERY_COMMISSION_RATE * 100) / 100;
   }
 
   getStatusClass(status: string): string {

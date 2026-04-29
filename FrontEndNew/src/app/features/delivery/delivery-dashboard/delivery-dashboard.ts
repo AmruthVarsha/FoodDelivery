@@ -12,6 +12,14 @@ import {
   UpdateDeliveryStatusDTO
 } from '../../../shared/models/order.model';
 
+/** Delivery agent earns 8% of the order total per delivery. */
+const DELIVERY_COMMISSION_RATE = 0.08;
+
+/** Returns the agent's cut for a given order amount. */
+function deliveryEarning(totalAmount: number): number {
+  return Math.round(totalAmount * DELIVERY_COMMISSION_RATE * 100) / 100;
+}
+
 @Component({
   selector: 'app-delivery-dashboard',
   standalone: true,
@@ -62,7 +70,12 @@ export class DeliveryDashboard implements OnInit, OnDestroy {
         a.deliveredAt &&
         new Date(a.deliveredAt).toDateString() === todayStr
       )
-      .reduce((sum, a) => sum + a.totalAmount, 0);
+      .reduce((sum, a) => sum + deliveryEarning(a.totalAmount), 0);
+  }
+
+  /** Returns the agent's earning for a single assignment (exposed for template). */
+  deliveryEarning(amount: number): number {
+    return deliveryEarning(amount);
   }
 
   get completionRate(): number {

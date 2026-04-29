@@ -18,8 +18,9 @@ export interface ProfileDTO {
   role: string; // Backend returns role as string
   isEmailConfirmed: boolean;
   isTwoFactorEnabled: boolean; // Now always returned from backend
-  accountStatus?: AccountStatus; // Optional, not in backend DTO
-  createdAt?: Date; // Optional, not in backend DTO
+  isActive: boolean;           // Whether the account is active (can be toggled by Admin)
+  createdAt?: Date;             // Optional — not yet tracked in User entity
+  accountStatus?: AccountStatus; // Computed locally from isActive for display
   addresses?: AddressResponseDTO[];
 }
 

@@ -146,6 +146,8 @@ export const API_ENDPOINTS = {
     ASSIGNMENTS: '/gateway/order/delivery/assignments',
     UPDATE_STATUS: (assignmentId: string) =>
       `/gateway/order/delivery/assignments/${assignmentId}/status`,
+    UPDATE_PAYMENT_STATUS: (assignmentId: string) =>
+      `/gateway/order/delivery/assignments/${assignmentId}/payment-status`,
     PROFILE: '/gateway/order/delivery/profile',
   },
 

@@ -98,7 +98,7 @@
                 <th class="px-6 py-4">Restaurant(s)</th>
                 <th class="px-6 py-4">Customer</th>
                 <th class="px-6 py-4">Drop-off</th>
-                <th class="px-6 py-4">Amount</th>
+                <th class="px-6 py-4">Your Earning</th>
                 <th class="px-6 py-4">Status</th>
               </tr>
             </thead>
@@ -131,7 +131,10 @@
                   </td>
                   <td class="px-6 py-5 text-white text-sm">{{ a.customerName }}</td>
                   <td class="px-6 py-5 text-zinc-400 text-sm">{{ a.dropoffCity }}, {{ a.dropoffPincode }}</td>
-                  <td class="px-6 py-5 font-bold text-white text-sm">₹{{ a.totalAmount }}</td>
+                  <td class="px-6 py-5">
+                    <span class="font-bold text-[#00ff88] text-sm">₹{{ deliveryEarning(a.totalAmount) | number:'1.2-2' }}</span>
+                    <div class="text-[10px] text-zinc-600 mt-0.5">Order: ₹{{ a.totalAmount }}</div>
+                  </td>
                   <td class="px-6 py-5">
                     <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border"
                       [class]="getStatusClass(a.assignmentStatus)">

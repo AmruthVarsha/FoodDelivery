@@ -295,20 +295,20 @@ export class ProfileComponent implements OnInit {
   }
 
   getAccountStatusName(status?: number): string {
+    // Derive from real isActive when available
+    if (this.userProfile) {
+      return this.userProfile.isActive ? 'Active' : 'Inactive';
+    }
     if (status === undefined) return 'Active';
     const statuses = ['Active', 'Inactive', 'Suspended', 'Pending Approval'];
     return statuses[status] || 'Unknown';
   }
 
   getAccountStatusClass(status?: number): string {
-    if (status === undefined) return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-    const classes = [
-      'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', // Active
-      'bg-slate-500/10 text-slate-400 border-slate-500/20', // Inactive
-      'bg-red-500/10 text-red-400 border-red-500/20', // Suspended
-      'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' // Pending
-    ];
-    return classes[status] || classes[0];
+    const isActive = this.userProfile ? this.userProfile.isActive : status === 0 || status === undefined;
+    return isActive
+      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+      : 'bg-slate-500/10 text-slate-400 border-slate-500/20';
   }
 
   formatDate(date?: Date | string): string {

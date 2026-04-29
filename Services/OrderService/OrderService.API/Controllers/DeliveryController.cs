@@ -39,5 +39,17 @@ namespace OrderService.API.Controllers
             var result = await _deliveryService.UpdateDeliveryStatusAsync(assignmentId, agentId, dto);
             return Ok(result);
         }
+
+        /// <summary>
+        /// Agent: update delivery payment status (e.g. mark COD as Paid).
+        /// </summary>
+        [HttpPut("assignments/{assignmentId:guid}/payment-status")]
+        public async Task<IActionResult> UpdateDeliveryPaymentStatus(
+            Guid assignmentId, [FromBody] UpdatePaymentStatusDTO dto)
+        {
+            var agentId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+            var result = await _deliveryService.UpdateDeliveryPaymentStatusAsync(assignmentId, agentId, dto);
+            return Ok(result);
+        }
     }
 }

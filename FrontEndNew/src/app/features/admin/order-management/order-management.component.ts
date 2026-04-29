@@ -14,6 +14,8 @@ export interface AdminOrder {
   restaurantName: string;
   totalAmount: number;
   status: any;
+  paymentMethod: string;
+  paymentStatus: string;
   placedAt: Date;
 }
 

@@ -143,6 +143,8 @@ namespace OrderService.Application.Services
                 DeliveryCity = parent?.City ?? string.Empty,
                 DeliveryPincode = parent?.Pincode ?? string.Empty,
                 DeliveryInstructions = parent?.DeliveryInstructions,
+                PaymentMethod = parent?.Payment?.Method.ToString() ?? "Unknown",
+                PaymentStatus = parent?.Payment?.Status.ToString() ?? "Unknown",
                 Items = ro.OrderItems.Select(oi => new OrderItemResponseDTO
                 {
                     Id = oi.Id,

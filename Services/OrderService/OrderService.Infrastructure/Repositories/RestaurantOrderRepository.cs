@@ -24,6 +24,7 @@ namespace OrderService.Infrastructure.Repositories
             return await _context.RestaurantOrders
                 .Include(ro => ro.OrderItems)
                 .Include(ro => ro.Order) // include parent for address/customer info
+                .Include(ro => ro.Order!.Payment)
                 .FirstOrDefaultAsync(ro => ro.Id == id);
         }
 
@@ -40,6 +41,7 @@ namespace OrderService.Infrastructure.Repositories
             return await _context.RestaurantOrders
                 .Include(ro => ro.OrderItems)
                 .Include(ro => ro.Order) // partner needs customer address
+                .Include(ro => ro.Order!.Payment)
                 .Where(ro => ro.RestaurantId == restaurantId)
                 .OrderByDescending(ro => ro.CreatedAt)
                 .ToListAsync();

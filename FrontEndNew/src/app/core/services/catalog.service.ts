@@ -51,6 +51,13 @@ export interface MenuItem {
   prepTimeMinutes?: number;
 }
 
+export interface Cuisine {
+  id: string;
+  name: string;
+  description?: string;
+  imageUrl?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -63,12 +70,21 @@ export class CatalogService {
     return this.api.get<Restaurant[]>(API_ENDPOINTS.CATALOG.RESTAURANTS);
   }
 
+  getRestaurantsByPincode(pincode: string): Observable<Restaurant[]> {
+    return this.api.get<Restaurant[]>(API_ENDPOINTS.CATALOG.RESTAURANT_BY_PINCODE(pincode));
+  }
+
   getRestaurantById(id: string): Observable<Restaurant> {
     return this.api.get<Restaurant>(API_ENDPOINTS.CATALOG.RESTAURANT_BY_ID(id));
   }
 
   searchRestaurants(query: string): Observable<Restaurant[]> {
     return this.api.get<Restaurant[]>(`${API_ENDPOINTS.CATALOG.RESTAURANT_SEARCH}?query=${query}`);
+  }
+
+  // Cuisine endpoints
+  getCuisines(): Observable<Cuisine[]> {
+    return this.api.get<Cuisine[]>(API_ENDPOINTS.CATALOG.CUISINES);
   }
 
   // Category endpoints

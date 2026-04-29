@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { API_ENDPOINTS } from '../constants/api-endpoints';
 import {
@@ -13,6 +13,9 @@ import {
   providedIn: 'root'
 })
 export class DeliveryService {
+
+  private profileSubject = new BehaviorSubject<AgentProfileResponseDTO | null>(null);
+  public profile$ = this.profileSubject.asObservable();
 
   constructor(private api: ApiService) {}
 
@@ -34,11 +37,22 @@ export class DeliveryService {
   }
 
   /**
+   * Agent: update payment status (e.g., mark COD as Paid).
+   * PUT /gateway/order/delivery/assignments/{id}/payment-status
+   */
+  updatePaymentStatus(assignmentId: string, dto: { status: string }): Observable<DeliveryOrderResponseDTO> {
+    return this.api.put<DeliveryOrderResponseDTO>(API_ENDPOINTS.DELIVERY.UPDATE_PAYMENT_STATUS(assignmentId), dto);
+  }
+
+  /**
    * Agent: get their profile (isActive, currentPincode).
    * GET /gateway/order/delivery/profile
    */
   getProfile(): Observable<AgentProfileResponseDTO> {
-    return this.api.get<AgentProfileResponseDTO>(API_ENDPOINTS.DELIVERY.PROFILE);
+    return this.api.get<AgentProfileResponseDTO>(API_ENDPOINTS.DELIVERY.PROFILE)
+      .pipe(
+        tap(profile => this.profileSubject.next(profile))
+      );
   }
 
   /**
@@ -46,6 +60,9 @@ export class DeliveryService {
    * PUT /gateway/order/delivery/profile
    */
   upsertProfile(dto: UpsertAgentProfileDTO): Observable<AgentProfileResponseDTO> {
-    return this.api.put<AgentProfileResponseDTO>(API_ENDPOINTS.DELIVERY.PROFILE, dto);
+    return this.api.put<AgentProfileResponseDTO>(API_ENDPOINTS.DELIVERY.PROFILE, dto)
+      .pipe(
+        tap(profile => this.profileSubject.next(profile))
+      );
   }
 }

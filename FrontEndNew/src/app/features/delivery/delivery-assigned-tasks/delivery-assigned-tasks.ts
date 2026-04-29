@@ -10,6 +10,9 @@ import {
   RestaurantOrderStatus
 } from '../../../shared/models/order.model';
 
+/** Delivery agent earns 8% of the order total per delivery. */
+const DELIVERY_COMMISSION_RATE = 0.08;
+
 @Component({
   selector: 'app-delivery-assigned-tasks',
   standalone: true,
@@ -94,6 +97,33 @@ export class DeliveryAssignedTasks implements OnInit, OnDestroy {
       });
   }
 
+  markPaymentPaid(assignment: DeliveryOrderResponseDTO): void {
+    if (this.updatingId === assignment.assignmentId) return;
+    this.updatingId = assignment.assignmentId;
+    
+    this.deliveryService.updatePaymentStatus(assignment.assignmentId, { status: 'Completed' })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (updated) => {
+          const idx = this.assignments.findIndex(a => a.assignmentId === assignment.assignmentId);
+          if (idx > -1) {
+            this.assignments = [
+              ...this.assignments.slice(0, idx),
+              updated,
+              ...this.assignments.slice(idx + 1)
+            ];
+          }
+          this.updatingId = null;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.errorMessage = err?.error?.message || 'Failed to update payment status.';
+          this.updatingId = null;
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
   getStopStatusClass(status: string): string {
     const map: Record<string, string> = {
       [RestaurantOrderStatus.ReadyForPickup]: 'text-green-400',
@@ -111,5 +141,10 @@ export class DeliveryAssignedTasks implements OnInit, OnDestroy {
       [DeliveryStatus.Delivered]: 'bg-green-500/15 border-green-500/40 text-green-300',
     };
     return map[status] ?? 'bg-zinc-500/20 border-zinc-500/40 text-zinc-300';
+  }
+
+  /** Returns the agent's earning for a single assignment (exposed for template). */
+  deliveryEarning(totalAmount: number): number {
+    return Math.round(totalAmount * DELIVERY_COMMISSION_RATE * 100) / 100;
   }
 }

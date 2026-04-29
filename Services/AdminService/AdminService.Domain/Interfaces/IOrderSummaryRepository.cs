@@ -9,6 +9,6 @@ namespace AdminService.Domain.Interfaces
         Task<List<OrderSummary>> GetAllAsync();
         Task<OrderSummary?> GetByOrderIdAsync(Guid orderId);
         Task<List<OrderSummary>> GetByDateRangeAsync(DateTime from, DateTime to);
-        Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, DateTime updatedAt);
+        Task UpdateStatusAsync(Guid orderId, OrderStatus newStatus, DateTime updatedAt, string paymentMethod, string paymentStatus);
     }
 }
