@@ -51,7 +51,8 @@ namespace OrderService.API.Controllers
         [HttpPost("items")]
         public async Task<IActionResult> AddCartItem([FromBody] CartItemDTO dto)
         {
-            var result = await _cartService.AddCartItem(dto);
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _cartService.AddCartItem(dto, userId);
             return Ok(result);
         }
 

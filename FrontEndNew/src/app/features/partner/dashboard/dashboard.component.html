@@ -8,35 +8,35 @@
 </app-partner-sidebar>
 
 <!-- Main Content -->
-<main class="md:pl-64 pt-24 px-6 pb-12 min-h-screen bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a]">
+<main class="md:pl-64 pt-24 px-6 pb-12 min-h-screen bg-background">
   <div class="max-w-7xl mx-auto space-y-8">
     
     <!-- Welcome Header -->
     @if (restaurants.length > 0) {
-      <header class="mb-8">
-        <h1 class="text-3xl font-bold text-white mb-2">Welcome back, {{ restaurantName }}!</h1>
-        <p class="text-gray-400 text-lg">Here's what's happening in your kitchen today.</p>
+      <header class="mb-8 animate-fade-in">
+        <h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">Welcome back, {{ restaurantName }}!</h1>
+        <p class="font-body-lg text-body-lg text-on-surface-variant">Here's what's happening in your kitchen today.</p>
       </header>
 
       @if (selectedRestaurant && !selectedRestaurant.isApproved) {
-        <div class="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl mb-8 flex items-start gap-4">
-          <span class="material-symbols-outlined text-yellow-400">pending_actions</span>
+        <div class="bg-tertiary-container border border-tertiary p-4 rounded-xl mb-8 flex items-start gap-4 animate-slide-in-bottom">
+          <span class="material-symbols-outlined text-on-tertiary-container">pending_actions</span>
           <div>
-            <h3 class="text-yellow-400 font-bold mb-1">Approval Pending</h3>
-            <p class="text-gray-300 text-sm">Your restaurant is currently under review by our admin team. Menu management and orders are temporarily disabled until approved.</p>
+            <h3 class="font-label-lg text-label-lg text-on-tertiary-container font-semibold mb-1">Approval Pending</h3>
+            <p class="font-body-md text-body-md text-on-tertiary-container">Your restaurant is currently under review by our admin team. Menu management and orders are temporarily disabled until approved.</p>
           </div>
         </div>
       }
     }
 
     @if (restaurants.length === 0 && !isLoading) {
-      <div class="glass-card p-12 rounded-2xl text-center flex flex-col items-center justify-center min-h-[400px]">
-        <div class="w-24 h-24 bg-[#00ff88]/10 rounded-full flex items-center justify-center mb-6">
-          <span class="material-symbols-outlined text-[#00ff88] text-5xl">storefront</span>
+      <div class="bg-surface-container-lowest p-12 rounded-[24px] text-center flex flex-col items-center justify-center min-h-[400px] border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] animate-scale-in">
+        <div class="w-24 h-24 bg-secondary-container rounded-full flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-on-secondary-container text-5xl">storefront</span>
         </div>
-        <h2 class="text-3xl font-bold text-white mb-4">Partner Portal</h2>
-        <p class="text-gray-400 mb-8 max-w-md">You don't have any restaurants registered yet. Add your first restaurant to start receiving orders.</p>
-        <button routerLink="/partner/add-restaurant" class="bg-[#00ff88] text-black px-8 py-3 rounded-xl font-bold hover:bg-[#00cc6a] transition-all flex items-center gap-2">
+        <h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">Partner Portal</h2>
+        <p class="font-body-lg text-body-lg text-on-surface-variant mb-8 max-w-md">You don't have any restaurants registered yet. Add your first restaurant to start receiving orders.</p>
+        <button routerLink="/partner/add-restaurant" class="bg-primary text-on-primary px-8 py-3 rounded-full font-label-lg text-label-lg font-semibold hover:bg-surface-tint transition-all flex items-center gap-2 shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:scale-105 active:scale-95">
           <span class="material-symbols-outlined">add</span>
           Add Restaurant
         </button>
@@ -46,85 +46,85 @@
     <!-- Loading State -->
     @if (isLoading) {
       <div class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00ff88]"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     }
 
     <!-- Error State -->
     @if (errorMessage) {
-      <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg">
+      <div class="bg-error-container border border-error text-on-error-container px-4 py-3 rounded-lg animate-slide-in-bottom">
         {{ errorMessage }}
       </div>
     }
 
     <!-- Stat Cards Grid -->
     @if (restaurants.length > 0) {
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-fade-in">
       
       <!-- Total Orders Today -->
-      <div class="glass-card p-6 rounded-xl">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all animate-slide-down delay-100">
         <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-[#00ff88]/10 rounded-lg">
-            <span class="material-symbols-outlined text-[#00ff88]">shopping_cart</span>
+          <div class="p-2 bg-primary-fixed rounded-lg">
+            <span class="material-symbols-outlined text-primary">shopping_cart</span>
           </div>
-          <span class="text-[#00ff88] text-xs font-bold flex items-center gap-1">
+          <span class="font-label-sm text-label-sm text-secondary font-semibold flex items-center gap-1">
             <span class="material-symbols-outlined text-xs">trending_up</span>
             +12%
           </span>
         </div>
-        <p class="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">TOTAL ORDERS TODAY</p>
-        <h3 class="text-2xl font-bold text-white">{{ stats.totalOrdersToday }}</h3>
+        <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">TOTAL ORDERS TODAY</p>
+        <h3 class="font-headline-md text-headline-md text-on-surface">{{ stats.totalOrdersToday }}</h3>
       </div>
 
       <!-- Active Orders -->
-      <div class="glass-card p-6 rounded-xl">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all animate-slide-down delay-200">
         <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-[#ff0088]/10 rounded-lg">
-            <span class="material-symbols-outlined text-[#ff0088]">timer</span>
+          <div class="p-2 bg-tertiary-fixed rounded-lg">
+            <span class="material-symbols-outlined text-on-tertiary-fixed">timer</span>
           </div>
-          <div class="w-3 h-3 bg-[#00ff88] rounded-full animate-pulse shadow-[0_0_10px_rgba(0,255,136,0.8)]"></div>
+          <div class="w-3 h-3 bg-secondary rounded-full animate-pulse shadow-[0_0_10px_rgba(0,109,55,0.8)]"></div>
         </div>
-        <p class="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">ACTIVE ORDERS</p>
-        <h3 class="text-2xl font-bold text-white">{{ stats.activeOrders }}</h3>
+        <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">ACTIVE ORDERS</p>
+        <h3 class="font-headline-md text-headline-md text-on-surface">{{ stats.activeOrders }}</h3>
       </div>
 
       <!-- Menu Items -->
-      <div class="glass-card p-6 rounded-xl">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all animate-slide-down delay-300">
         <div class="flex justify-between items-start mb-4">
-          <div class="p-2 bg-yellow-500/10 rounded-lg">
-            <span class="material-symbols-outlined text-yellow-400">lunch_dining</span>
+          <div class="p-2 bg-secondary-fixed rounded-lg">
+            <span class="material-symbols-outlined text-on-secondary-fixed">lunch_dining</span>
           </div>
         </div>
-        <p class="text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">MENU ITEMS</p>
-        <h3 class="text-2xl font-bold text-white">{{ stats.menuItems }}</h3>
+        <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">MENU ITEMS</p>
+        <h3 class="font-headline-md text-headline-md text-on-surface">{{ stats.menuItems }}</h3>
       </div>
 
       <!-- Restaurant Status -->
-      <div class="glass-card p-6 rounded-xl flex flex-col justify-between">
+      <div class="bg-surface-container-lowest p-6 rounded-xl border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all flex flex-col justify-between animate-slide-down delay-400">
         <div class="flex justify-between items-start">
-          <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">RESTAURANT STATUS</p>
-          <span class="material-symbols-outlined text-gray-500">storefront</span>
+          <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">RESTAURANT STATUS</p>
+          <span class="material-symbols-outlined text-on-surface-variant">storefront</span>
         </div>
         <div class="flex items-center justify-between mt-4">
-          <span class="text-lg font-bold"
-                [class]="stats.restaurantStatus ? 'text-[#00ff88]' : 'text-gray-400'">
-            @if (isTogglingStatus) { <span class="text-sm">Updating…</span> }
+          <span class="font-headline-md text-headline-md"
+                [class]="stats.restaurantStatus ? 'text-secondary' : 'text-on-surface-variant'">
+            @if (isTogglingStatus) { <span class="font-body-md text-body-md">Updating…</span> }
             @else { {{ stats.restaurantStatus ? 'Open' : 'Closed' }} }
           </span>
           <!-- Toggle Switch -->
           <div class="w-12 h-6 rounded-full relative p-1 transition-all"
-               [class]="isTogglingStatus ? 'bg-gray-600 cursor-wait opacity-60' : (stats.restaurantStatus ? 'bg-[#00ff88]/20 cursor-pointer' : 'bg-gray-700 cursor-pointer')"
+               [class]="isTogglingStatus ? 'bg-surface-container cursor-wait opacity-60' : (stats.restaurantStatus ? 'bg-secondary-container cursor-pointer' : 'bg-surface-container cursor-pointer')"
                (click)="toggleRestaurantStatus()">
             @if (isTogglingStatus) {
-              <div class="w-4 h-4 rounded-full bg-gray-400 flex items-center justify-center">
-                <svg class="animate-spin w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <div class="w-4 h-4 rounded-full bg-on-surface-variant flex items-center justify-center">
+                <svg class="animate-spin w-3 h-3 text-surface" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                 </svg>
               </div>
             } @else {
               <div class="w-4 h-4 rounded-full transition-all duration-300 shadow-lg"
-                   [class]="stats.restaurantStatus ? 'bg-[#00ff88] translate-x-6 shadow-[0_0_10px_rgba(0,255,136,0.8)]' : 'bg-gray-400 translate-x-0'">
+                   [class]="stats.restaurantStatus ? 'bg-secondary translate-x-6 shadow-[0_0_10px_rgba(0,109,55,0.8)]' : 'bg-on-surface-variant translate-x-0'">
               </div>
             }
           </div>
@@ -133,45 +133,46 @@
     </div>
 
     <!-- Recent Orders Section -->
-    <section class="space-y-6">
+    <section class="space-y-6 animate-fade-in">
       <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold text-white">Recent Orders</h2>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Recent Orders</h2>
         <button (click)="navigateToOrders()" 
-                class="px-4 py-2 rounded-lg border border-white/10 text-gray-400 hover:bg-white/5 hover:text-white transition-all text-sm font-semibold">
+                class="px-4 py-2 rounded-lg border border-surface-variant text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all font-label-lg text-label-lg font-semibold">
           View All History
         </button>
       </div>
 
       <!-- Orders Table -->
-      <div class="glass-card rounded-xl overflow-hidden">
+      <div class="bg-surface-container-lowest rounded-xl overflow-hidden border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-              <tr class="border-b border-white/10 bg-white/5">
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">ORDER ID</th>
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">CUSTOMER</th>
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">ITEMS SUMMARY</th>
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">AMOUNT (₹)</th>
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">STATUS</th>
-                <th class="p-6 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right">ACTION</th>
+              <tr class="border-b border-surface-variant bg-surface-container">
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">ORDER ID</th>
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">CUSTOMER</th>
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">ITEMS SUMMARY</th>
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">AMOUNT (₹)</th>
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">STATUS</th>
+                <th class="p-6 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider text-right">ACTION</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-white/5">
-              @for (order of recentOrders; track order.subOrderId) {
-                <tr class="hover:bg-white/5 transition-colors">
-                  <td class="p-6 font-mono text-[#00ff88] font-bold">#{{ order.subOrderId.substring(0, 8).toUpperCase() }}</td>
-                  <td class="p-6 font-medium text-white">{{ order.customerName }}</td>
-                  <td class="p-6 text-gray-400">{{ getItemsSummary(order) }}</td>
-                  <td class="p-6 font-bold text-white">₹{{ order.subTotal | number }}</td>
+            <tbody class="divide-y divide-surface-variant">
+              @for (order of recentOrders; track order.subOrderId; let i = $index) {
+                <tr class="hover:bg-surface-container transition-colors animate-fade-in"
+                  [style.animation-delay]="(i * 0.05) + 's'">
+                  <td class="p-6 font-mono text-primary font-bold">#{{ order.subOrderId.substring(0, 8).toUpperCase() }}</td>
+                  <td class="p-6 font-label-lg text-label-lg text-on-surface font-semibold">{{ order.customerName }}</td>
+                  <td class="p-6 font-body-md text-body-md text-on-surface-variant">{{ getItemsSummary(order) }}</td>
+                  <td class="p-6 font-label-lg text-label-lg text-on-surface font-semibold">₹{{ order.subTotal | number }}</td>
                   <td class="p-6">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border"
+                    <span class="inline-flex items-center px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold border"
                           [class]="getStatusClass(order.status)">
                       {{ getStatusLabel(order.status) }}
                     </span>
                   </td>
                   <td class="p-6 text-right">
                     <button (click)="viewOrderDetails(order)" 
-                            class="text-[#00ff88] hover:underline font-bold text-sm">
+                            class="text-primary hover:underline font-label-lg text-label-lg font-semibold">
                       View Details
                     </button>
                   </td>
@@ -184,29 +185,29 @@
     </section>
 
     <!-- Action Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
       <div (click)="navigateToMenuItems()" 
-           class="glass-card p-6 rounded-xl flex items-center gap-6 group cursor-pointer hover:border-[#00ff88]/50 transition-all">
-        <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#00ff88]/20 to-[#00ff88]/5 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[#00ff88] text-2xl">restaurant_menu</span>
+           class="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-6 group cursor-pointer border border-surface-variant hover:border-primary hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all">
+        <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-primary-fixed flex items-center justify-center">
+          <span class="material-symbols-outlined text-primary text-2xl">restaurant_menu</span>
         </div>
         <div>
-          <h4 class="font-bold text-lg text-[#00ff88]">Update Menu</h4>
-          <p class="text-gray-400 text-sm">Manage your burger varieties and pricing instantly.</p>
+          <h4 class="font-headline-md text-headline-md text-primary">Update Menu</h4>
+          <p class="font-body-md text-body-md text-on-surface-variant">Manage your burger varieties and pricing instantly.</p>
         </div>
-        <span class="material-symbols-outlined ml-auto text-gray-500 group-hover:text-[#00ff88] transition-colors">chevron_right</span>
+        <span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-primary transition-colors">chevron_right</span>
       </div>
 
       <div (click)="navigateToSettings()" 
-           class="glass-card p-6 rounded-xl flex items-center gap-6 group cursor-pointer hover:border-[#00ff88]/50 transition-all">
-        <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-gradient-to-br from-[#ff0088]/20 to-[#ff0088]/5 flex items-center justify-center">
-          <span class="material-symbols-outlined text-[#ff0088] text-2xl">analytics</span>
+           class="bg-surface-container-lowest p-6 rounded-xl flex items-center gap-6 group cursor-pointer border border-surface-variant hover:border-primary hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all">
+        <div class="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-secondary-fixed flex items-center justify-center">
+          <span class="material-symbols-outlined text-on-secondary-fixed text-2xl">analytics</span>
         </div>
         <div>
-          <h4 class="font-bold text-lg text-[#00ff88]">Sales Insights</h4>
-          <p class="text-gray-400 text-sm">Track your best-selling patties and rush hour trends.</p>
+          <h4 class="font-headline-md text-headline-md text-primary">Sales Insights</h4>
+          <p class="font-body-md text-body-md text-on-surface-variant">Track your best-selling patties and rush hour trends.</p>
         </div>
-        <span class="material-symbols-outlined ml-auto text-gray-500 group-hover:text-[#00ff88] transition-colors">chevron_right</span>
+        <span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-primary transition-colors">chevron_right</span>
       </div>
       </div>
     }

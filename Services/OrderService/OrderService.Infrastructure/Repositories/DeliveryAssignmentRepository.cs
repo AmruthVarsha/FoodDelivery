@@ -24,7 +24,11 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<IEnumerable<DeliveryAssignment>> GetByAgentId(string agentId)
         {
             return await _context.DeliveryAssignments
+                .AsSplitQuery()
                 .Include(d => d.Order)
+                    .ThenInclude(o => o.RestaurantOrders)
+                        .ThenInclude(ro => ro.OrderItems)
+                .Include(d => d.Order!.Payment)
                 .Where(d => d.DeliveryAgentId == agentId)
                 .ToListAsync();
         }

@@ -6,30 +6,30 @@
   (logoutClicked)="logout()">
 </app-partner-sidebar>
 
-<main class="ml-64 pt-16 p-8">
+<main class="md:ml-64 pt-24 px-6 pb-12 min-h-screen bg-background">
   <div class="max-w-5xl mx-auto">
 
     <!-- Header -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-8 flex items-center justify-between animate-fade-in">
       <div>
-        <h1 class="text-2xl font-bold text-white">Orders</h1>
-        <p class="text-zinc-400 text-sm mt-1">Manage incoming orders for {{ restaurantName }}</p>
+        <h1 class="font-headline-lg text-headline-lg text-[#1a1a1a]">Orders</h1>
+        <p class="font-body-md text-body-md text-[#6b7280] mt-1">Manage incoming orders for {{ restaurantName }}</p>
       </div>
       <!-- Restaurant Switcher -->
       @if (restaurants.length > 1) {
         <div class="relative">
           <button (click)="showRestaurantDropdown = !showRestaurantDropdown"
-            class="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-white/10 rounded-xl text-white text-sm hover:bg-zinc-700 transition-all">
-            <span class="material-symbols-outlined text-sm text-green-400">store</span>
+            class="flex items-center gap-2 px-4 py-2 bg-white border border-[#e5e7eb] rounded-xl text-[#1a1a1a] font-label-lg text-label-lg font-semibold hover:bg-[#f3f4f6] transition-all shadow-sm">
+            <span class="material-symbols-outlined text-sm text-[#ff6b35]">store</span>
             {{ restaurantName }}
             <span class="material-symbols-outlined text-xs">expand_more</span>
           </button>
           @if (showRestaurantDropdown) {
-            <div class="absolute right-0 top-12 w-56 bg-zinc-800 border border-white/10 rounded-xl shadow-2xl z-50 overflow-hidden">
+            <div class="absolute right-0 top-12 w-56 bg-white border border-[#e5e7eb] rounded-xl shadow-lg z-50 overflow-hidden">
               @for (r of restaurants; track r.id) {
                 <button (click)="selectRestaurant(r)"
-                  class="w-full text-left px-4 py-3 text-sm hover:bg-zinc-700 transition-colors"
-                  [class]="selectedRestaurant?.id === r.id ? 'text-green-400' : 'text-white'">
+                  class="w-full text-left px-4 py-3 font-label-lg text-label-lg hover:bg-[#f3f4f6] transition-colors"
+                  [class]="selectedRestaurant?.id === r.id ? 'text-[#ff6b35] font-semibold bg-[#fff5f2]' : 'text-[#1a1a1a]'">
                   {{ r.name }}
                 </button>
               }
@@ -41,17 +41,17 @@
 
     <!-- Error -->
     @if (errorMessage) {
-      <div class="mb-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{{ errorMessage }}</div>
+      <div class="mb-4 p-4 rounded-xl bg-red-50 border border-red-200 text-red-800 font-body-md text-body-md animate-slide-in-bottom">{{ errorMessage }}</div>
     }
 
     <!-- Status Filters -->
-    <div class="flex items-center gap-2 mb-6 flex-wrap">
+    <div class="flex items-center gap-2 mb-6 flex-wrap animate-fade-in">
       @for (f of statusFilters; track f.value) {
         <button (click)="selectedFilter = f.value"
-          class="px-4 py-2 rounded-xl text-sm font-medium transition-all border"
+          class="px-4 py-2 rounded-full font-label-lg text-label-lg font-semibold transition-all border"
           [class]="selectedFilter === f.value
-            ? 'bg-green-500 text-black border-green-500'
-            : 'bg-zinc-800 text-zinc-400 border-white/10 hover:border-white/25'">
+            ? 'bg-[#ff6b35] text-white border-[#ff6b35] shadow-md'
+            : 'bg-white text-[#6b7280] border-[#e5e7eb] hover:border-[#ff6b35] hover:text-[#ff6b35]'">
           {{ f.label }}
           <span class="ml-1 text-xs opacity-70">({{ f.count }})</span>
         </button>
@@ -61,70 +61,70 @@
     <!-- Loading -->
     @if (isLoading) {
       <div class="flex items-center justify-center py-20">
-        <span class="material-symbols-outlined text-4xl text-green-400 animate-spin">progress_activity</span>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     }
 
     <!-- Empty state -->
     @if (!isLoading && filteredOrders.length === 0 && !errorMessage) {
-      <div class="text-center py-20">
-        <span class="material-symbols-outlined text-5xl text-zinc-600 mb-3">inbox</span>
-        <p class="text-zinc-400">No orders found for this filter.</p>
+      <div class="text-center py-20 animate-scale-in">
+        <span class="material-symbols-outlined text-5xl text-[#9ca3af] mb-3">inbox</span>
+        <p class="font-body-lg text-body-lg text-[#6b7280]">No orders found for this filter.</p>
       </div>
     }
 
     <!-- Orders list -->
     @if (!isLoading) {
-      <div class="space-y-4">
-        @for (order of filteredOrders; track order.subOrderId) {
-          <div class="bg-zinc-900 border border-white/8 rounded-2xl overflow-hidden">
+      <div class="space-y-4 animate-fade-in">
+        @for (order of filteredOrders; track order.subOrderId; let i = $index) {
+          <div class="bg-white border border-[#e5e7eb] rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-all animate-slide-in-left"
+            [style.animation-delay]="(i * 0.1) + 's'">
             <!-- Header row -->
-            <div class="px-5 py-4 border-b border-white/8 flex items-center justify-between">
+            <div class="px-5 py-4 border-b border-[#e5e7eb] flex items-center justify-between bg-[#f9fafb]">
               <div class="flex items-center gap-4">
                 <div>
-                  <p class="font-bold text-white text-sm font-mono">#{{ order.subOrderId.substring(0, 8).toUpperCase() }}</p>
-                  <p class="text-xs text-zinc-400">Customer: <span class="text-zinc-200">{{ order.customerName }}</span></p>
+                  <p class="font-label-lg text-label-lg text-primary font-bold font-mono">#{{ order.subOrderId.substring(0, 8).toUpperCase() }}</p>
+                  <p class="font-label-sm text-label-sm text-on-surface-variant">Customer: <span class="text-on-surface font-semibold">{{ order.customerName }}</span></p>
                 </div>
               </div>
               <div class="flex items-center gap-3">
-                <span class="px-3 py-1 rounded-full text-xs font-bold border"
-                  [ngClass]="{
-                    'bg-green-500/15 border-green-500/40 text-green-300': order.paymentStatus === 'Completed',
-                    'bg-yellow-500/15 border-yellow-500/40 text-yellow-300': order.paymentStatus === 'Pending'
-                  }">
+                <span class="px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold border"
+                  [class]="order.paymentStatus === 'Completed' 
+                    ? 'bg-secondary-fixed border-secondary text-secondary' 
+                    : 'bg-tertiary-container border-tertiary text-on-tertiary-container'">
                   {{ order.paymentMethod === 'COD' ? 'Cash' : 'Online' }} - {{ order.paymentStatus === 'Completed' ? 'Paid' : 'Pending' }}
                 </span>
-                <span class="px-3 py-1 rounded-full text-xs font-bold border"
+                <span class="px-3 py-1 rounded-full font-label-sm text-label-sm font-semibold border"
                   [class]="getStatusBadgeClass(order.status)">
                   {{ order.status }}
                 </span>
-                <p class="text-green-400 font-bold text-sm">₹{{ order.subTotal }}</p>
+                <p class="text-primary font-headline-md text-headline-md">₹{{ order.subTotal }}</p>
               </div>
             </div>
 
             <!-- Items -->
-            <div class="px-5 py-3 border-b border-white/5 space-y-1.5">
+            <div class="px-5 py-3 border-b border-[#e5e7eb] space-y-1.5">
               @for (item of order.items; track item.id) {
-                <div class="flex justify-between text-sm">
-                  <span class="text-zinc-300">{{ item.menuItemName }} × {{ item.quantity }}</span>
-                  <span class="text-white">₹{{ item.totalPrice }}</span>
+                <div class="flex justify-between font-body-md text-body-md">
+                  <span class="text-[#6b7280]">{{ item.menuItemName }} × {{ item.quantity }}</span>
+                  <span class="text-[#1a1a1a] font-semibold">₹{{ item.totalPrice }}</span>
                 </div>
               }
             </div>
 
             <!-- Delivery address + Instructions -->
-            <div class="px-5 py-3 border-b border-white/5">
-              <p class="text-xs text-zinc-500 mb-0.5">Deliver to</p>
-              <p class="text-sm text-zinc-200">{{ order.deliveryStreet }}, {{ order.deliveryCity }} — {{ order.deliveryPincode }}</p>
+            <div class="px-5 py-3 border-b border-[#e5e7eb]">
+              <p class="font-label-sm text-label-sm text-[#6b7280] mb-0.5">Deliver to</p>
+              <p class="font-body-md text-body-md text-[#1a1a1a]">{{ order.deliveryStreet }}, {{ order.deliveryCity }} — {{ order.deliveryPincode }}</p>
               @if (order.deliveryInstructions) {
-                <p class="text-xs text-zinc-400 mt-1">📝 {{ order.deliveryInstructions }}</p>
+                <p class="font-label-sm text-label-sm text-[#6b7280] mt-1">📝 {{ order.deliveryInstructions }}</p>
               }
             </div>
 
             <!-- Cancellation reason -->
             @if (order.cancellationReason) {
-              <div class="px-5 py-2 bg-red-500/5 border-t border-red-500/20">
-                <p class="text-xs text-red-400">{{ order.cancellationReason }}</p>
+              <div class="px-5 py-2 bg-red-50 border-t border-red-200">
+                <p class="font-label-sm text-label-sm text-red-800">{{ order.cancellationReason }}</p>
               </div>
             }
 
@@ -133,21 +133,21 @@
               <!-- Reject (Pending only) -->
               @if (canReject(order.status)) {
                 <button (click)="openReasonModal(order.subOrderId, RestaurantOrderStatus.Rejected)"
-                  class="px-4 py-2 rounded-xl border border-red-500/50 text-red-400 text-sm font-medium hover:bg-red-500/10 transition-all">
+                  class="px-4 py-2 rounded-xl border border-red-300 text-red-700 font-label-lg text-label-lg font-semibold hover:bg-red-50 transition-all">
                   Reject
                 </button>
               }
               <!-- Cancel (Accepted / Preparing) -->
               @if (canCancel(order.status)) {
                 <button (click)="openReasonModal(order.subOrderId, RestaurantOrderStatus.Cancelled)"
-                  class="px-4 py-2 rounded-xl border border-orange-500/50 text-orange-400 text-sm font-medium hover:bg-orange-500/10 transition-all">
+                  class="px-4 py-2 rounded-xl border border-orange-300 text-orange-700 font-label-lg text-label-lg font-semibold hover:bg-orange-50 transition-all">
                   Cancel
                 </button>
               }
               <!-- Forward action -->
               @if (getNextAction(order.status); as action) {
                 <button (click)="doNextAction(order)"
-                  class="px-5 py-2 rounded-xl bg-green-500 text-black font-bold text-sm hover:bg-green-400 active:scale-95 transition-all">
+                  class="px-5 py-2 rounded-full bg-[#ff6b35] text-white font-label-lg text-label-lg font-semibold hover:bg-[#ff8555] active:scale-95 transition-all shadow-md">
                   {{ action.label }}
                 </button>
               }
@@ -162,28 +162,28 @@
 
 <!-- Reason Modal (Reject / Cancel) -->
 @if (showReasonModal) {
-  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
-      <h2 class="font-bold text-white text-lg mb-4">
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+    <div class="bg-white border border-[#e5e7eb] rounded-[24px] p-6 w-full max-w-md shadow-xl animate-scale-in">
+      <h2 class="font-headline-md text-headline-md text-[#1a1a1a] mb-4">
         {{ pendingAction?.status === RestaurantOrderStatus.Rejected ? 'Reject Order' : 'Cancel Order' }}
       </h2>
-      <p class="text-zinc-400 text-sm mb-4">Please provide a reason for the customer:</p>
+      <p class="font-body-md text-body-md text-[#6b7280] mb-4">Please provide a reason for the customer:</p>
       <textarea
         [(ngModel)]="reasonInput"
         rows="3"
         placeholder="e.g. Out of stock, restaurant closing soon..."
-        class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-red-500 resize-none mb-4">
+        class="w-full bg-[#f9fafb] border border-[#e5e7eb] rounded-xl px-4 py-3 text-[#1a1a1a] font-body-lg text-body-lg placeholder-[#9ca3af] focus:outline-none focus:ring-2 focus:ring-[#ff6b35] focus:border-transparent resize-none mb-4">
       </textarea>
       <div class="flex gap-3 justify-end">
         <button (click)="showReasonModal = false; pendingAction = null"
-          class="px-5 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-sm hover:bg-zinc-700 transition-all">
+          class="px-5 py-2 rounded-xl bg-[#f3f4f6] text-[#1a1a1a] font-label-lg text-label-lg font-semibold hover:bg-[#e5e7eb] transition-all">
           Back
         </button>
         <button (click)="confirmWithReason()" [disabled]="!reasonInput.trim()"
-          class="px-5 py-2 rounded-xl font-bold text-sm transition-all"
+          class="px-5 py-2 rounded-xl font-label-lg text-label-lg font-semibold transition-all"
           [class]="reasonInput.trim()
-            ? 'bg-red-500 text-white hover:bg-red-400'
-            : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'">
+            ? 'bg-red-600 text-white hover:bg-red-700 shadow-md'
+            : 'bg-[#e5e7eb] text-[#9ca3af] cursor-not-allowed'">
           Confirm
         </button>
       </div>

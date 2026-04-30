@@ -191,15 +191,15 @@ export class PartnerOrdersComponent implements OnInit, OnDestroy {
 
   getStatusBadgeClass(status: string): string {
     const map: Record<string, string> = {
-      [RestaurantOrderStatus.Pending]:       'bg-zinc-500/20 border-zinc-500/40 text-zinc-300',
-      [RestaurantOrderStatus.Accepted]:      'bg-blue-500/15 border-blue-500/40 text-blue-300',
-      [RestaurantOrderStatus.Preparing]:     'bg-yellow-500/15 border-yellow-500/40 text-yellow-300',
-      [RestaurantOrderStatus.ReadyForPickup]:'bg-green-500/15 border-green-500/40 text-green-300',
-      [RestaurantOrderStatus.PickedUp]:      'bg-purple-500/15 border-purple-500/40 text-purple-300',
-      [RestaurantOrderStatus.Cancelled]:     'bg-red-500/15 border-red-500/40 text-red-300',
-      [RestaurantOrderStatus.Rejected]:      'bg-red-500/15 border-red-500/40 text-red-300',
+      [RestaurantOrderStatus.Pending]:       'bg-surface-container border-outline text-on-surface-variant',
+      [RestaurantOrderStatus.Accepted]:      'bg-tertiary-container border-tertiary text-on-tertiary-container',
+      [RestaurantOrderStatus.Preparing]:     'bg-tertiary-fixed border-tertiary text-tertiary',
+      [RestaurantOrderStatus.ReadyForPickup]:'bg-secondary-fixed border-secondary text-secondary',
+      [RestaurantOrderStatus.PickedUp]:      'bg-secondary-container border-secondary text-on-secondary-container',
+      [RestaurantOrderStatus.Cancelled]:     'bg-error-container border-error text-on-error-container',
+      [RestaurantOrderStatus.Rejected]:      'bg-error-container border-error text-on-error-container',
     };
-    return map[status] ?? 'bg-zinc-500/20 border-zinc-500/40 text-zinc-300';
+    return map[status] ?? 'bg-surface-container border-outline text-on-surface-variant';
   }
 
   logout(): void {

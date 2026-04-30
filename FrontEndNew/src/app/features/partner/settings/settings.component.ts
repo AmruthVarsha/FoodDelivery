@@ -32,11 +32,19 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
     id: '',
     name: '',
     description: '',
-    address: '',
+    address: {
+      street: '',
+      city: '',
+      state: '',
+      pincode: ''
+    },
     phoneNumber: '',
     email: '',
     isOpen: true,
-    isApproved: false
+    isApproved: false,
+    openingTime: '',
+    closingTime: '',
+    prepTimeMinutes: 30
   };
 
   private destroy$ = new Subject<void>();
@@ -59,10 +67,38 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
       filter(r => r !== null)
     ).subscribe(restaurant => {
       this.selectedRestaurant = restaurant;
-      this.restaurant = { ...restaurant! };
       this.restaurantId = restaurant!.id;
-      this.isLoading = false;
+      this.isLoading = true;
+      this.errorMessage = '';
       this.cdr.markForCheck();
+
+      // Fetch full profile to get all fields (Address, Email, Phone, etc.) 
+      // missing from the list-view DTO
+      this.partnerService.getRestaurantProfile(this.restaurantId).subscribe({
+        next: (fullProfile) => {
+          this.restaurant = {
+            ...fullProfile,
+            address: fullProfile.address ? {
+              street: fullProfile.address.street || '',
+              city: fullProfile.address.city || '',
+              state: fullProfile.address.state || '',
+              pincode: fullProfile.address.pincode || ''
+            } : {
+              street: '',
+              city: '',
+              state: '',
+              pincode: ''
+            }
+          };
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to load restaurant profile.';
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }
+      });
     });
   }
 
@@ -88,7 +124,13 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
     this.successMessage = '';
     this.cdr.markForCheck();
 
-    this.partnerService.updateRestaurant(this.restaurantId, this.restaurant).subscribe({
+    // Prepare DTO for backend (Map cuisines -> cuisineNames)
+    const updateDto = {
+      ...this.restaurant,
+      cuisineNames: (this.restaurant as any).cuisines || []
+    };
+
+    this.partnerService.updateRestaurant(this.restaurantId, updateDto as any).subscribe({
       next: () => {
         this.successMessage = 'Settings saved successfully!';
         this.isLoading = false;
@@ -101,7 +143,7 @@ export class PartnerSettingsComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error saving settings:', error);
-        this.errorMessage = 'Failed to save settings. Please try again.';
+        this.errorMessage = error?.message || 'Failed to save settings. Please try again.';
         this.isLoading = false;
         this.cdr.markForCheck();
       }

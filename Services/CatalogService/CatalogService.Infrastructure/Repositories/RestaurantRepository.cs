@@ -19,6 +19,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<IEnumerable<Restaurant>> GetAllAsync()
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.RestaurantCuisines)
                     .ThenInclude(rc => rc.Cuisine)
@@ -28,6 +29,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<Restaurant?> GetByIdAsync(Guid id)
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.ServiceAreas)
                 .Include(r => r.Categories)
@@ -40,6 +42,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<IEnumerable<Restaurant>> GetByCuisineAsync(Guid cuisineId)
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.RestaurantCuisines)
                     .ThenInclude(rc => rc.Cuisine)
@@ -50,6 +53,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<IEnumerable<Restaurant>> SearchAsync(string searchTerm)
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.RestaurantCuisines)
                     .ThenInclude(rc => rc.Cuisine)
@@ -61,6 +65,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<IEnumerable<Restaurant>> GetByPincodeAsync(string pincode)
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.RestaurantCuisines)
                     .ThenInclude(rc => rc.Cuisine)
@@ -71,6 +76,7 @@ namespace CatalogService.Infrastructure.Repositories
         public async Task<IEnumerable<Restaurant>> GetByOwnerIdAsync(string ownerId)
         {
             return await _context.Restaurants
+                .AsSplitQuery()
                 .Include(r => r.Address)
                 .Include(r => r.RestaurantCuisines)
                     .ThenInclude(rc => rc.Cuisine)

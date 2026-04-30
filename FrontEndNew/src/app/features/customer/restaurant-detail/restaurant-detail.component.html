@@ -1,42 +1,42 @@
-<div class="min-h-screen bg-background text-on-background">
+<div class="min-h-screen bg-background text-on-surface">
   <!-- Shared Navbar -->
   <app-navbar></app-navbar>
 
-  <main class="relative">
+  <main class="relative pt-16">
     <!-- Hero Section -->
     @if (restaurant) {
-      <section class="relative h-[450px] w-full overflow-hidden">
+      <section class="relative h-[400px] w-full overflow-hidden bg-surface-container animate-slide-down">
         <img 
           class="w-full h-full object-cover" 
-          [src]="restaurant.imageUrl || 'https://via.placeholder.com/1920x450?text=Restaurant'"
+          [src]="restaurant.imageUrl || 'https://via.placeholder.com/1920x400?text=Restaurant'"
           [alt]="restaurant.name"
         />
-        <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         
-        <div class="absolute bottom-0 left-0 w-full p-16 md:px-10">
+        <div class="absolute bottom-0 left-0 w-full p-8 md:p-10">
           <div class="max-w-7xl mx-auto flex flex-col gap-3">
             <div class="flex items-center gap-2">
               @if (restaurant.isActive) {
-                <span class="bg-secondary-container/20 text-secondary-container px-3 py-1 rounded-full text-xs font-semibold tracking-wider backdrop-blur-md border border-secondary-container/30">OPEN NOW</span>
+                <span class="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-xs font-semibold tracking-wider backdrop-blur-md border border-green-500/30">OPEN NOW</span>
               }
               <div class="flex items-center gap-1 bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                <span class="material-symbols-outlined text-primary-container text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
-                <span class="text-sm font-bold">{{ restaurant.rating }} (2.4k+ Reviews)</span>
+                <span class="material-symbols-outlined text-yellow-400 text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                <span class="text-sm font-bold text-white">{{ restaurant.rating }} (2.4k+ Reviews)</span>
               </div>
             </div>
-            <h1 class="text-5xl font-extrabold text-white drop-shadow-2xl">{{ restaurant.name }}</h1>
-            <div class="flex items-center gap-6 text-slate-300">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-2xl">{{ restaurant.name }}</h1>
+            <div class="flex flex-wrap items-center gap-4 md:gap-6 text-slate-200">
               <div class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary-container">location_on</span>
-                <span class="text-base">{{ restaurant.address }}</span>
+                <span class="material-symbols-outlined text-[#ff6b35]">location_on</span>
+                <span class="text-sm md:text-base">{{ restaurant.address }}</span>
               </div>
               <div class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary-container">schedule</span>
-                <span class="text-base">{{ restaurant.deliveryTime || '25-35 mins' }} delivery</span>
+                <span class="material-symbols-outlined text-[#ff6b35]">schedule</span>
+                <span class="text-sm md:text-base">{{ restaurant.deliveryTime || '25-35 mins' }} delivery</span>
               </div>
               <div class="flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary-container">payments</span>
-                <span class="text-base">{{ restaurant.cuisineType || 'Fine Dining' }}</span>
+                <span class="material-symbols-outlined text-[#ff6b35]">payments</span>
+                <span class="text-sm md:text-base">{{ restaurant.cuisineType || 'Fine Dining' }}</span>
               </div>
             </div>
           </div>
@@ -49,34 +49,34 @@
       <!-- Left Side: Menu Content -->
       <div class="flex-1 space-y-6">
         <!-- Navigation Tabs -->
-        <div class="flex border-b border-white/5 gap-10 mb-8">
+        <div class="flex border-b border-surface-variant gap-10 mb-8">
           <button 
             (click)="selectTab('menu')"
-            [class.text-primary-container]="selectedTab === 'menu'"
+            [class.text-primary]="selectedTab === 'menu'"
             [class.border-b-2]="selectedTab === 'menu'"
-            [class.border-primary-container]="selectedTab === 'menu'"
-            [class.text-slate-400]="selectedTab !== 'menu'"
-            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+            [class.border-primary]="selectedTab === 'menu'"
+            [class.text-on-surface-variant]="selectedTab !== 'menu'"
+            class="font-headline-md text-headline-md pb-4 transition-colors hover:text-on-surface"
           >
             Menu
           </button>
           <button 
             (click)="selectTab('info')"
-            [class.text-primary-container]="selectedTab === 'info'"
+            [class.text-primary]="selectedTab === 'info'"
             [class.border-b-2]="selectedTab === 'info'"
-            [class.border-primary-container]="selectedTab === 'info'"
-            [class.text-slate-400]="selectedTab !== 'info'"
-            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+            [class.border-primary]="selectedTab === 'info'"
+            [class.text-on-surface-variant]="selectedTab !== 'info'"
+            class="font-headline-md text-headline-md pb-4 transition-colors hover:text-on-surface"
           >
             Information
           </button>
           <button 
             (click)="selectTab('reviews')"
-            [class.text-primary-container]="selectedTab === 'reviews'"
+            [class.text-primary]="selectedTab === 'reviews'"
             [class.border-b-2]="selectedTab === 'reviews'"
-            [class.border-primary-container]="selectedTab === 'reviews'"
-            [class.text-slate-400]="selectedTab !== 'reviews'"
-            class="text-lg font-bold pb-4 transition-colors hover:text-white"
+            [class.border-primary]="selectedTab === 'reviews'"
+            [class.text-on-surface-variant]="selectedTab !== 'reviews'"
+            class="font-headline-md text-headline-md pb-4 transition-colors hover:text-on-surface"
           >
             Reviews
           </button>
@@ -89,15 +89,15 @@
             @for (category of categories; track category) {
               <button 
                 (click)="selectCategory(category)"
-                [class.bg-primary-container]="selectedCategory === category"
-                [class.text-white]="selectedCategory === category"
-                [class.orange-glow]="selectedCategory === category"
-                [class.bg-white/5]="selectedCategory !== category"
+                [class.bg-primary]="selectedCategory === category"
+                [class.text-on-primary]="selectedCategory === category"
+                [class.shadow-[0_4px_12px_rgba(181,28,0,0.2)]]="selectedCategory === category"
+                [class.bg-surface-container]="selectedCategory !== category"
                 [class.border]="selectedCategory !== category"
-                [class.border-white/10]="selectedCategory !== category"
-                [class.text-slate-300]="selectedCategory !== category"
-                [class.hover:bg-white/10]="selectedCategory !== category"
-                class="whitespace-nowrap px-6 py-2 rounded-full text-xs font-semibold tracking-wider transition-all"
+                [class.border-surface-variant]="selectedCategory !== category"
+                [class.text-on-surface]="selectedCategory !== category"
+                [class.hover:border-primary]="selectedCategory !== category"
+                class="whitespace-nowrap px-6 py-2 rounded-full font-label-lg text-label-lg font-semibold transition-all"
               >
                 {{ category }}
               </button>
@@ -108,23 +108,24 @@
           @if (isLoadingMenu) {
             <div class="flex justify-center items-center py-20">
               <div class="text-center">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-container"></div>
-                <p class="text-slate-400 mt-4">Loading menu...</p>
+                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p class="font-body-md text-body-md text-on-surface-variant mt-4">Loading menu...</p>
               </div>
             </div>
           }
 
           @if (!isLoadingMenu && filteredMenuItems.length === 0) {
-            <div class="glass-panel rounded-2xl p-8 text-center">
-              <span class="material-symbols-outlined text-slate-400 text-5xl mb-4">restaurant_menu</span>
-              <p class="text-slate-400 text-lg">No menu items available.</p>
+            <div class="bg-surface-container-lowest rounded-2xl p-8 text-center border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+              <span class="material-symbols-outlined text-on-surface-variant text-5xl mb-4">restaurant_menu</span>
+              <p class="font-body-lg text-body-lg text-on-surface-variant">No menu items available.</p>
             </div>
           }
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @for (item of filteredMenuItems; track item.id) {
-              <div class="glass-panel neo-outset rounded-3xl p-4 flex gap-6 group">
-                <div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 neo-inset">
+            @for (item of filteredMenuItems; track item.id; let i = $index) {
+              <div class="bg-surface-container-lowest rounded-[24px] p-4 flex gap-6 group border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] transition-all animate-slide-in-left"
+                [style.animation-delay]="(i * 0.05) + 's'">
+                <div class="w-32 h-32 rounded-2xl overflow-hidden shrink-0 bg-surface-container flex items-center justify-center">
                   <img 
                     class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                     [src]="item.imageUrl || 'https://via.placeholder.com/200x200?text=Dish'"
@@ -133,15 +134,15 @@
                 </div>
                 <div class="flex flex-col justify-between py-2 flex-1">
                   <div>
-                    <h3 class="text-lg font-bold text-white">{{ item.name }}</h3>
-                    <p class="text-slate-400 text-sm line-clamp-2 mt-1">{{ item.description }}</p>
+                    <h3 class="font-headline-md text-headline-md text-on-surface">{{ item.name }}</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">{{ item.description }}</p>
                   </div>
                   <div class="flex justify-between items-center mt-4">
-                    <span class="text-primary-container text-xl font-bold">₹{{ item.price }}</span>
+                    <span class="text-primary font-label-lg text-label-lg font-semibold">₹{{ item.price }}</span>
                     <button 
                       (click)="addToCart(item)"
                       [disabled]="!item.isAvailable"
-                      class="neo-outset bg-primary-container h-8 w-8 rounded-full flex items-center justify-center text-white active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="bg-primary text-on-primary h-8 w-8 rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:bg-surface-tint active:scale-90 transition-transform disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span class="material-symbols-outlined text-sm">add</span>
                     </button>
@@ -154,24 +155,24 @@
 
         <!-- Info Tab Content -->
         @if (selectedTab === 'info' && restaurant) {
-          <div class="glass-panel rounded-3xl p-8 space-y-6">
-            <h3 class="text-2xl font-bold text-white mb-4">Restaurant Information</h3>
+          <div class="bg-surface-container-lowest rounded-[24px] p-8 space-y-6 border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <h3 class="font-headline-md text-headline-md text-on-surface mb-4">Restaurant Information</h3>
             <div class="space-y-4">
               <div>
-                <p class="text-slate-400 text-sm mb-1">Description</p>
-                <p class="text-white">{{ restaurant.description || 'No description available.' }}</p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Description</p>
+                <p class="font-body-md text-body-md text-on-surface">{{ restaurant.description || 'No description available.' }}</p>
               </div>
               <div>
-                <p class="text-slate-400 text-sm mb-1">Address</p>
-                <p class="text-white">{{ restaurant.address }}</p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Address</p>
+                <p class="font-body-md text-body-md text-on-surface">{{ restaurant.address }}</p>
               </div>
               <div>
-                <p class="text-slate-400 text-sm mb-1">Phone</p>
-                <p class="text-white">{{ restaurant.phoneNumber }}</p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Phone</p>
+                <p class="font-body-md text-body-md text-on-surface">{{ restaurant.phoneNumber }}</p>
               </div>
               <div>
-                <p class="text-slate-400 text-sm mb-1">Email</p>
-                <p class="text-white">{{ restaurant.email }}</p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Email</p>
+                <p class="font-body-md text-body-md text-on-surface">{{ restaurant.email }}</p>
               </div>
             </div>
           </div>
@@ -179,23 +180,23 @@
 
         <!-- Reviews Tab Content -->
         @if (selectedTab === 'reviews') {
-          <div class="glass-panel rounded-3xl p-8 text-center">
-            <span class="material-symbols-outlined text-slate-400 text-5xl mb-4">rate_review</span>
-            <p class="text-slate-400 text-lg">Reviews coming soon!</p>
+          <div class="bg-surface-container-lowest rounded-[24px] p-8 text-center border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <span class="material-symbols-outlined text-on-surface-variant text-5xl mb-4">rate_review</span>
+            <p class="font-body-lg text-body-lg text-on-surface-variant">Reviews coming soon!</p>
           </div>
         }
       </div>
 
       <!-- Right Side: Sticky Sidebar -->
-      <aside class="w-full lg:w-80 relative">
+      <aside class="w-full lg:w-80 relative animate-slide-in-right delay-200">
         <div class="lg:sticky lg:top-24 space-y-6">
-          <div class="glass-panel rounded-3xl p-6 neo-outset flex flex-col space-y-4">
-            <div class="flex justify-between items-center border-b border-white/5 pb-4 mb-2">
+          <div class="bg-surface-container-lowest rounded-[24px] p-6 flex flex-col space-y-4 border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <div class="flex justify-between items-center border-b border-surface-variant pb-4 mb-2">
               <div>
-                <h2 class="text-lg font-bold text-white">Your Basket</h2>
-                <p class="text-slate-400 text-sm">{{ cartItemCount }} items ready to checkout</p>
+                <h2 class="font-headline-md text-headline-md text-on-surface">Your Basket</h2>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">{{ cartItemCount }} items ready to checkout</p>
               </div>
-              <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container">
+              <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
                 <span class="material-symbols-outlined">shopping_basket</span>
               </div>
             </div>
@@ -203,8 +204,8 @@
             <!-- Cart Items List -->
             @if (cartItems.length === 0) {
               <div class="text-center py-8">
-                <span class="material-symbols-outlined text-slate-500 text-4xl mb-2">shopping_cart</span>
-                <p class="text-slate-400 text-sm">Your basket is empty</p>
+                <span class="material-symbols-outlined text-on-surface-variant text-4xl mb-2">shopping_cart</span>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Your basket is empty</p>
               </div>
             }
 
@@ -212,19 +213,19 @@
               @for (item of cartItems; track item.menuItem.id) {
                 <div class="flex justify-between items-center">
                   <div class="flex gap-3 flex-1">
-                    <div class="w-10 h-10 rounded-lg bg-surface-container-high neo-inset flex items-center justify-center text-xs font-bold text-primary-container">
+                    <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center font-label-sm text-label-sm font-semibold text-primary">
                       {{ item.quantity }}x
                     </div>
                     <div class="flex-1">
-                      <p class="text-white text-sm font-medium">{{ item.menuItem.name }}</p>
-                      <p class="text-slate-500 text-xs">₹{{ item.menuItem.price }} each</p>
+                      <p class="font-label-md text-label-md text-on-surface font-semibold">{{ item.menuItem.name }}</p>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">₹{{ item.menuItem.price }} each</p>
                     </div>
                   </div>
                   <div class="flex items-center gap-2">
-                    <button (click)="updateQuantity(item, -1)" class="text-slate-400 hover:text-white">
+                    <button (click)="updateQuantity(item, -1)" class="text-on-surface-variant hover:text-on-surface">
                       <span class="material-symbols-outlined text-sm">remove_circle_outline</span>
                     </button>
-                    <button (click)="updateQuantity(item, 1)" class="text-slate-400 hover:text-white">
+                    <button (click)="updateQuantity(item, 1)" class="text-on-surface-variant hover:text-on-surface">
                       <span class="material-symbols-outlined text-sm">add_circle_outline</span>
                     </button>
                   </div>
@@ -233,28 +234,28 @@
             </div>
 
             @if (cartItems.length > 0) {
-              <div class="h-px bg-white/5 my-4"></div>
+              <div class="h-px bg-surface-variant my-4"></div>
 
               <!-- Subtotal Section -->
               <div class="space-y-2">
-                <div class="flex justify-between text-slate-400 text-sm">
+                <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
                   <span>Subtotal</span>
                   <span>₹{{ cartSubtotal }}</span>
                 </div>
-                <div class="flex justify-between text-slate-400 text-sm">
+                <div class="flex justify-between font-body-sm text-body-sm text-on-surface-variant">
                   <span>Delivery Fee</span>
                   <span>₹{{ deliveryFee }}</span>
                 </div>
-                <div class="flex justify-between text-white text-lg font-bold pt-2">
+                <div class="flex justify-between font-label-lg text-label-lg text-on-surface font-semibold pt-2">
                   <span>Total</span>
-                  <span class="text-primary-container">₹{{ cartTotal }}</span>
+                  <span class="text-primary">₹{{ cartTotal }}</span>
                 </div>
               </div>
 
               <!-- Checkout CTA -->
               <button 
                 (click)="checkout()"
-                class="w-full bg-primary-container text-white py-4 rounded-2xl font-bold text-base orange-glow hover:translate-y-[-2px] transition-all active:scale-95 transform"
+                class="w-full bg-primary text-on-primary py-4 rounded-2xl font-label-lg text-label-lg font-semibold shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:bg-surface-tint hover:translate-y-[-2px] transition-all active:scale-95 transform"
               >
                 Checkout Now
               </button>

@@ -138,7 +138,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         this.router.navigate(['/customer/order-tracking', order.id]);
       },
       error: (err) => {
-        this.errorMessage = err?.error?.message || 'Failed to place order. Please try again.';
+        this.errorMessage = err?.message || 'Failed to place order. Please try again.';
         this.isPlacingOrder = false;
         this.cdr.detectChanges();
       }

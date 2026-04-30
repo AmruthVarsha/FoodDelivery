@@ -98,7 +98,10 @@ namespace OrderService.Application.Services
 
                 foreach (var cartItem in cart.CartItems)
                 {
-                    var menuItem = await _catalogRepository.GetItemById(cartItem.MenuItemId);
+                    // Find the category and item in the pre-fetched restaurant menu
+                    var category = restaurant.Menu.FirstOrDefault(c => c.Items.Any(i => i.Id == cartItem.MenuItemId));
+                    var menuItem = category?.Items.FirstOrDefault(i => i.Id == cartItem.MenuItemId);
+
                     if (menuItem == null)
                         throw new BadRequestException(
                             $"'{cartItem.MenuItemName}' from '{restaurant.Name}' is no longer available.");
@@ -107,8 +110,7 @@ namespace OrderService.Application.Services
                         throw new BadRequestException(
                             $"'{cartItem.MenuItemName}' from '{restaurant.Name}' is currently unavailable.");
 
-                    var category = await _catalogRepository.GetCategoryById(menuItem.CategoryId);
-                    if (category == null || !category.IsActive)
+                    if (!category.IsActive)
                         throw new BadRequestException(
                             $"'{cartItem.MenuItemName}' belongs to an inactive category.");
 

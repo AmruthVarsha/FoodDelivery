@@ -9,7 +9,7 @@ namespace OrderService.Application.Interfaces
         Task<CartResponseDTO> GetCartInfo(Guid id);
         Task<IEnumerable<CartResponseDTO>> GetUserActiveCarts(string userId);
         Task<Guid> AddCartAsync(CartDTO cartDTO,string userId);
-        Task<CartItemResponseDTO> AddCartItem(CartItemDTO cartItemDTO);
+        Task<CartItemResponseDTO> AddCartItem(CartItemDTO cartItemDTO, string userId);
         Task<CartItemResponseDTO> UpdateCartItem(UpdateCartItemDTO cartItemDTO);
         Task<bool> DeleteCartItem(Guid id,Guid cartId,string userId);
     }

@@ -6,29 +6,30 @@
   (restaurantSelected)="selectRestaurant($event)"
   (logoutClicked)="logout()">
 </app-partner-sidebar>
+
 <!-- Main Content -->
-<main class="md:ml-64 pt-24 px-6 pb-12 bg-gradient-to-br from-[#0a0a0a] via-[#1a1a1a] to-[#0a0a0a] min-h-screen">
+<main class="md:ml-64 pt-24 px-6 pb-12 bg-background min-h-screen">
   <div class="max-w-7xl mx-auto">
     
     <!-- Action Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10 animate-fade-in">
       <div>
-        <h2 class="text-3xl font-bold text-white">Menu Items Management</h2>
-        <p class="text-gray-400">Manage your digital menu and item availability.</p>
+        <h2 class="font-headline-lg text-headline-lg text-on-surface">Menu Items Management</h2>
+        <p class="font-body-md text-body-md text-on-surface-variant">Manage your digital menu and item availability.</p>
       </div>
       <div class="flex flex-col sm:flex-row gap-4">
         <div class="relative group">
-          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00ff88] transition-colors">search</span>
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
           <input 
             [(ngModel)]="searchQuery"
             (input)="onSearch()"
-            class="neomorphic-inset w-full sm:w-64 h-12 pl-10 pr-4 rounded-xl border-none text-white focus:ring-1 focus:ring-[#00ff88] placeholder:text-gray-600" 
+            class="w-full sm:w-64 h-12 pl-10 pr-4 rounded-xl border border-surface-variant bg-surface-container text-on-surface focus:ring-2 focus:ring-primary placeholder:text-on-surface-variant/70 font-body-lg text-body-lg" 
             placeholder="Search items..." 
             type="text"/>
         </div>
         <button 
           (click)="openAddItemDialog()"
-          class="h-12 px-6 rounded-xl bg-[#00ff88] text-black font-bold flex items-center justify-center gap-2 neon-glow-green active:scale-95 transition-all duration-150">
+          class="h-12 px-6 rounded-full bg-primary text-on-primary font-label-lg text-label-lg font-semibold flex items-center justify-center gap-2 shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:bg-surface-tint active:scale-95 transition-all duration-150">
           <span class="material-symbols-outlined">add</span>
           Add New Item
         </button>
@@ -38,44 +39,47 @@
     <!-- Loading State -->
     @if (isLoading) {
       <div class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00ff88]"></div>
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     }
 
     <!-- Error State -->
     @if (errorMessage) {
-      <div class="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6">
+      <div class="bg-error-container border border-error text-on-error-container px-4 py-3 rounded-lg mb-6 font-body-md text-body-md animate-slide-in-bottom">
         {{ errorMessage }}
       </div>
     }
 
     <!-- Menu Items Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      @for (item of filteredMenuItems; track item.id) {
-        <div class="glass-card rounded-xl overflow-hidden flex flex-col group transition-all duration-300 hover:translate-y-[-4px]">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in">
+      @for (item of filteredMenuItems; track item.id; let i = $index) {
+        <div class="bg-surface-container-lowest rounded-[16px] overflow-hidden flex flex-col group transition-all duration-300 hover:translate-y-[-4px] border border-surface-variant shadow-[0_4px_12px_rgba(181,28,0,0.06)] hover:shadow-[0_8px_20px_rgba(181,28,0,0.1)] animate-scale-in"
+          [style.animation-delay]="(i * 0.05) + 's'">
           
           <!-- Item Image -->
-          <div class="h-48 relative overflow-hidden bg-gray-800">
+          <div class="h-48 relative overflow-hidden bg-surface-container">
             @if (item.imageUrl) {
               <img [src]="item.imageUrl" [alt]="item.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"/>
             } @else {
               <div class="w-full h-full flex items-center justify-center">
-                <span class="material-symbols-outlined text-6xl text-gray-600">restaurant_menu</span>
+                <span class="material-symbols-outlined text-6xl text-on-surface-variant">restaurant_menu</span>
               </div>
             }
             
             <!-- Category Badge -->
             <div class="absolute top-3 left-3 flex gap-2">
-              <span class="px-2 py-1 rounded bg-black/60 backdrop-blur-md border border-[#00ff88]/30 text-[#00ff88] text-[10px] font-bold uppercase tracking-wider">
+              <span class="px-2 py-1 rounded bg-primary-container backdrop-blur-md border border-primary text-on-primary-container font-label-sm text-label-sm font-semibold uppercase tracking-wider">
                 {{ item.categoryId }}
               </span>
               <span 
-                [class.border-green-500/30]="item.isVegetarian"
-                [class.text-green-500]="item.isVegetarian"
-                [class.border-red-500/30]="!item.isVegetarian"
-                [class.text-red-500]="!item.isVegetarian"
-                class="px-2 py-1 rounded bg-black/60 backdrop-blur-md border text-[10px] flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full" [class.bg-green-500]="item.isVegetarian" [class.bg-red-500]="!item.isVegetarian"></span>
+                [class.border-secondary]="item.isVegetarian"
+                [class.text-on-secondary-container]="item.isVegetarian"
+                [class.bg-secondary-container]="item.isVegetarian"
+                [class.border-error]="!item.isVegetarian"
+                [class.text-on-error-container]="!item.isVegetarian"
+                [class.bg-error-container]="!item.isVegetarian"
+                class="px-2 py-1 rounded backdrop-blur-md border font-label-sm text-label-sm flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full" [class.bg-secondary]="item.isVegetarian" [class.bg-error]="!item.isVegetarian"></span>
                 {{ item.isVegetarian ? 'Veg' : 'Non-Veg' }}
               </span>
             </div>
@@ -84,12 +88,12 @@
             <div class="absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <button 
                 (click)="editItem(item)"
-                class="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:text-[#00ff88] transition-colors">
+                class="w-8 h-8 rounded-full bg-surface-container-lowest backdrop-blur-md border border-surface-variant flex items-center justify-center text-on-surface hover:text-primary transition-colors">
                 <span class="material-symbols-outlined text-sm">edit</span>
               </button>
               <button 
                 (click)="deleteItem(item.id)"
-                class="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:text-red-500 transition-colors">
+                class="w-8 h-8 rounded-full bg-surface-container-lowest backdrop-blur-md border border-surface-variant flex items-center justify-center text-on-surface hover:text-error transition-colors">
                 <span class="material-symbols-outlined text-sm">delete</span>
               </button>
             </div>
@@ -98,26 +102,26 @@
           <!-- Item Details -->
           <div class="p-6 flex flex-col flex-1">
             <div class="flex justify-between items-start mb-2">
-              <h3 class="text-lg text-white truncate pr-2 font-bold">{{ item.name }}</h3>
-              <span class="font-bold text-[#00ff88] whitespace-nowrap">₹{{ item.price }}</span>
+              <h3 class="font-headline-md text-headline-md text-on-surface truncate pr-2">{{ item.name }}</h3>
+              <span class="font-headline-md text-headline-md text-primary whitespace-nowrap">₹{{ item.price }}</span>
             </div>
-            <p class="text-sm text-gray-400 line-clamp-2 mb-6">{{ item.description }}</p>
+            <p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-6">{{ item.description }}</p>
             
             <!-- Availability Toggle -->
-            <div class="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+            <div class="mt-auto pt-4 border-t border-surface-variant flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-xs text-gray-500 uppercase font-bold tracking-widest">Available</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold tracking-widest">Available</span>
                 <button 
                   (click)="toggleAvailability(item)"
                   class="w-10 h-5 rounded-full relative flex items-center px-1 cursor-pointer transition-colors"
-                  [class.bg-[#00ff88]/20]="item.isAvailable"
-                  [class.bg-gray-800]="!item.isAvailable">
+                  [class.bg-secondary-container]="item.isAvailable"
+                  [class.bg-surface-container]="!item.isAvailable">
                   <div 
                     class="w-3 h-3 rounded-full transition-transform duration-200"
-                    [class.bg-[#00ff88]]="item.isAvailable"
-                    [class.shadow-[0_0_8px_#00ff88]]="item.isAvailable"
+                    [class.bg-secondary]="item.isAvailable"
+                    [class.shadow-[0_0_8px_rgba(0,109,55,0.8)]]="item.isAvailable"
                     [class.translate-x-5]="item.isAvailable"
-                    [class.bg-gray-600]="!item.isAvailable"></div>
+                    [class.bg-on-surface-variant]="!item.isAvailable"></div>
                 </button>
               </div>
             </div>
@@ -127,26 +131,26 @@
     </div>
 
     <!-- Summary Bar -->
-    <div class="mt-12 p-6 glass-card rounded-2xl flex flex-wrap gap-8 items-center justify-between border-l-4 border-l-[#00ff88]">
+    <div class="mt-12 p-6 bg-surface-container-lowest rounded-[16px] flex flex-wrap gap-8 items-center justify-between border-l-4 border-l-primary shadow-[0_4px_12px_rgba(181,28,0,0.06)] animate-fade-in">
       <div class="flex gap-8">
         <div class="flex flex-col">
-          <span class="text-xs text-gray-500 font-bold uppercase tracking-widest">Total Items</span>
-          <span class="text-2xl font-black text-white">{{ totalItems }}</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-widest">Total Items</span>
+          <span class="font-headline-lg text-headline-lg text-on-surface">{{ totalItems }}</span>
         </div>
         <div class="flex flex-col">
-          <span class="text-xs text-gray-500 font-bold uppercase tracking-widest">Active Now</span>
-          <span class="text-2xl font-black text-[#00ff88]">{{ activeItems }}</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-widest">Active Now</span>
+          <span class="font-headline-lg text-headline-lg text-secondary">{{ activeItems }}</span>
         </div>
         <div class="flex flex-col">
-          <span class="text-xs text-gray-500 font-bold uppercase tracking-widest">Most Popular</span>
-          <span class="text-2xl font-black text-[#ff0088]">{{ mostPopularItem }}</span>
+          <span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-widest">Most Popular</span>
+          <span class="font-headline-lg text-headline-lg text-primary">{{ mostPopularItem }}</span>
         </div>
       </div>
       <div class="flex items-center gap-3">
-        <button class="px-4 py-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-all text-sm font-bold flex items-center gap-2">
+        <button class="px-4 py-2 rounded-lg border border-surface-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-label-lg text-label-lg font-semibold flex items-center gap-2">
           <span class="material-symbols-outlined text-sm">download</span> Export PDF
         </button>
-        <button class="px-4 py-2 rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-all text-sm font-bold flex items-center gap-2">
+        <button class="px-4 py-2 rounded-lg border border-surface-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all font-label-lg text-label-lg font-semibold flex items-center gap-2">
           <span class="material-symbols-outlined text-sm">print</span> Print Menu
         </button>
       </div>
@@ -155,11 +159,11 @@
 
   <!-- Menu Item Modal -->
   @if (showItemModal) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto pt-24 pb-12">
-      <div class="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-2xl shadow-2xl relative">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto pt-24 pb-12 animate-fade-in">
+      <div class="bg-surface-container-lowest border border-surface-variant rounded-[24px] p-6 w-full max-w-2xl shadow-[0_8px_32px_rgba(181,28,0,0.15)] relative animate-scale-in">
         <div class="flex justify-between items-center mb-6">
-          <h2 class="text-xl font-bold text-white">{{ isEditing ? 'Edit Menu Item' : 'Add New Item' }}</h2>
-          <button (click)="closeModal()" class="text-gray-400 hover:text-white transition-colors">
+          <h2 class="font-headline-md text-headline-md text-on-surface">{{ isEditing ? 'Edit Menu Item' : 'Add New Item' }}</h2>
+          <button (click)="closeModal()" class="text-on-surface-variant hover:text-on-surface transition-colors">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
@@ -168,13 +172,13 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-300">Item Name *</label>
-              <input type="text" formControlName="name" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="e.g. Classic Burger">
+              <label class="font-label-lg text-label-lg text-on-surface font-semibold">Item Name *</label>
+              <input type="text" formControlName="name" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors font-body-lg text-body-lg" placeholder="e.g. Classic Burger">
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-300">Category *</label>
-              <select formControlName="categoryName" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors appearance-none">
+              <label class="font-label-lg text-label-lg text-on-surface font-semibold">Category *</label>
+              <select formControlName="categoryName" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors appearance-none font-body-lg text-body-lg">
                 <option value="">Select a category</option>
                 @for (cat of categories; track cat.id) {
                   <option [value]="cat.name">{{ cat.name }}</option>
@@ -183,51 +187,51 @@
             </div>
             
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-300">Price (₹) *</label>
-              <input type="number" formControlName="price" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="e.g. 199">
+              <label class="font-label-lg text-label-lg text-on-surface font-semibold">Price (₹) *</label>
+              <input type="number" formControlName="price" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors font-body-lg text-body-lg" placeholder="e.g. 199">
             </div>
 
             <div class="space-y-2">
-              <label class="text-sm font-medium text-gray-300">Preparation Time (mins) *</label>
-              <input type="number" formControlName="prepTimeMinutes" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors">
+              <label class="font-label-lg text-label-lg text-on-surface font-semibold">Preparation Time (mins) *</label>
+              <input type="number" formControlName="prepTimeMinutes" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors font-body-lg text-body-lg">
             </div>
           </div>
 
           <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-300">Description</label>
-            <textarea formControlName="description" rows="3" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="Describe the item..."></textarea>
+            <label class="font-label-lg text-label-lg text-on-surface font-semibold">Description</label>
+            <textarea formControlName="description" rows="3" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors font-body-lg text-body-lg" placeholder="Describe the item..."></textarea>
           </div>
 
           <div class="space-y-2">
-            <label class="text-sm font-medium text-gray-300">Image URL</label>
-            <input type="text" formControlName="imageUrl" class="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-[#00ff88] transition-colors" placeholder="https://...">
+            <label class="font-label-lg text-label-lg text-on-surface font-semibold">Image URL</label>
+            <input type="text" formControlName="imageUrl" class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface placeholder-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary transition-colors font-body-lg text-body-lg" placeholder="https://...">
           </div>
 
-          <div class="flex gap-8 border-t border-white/10 pt-6">
+          <div class="flex gap-8 border-t border-surface-variant pt-6">
             <label class="flex items-center gap-3 cursor-pointer">
               <div class="relative flex items-center">
                 <input type="checkbox" formControlName="isVeg" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-green-500 transition-colors"></div>
-                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                <div class="w-11 h-6 bg-surface-container rounded-full peer peer-checked:bg-secondary transition-colors"></div>
+                <div class="absolute left-1 top-1 w-4 h-4 bg-surface-container-lowest rounded-full transition-transform peer-checked:translate-x-5"></div>
               </div>
-              <span class="text-sm font-medium text-gray-300">Vegetarian</span>
+              <span class="font-label-lg text-label-lg text-on-surface font-semibold">Vegetarian</span>
             </label>
 
             <label class="flex items-center gap-3 cursor-pointer">
               <div class="relative flex items-center">
                 <input type="checkbox" formControlName="isAvailable" class="sr-only peer">
-                <div class="w-11 h-6 bg-gray-700 rounded-full peer peer-checked:bg-[#00ff88] transition-colors"></div>
-                <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                <div class="w-11 h-6 bg-surface-container rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                <div class="absolute left-1 top-1 w-4 h-4 bg-surface-container-lowest rounded-full transition-transform peer-checked:translate-x-5"></div>
               </div>
-              <span class="text-sm font-medium text-gray-300">Available</span>
+              <span class="font-label-lg text-label-lg text-on-surface font-semibold">Available</span>
             </label>
           </div>
 
-          <div class="pt-6 flex gap-3 justify-end border-t border-white/10 mt-6">
-            <button type="button" (click)="closeModal()" class="px-6 py-2 rounded-xl font-bold text-gray-400 hover:text-white transition-colors">
+          <div class="pt-6 flex gap-3 justify-end border-t border-surface-variant mt-6">
+            <button type="button" (click)="closeModal()" class="px-6 py-2 rounded-xl font-label-lg text-label-lg font-semibold text-on-surface-variant hover:text-on-surface transition-colors">
               Cancel
             </button>
-            <button type="submit" [disabled]="itemForm.invalid || isLoading" class="bg-[#00ff88] text-black px-6 py-2 rounded-xl font-bold hover:bg-[#00cc6a] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+            <button type="submit" [disabled]="itemForm.invalid || isLoading" class="bg-primary text-on-primary px-6 py-2 rounded-full font-label-lg text-label-lg font-semibold hover:bg-surface-tint transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-[0_4px_12px_rgba(181,28,0,0.2)]">
               @if (isLoading) {
                 <span class="material-symbols-outlined animate-spin">refresh</span>
               }

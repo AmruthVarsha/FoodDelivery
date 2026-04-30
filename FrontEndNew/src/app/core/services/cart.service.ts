@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { tap, switchMap, catchError } from 'rxjs/operators';
+import { tap, catchError, switchMap } from 'rxjs/operators';
 import { ApiService } from './api.service';
 import { API_ENDPOINTS } from '../constants/api-endpoints';
 import { MenuItem } from './catalog.service';
@@ -24,11 +24,6 @@ interface BackendCartCreatedResponse {
   cartId: string;
 }
 
-interface BackendCartResponse {
-  id: string;
-  restaurantId: string;
-}
-
 interface BackendCartItemResponse {
   id: string;
   cartId: string;
@@ -43,15 +38,8 @@ export class CartService {
 
   /**
    * restaurantId → backendCartId
-   * Persisted in localStorage so we never recreate carts across page refreshes.
    */
   private cartIdMap = new Map<string, string>();
-
-  /**
-   * In-flight cart creation promises — prevents race conditions when multiple
-   * items are added in quick succession before the first cart is created.
-   */
-  private pendingCartCreations = new Map<string, Promise<string>>();
 
   constructor(private api: ApiService) {
     this.loadFromStorage();
@@ -82,93 +70,69 @@ export class CartService {
     return this.cartItems.value.reduce((s, i) => s + i.menuItem.price * i.quantity, 0);
   }
 
-  // ─── Add item — OPTIMISTIC ────────────────────────────────────────────────
+  // ─── Add item ─────────────────────────────────────────────────────────────
 
   /**
-   * ① Updates UI immediately (no waiting).
-   * ② Ensures a backend cart exists for this restaurant (creates one if needed).
-   * ③ Syncs the item with the backend in background.
-   *
-   * Returns Observable so callers can react to backend errors if needed,
-   * but the UI is already updated by the time the Observable is subscribed.
+   * ① Updates UI immediately (optimistic).
+   * ② Syncs with backend using POST /items.
+   * ③ Backend automatically creates/finds the active cart using restaurantId.
    */
   addItem(menuItem: MenuItem, restaurantId: string, restaurantName: string): Observable<any> {
-
-    // ── Step 1: Optimistic local update ────────────────────────────────────
     const current = this.cartItems.value;
     const existing = current.find(i => i.menuItem.id === menuItem.id);
 
     if (existing) {
+      // INCREMENT EXISTING
       const previousQuantity = existing.quantity;
+      const newQuantity = previousQuantity + 1;
 
-      // Increase quantity immediately in UI
-      const updated = current.map(i =>
-        i.menuItem.id === menuItem.id ? { ...i, quantity: previousQuantity + 1 } : i
-      );
-      this.cartItems.next(updated);
+      this.cartItems.next(current.map(i =>
+        i.menuItem.id === menuItem.id ? { ...i, quantity: newQuantity } : i
+      ));
       this.persist();
 
-      // ── Step 2: Sync quantity update to backend (background) ─────────────
-      return this.getOrCreateCart(restaurantId).pipe(
-        switchMap(_cartId => {
-          // Read the current quantity from the LIVE array at call time — not the
-          // stale `previousQuantity + 1` snapshot — so rapid successive increments
-          // don't overwrite each other with an outdated value.
-          const liveItem = this.cartItems.value.find(i => i.menuItem.id === menuItem.id);
-          if (!liveItem?.backendItemId) return of(null); // not yet synced, skip
-          return this.api.put<BackendCartItemResponse>(API_ENDPOINTS.CART.UPDATE_ITEM, {
-            id: liveItem.backendItemId,
-            quantity: liveItem.quantity
-          });
-        }),
-        catchError(err => {
-          // Rollback: restore old quantity
-          console.error('[CartService] increment failed, rolling back:', err);
-          this.cartItems.next(
-            this.cartItems.value.map(i =>
-              i.menuItem.id === menuItem.id ? { ...i, quantity: previousQuantity } : i
-            )
-          );
-          this.persist();
-          throw err;
-        })
-      );
-
+      return this.syncItem(menuItem.id, restaurantId, newQuantity, existing.backendCartId);
     } else {
-      // New item — add to UI immediately as a temporary entry
+      // ADD NEW
       const tempItem: CartItem = { menuItem, quantity: 1, restaurantId, restaurantName };
       this.cartItems.next([...current, tempItem]);
       this.persist();
 
-      // ── Step 2: Ensure cart exists then POST item (background) ───────────
-      return this.getOrCreateCart(restaurantId).pipe(
-        switchMap(cartId => {
-          return this.api.post<BackendCartItemResponse>(API_ENDPOINTS.CART.ADD_ITEM, {
-            cartId,
-            menuItemId: menuItem.id,
-            quantity: 1
-          }).pipe(
-            tap(resp => {
-              // Back-fill backend IDs into the existing local item
-              const items = this.cartItems.value.map(i =>
-                i.menuItem.id === menuItem.id
-                  ? { ...i, backendItemId: resp.id, backendCartId: cartId }
-                  : i
-              );
-              this.cartItems.next(items);
-              this.persist();
-            })
-          );
-        }),
-        catchError(err => {
-          // Rollback: remove the item we optimistically added
-          console.error('[CartService] add item failed, rolling back:', err);
-          this.cartItems.next(this.cartItems.value.filter(i => i.menuItem.id !== menuItem.id));
-          this.persist();
-          throw err; // re-throw so the component can show an error
-        })
-      );
+      return this.syncItem(menuItem.id, restaurantId, 1);
     }
+  }
+
+  /**
+   * Core sync logic: Uses POST /items which handles cart creation on the backend.
+   */
+  private syncItem(menuItemId: string, restaurantId: string, quantity: number, cartId?: string): Observable<any> {
+    const effectiveCartId = cartId || this.cartIdMap.get(restaurantId);
+
+    const payload: any = {
+      menuItemId,
+      quantity,
+      restaurantId: effectiveCartId ? undefined : restaurantId, // Only send restaurantId if we don't have a cartId yet
+      cartId: effectiveCartId || '00000000-0000-0000-0000-000000000000' // Guid.Empty if unknown
+    };
+
+    return this.api.post<BackendCartItemResponse>(API_ENDPOINTS.CART.ADD_ITEM, payload).pipe(
+      tap(resp => {
+        // Update local state with real backend IDs
+        const items = this.cartItems.value.map(i =>
+          i.menuItem.id === menuItemId
+            ? { ...i, backendCartId: resp.cartId, backendItemId: resp.id }
+            : i
+        );
+        this.cartItems.next(items);
+        this.cartIdMap.set(restaurantId, resp.cartId);
+        this.persist();
+      }),
+      catchError(err => {
+        console.error('[CartService] Sync failed:', err);
+        // We could add rollback logic here, but for now we let the user retry or refresh
+        throw err;
+      })
+    );
   }
 
   // ─── Update quantity ──────────────────────────────────────────────────────
@@ -180,6 +144,7 @@ export class CartService {
     if (!item) return;
 
     const previousQuantity = item.quantity;
+    const cartId = item.backendCartId || this.cartIdMap.get(item.restaurantId);
 
     // Optimistic update
     this.cartItems.next(this.cartItems.value.map(i =>
@@ -187,22 +152,27 @@ export class CartService {
     ));
     this.persist();
 
-    // Background sync — rollback to previous qty on failure
-    if (item.backendItemId) {
-      this.api.put(API_ENDPOINTS.CART.UPDATE_ITEM, { id: item.backendItemId, quantity })
-        .pipe(
-          catchError(err => {
-            console.error('[CartService] updateQuantity failed, rolling back:', err);
-            this.cartItems.next(
-              this.cartItems.value.map(i =>
-                i.menuItem.id === menuItemId ? { ...i, quantity: previousQuantity } : i
-              )
-            );
-            this.persist();
-            return of(null);
-          })
-        )
-        .subscribe();
+    // Background sync
+    if (cartId) {
+      this.api.put(API_ENDPOINTS.CART.UPDATE_ITEM, { 
+        cartId, 
+        menuItemId, 
+        quantity 
+      })
+      .pipe(
+        catchError(err => {
+          console.error('[CartService] updateQuantity failed:', err);
+          this.cartItems.next(this.cartItems.value.map(i =>
+            i.menuItem.id === menuItemId ? { ...i, quantity: previousQuantity } : i
+          ));
+          this.persist();
+          return of(null);
+        })
+      )
+      .subscribe();
+    } else {
+      // Fallback to POST /items which handles cart creation
+      this.syncItem(menuItemId, item.restaurantId, quantity).subscribe();
     }
   }
 
@@ -212,20 +182,16 @@ export class CartService {
     const item = this.cartItems.value.find(i => i.menuItem.id === menuItemId);
     if (!item) return;
 
-    // Snapshot current list so we can restore it at the exact same position
     const previousItems = this.cartItems.value;
-
-    // Optimistic removal
     this.cartItems.next(previousItems.filter(i => i.menuItem.id !== menuItemId));
     this.persist();
 
-    // Background sync — rollback (re-insert) on failure
     if (item.backendItemId && item.backendCartId) {
       this.api.delete(API_ENDPOINTS.CART.DELETE_ITEM(item.backendItemId, item.backendCartId))
         .pipe(
           catchError(err => {
-            console.error('[CartService] removeItem failed, rolling back:', err);
-            this.cartItems.next(previousItems); // restore full list with original order
+            console.error('[CartService] removeItem failed:', err);
+            this.cartItems.next(previousItems);
             this.persist();
             return of(null);
           })
@@ -236,60 +202,56 @@ export class CartService {
 
   // ─── Clear ────────────────────────────────────────────────────────────────
 
-  clearCart(): void {
-    this.cartItems.next([]);
-    this.cartIdMap.clear();
-    this.pendingCartCreations.clear();
-    localStorage.removeItem('cart');
-    localStorage.removeItem('cart_id_map');
-  }
-
-  // ─── Cart provisioning ────────────────────────────────────────────────────
-
+  // ─── Proactive Cart Management ──────────────────────────────────────────
+ 
   /**
-   * Returns the backend cartId for a restaurant.
-   *
-   * Fast path (common case): returns immediately from cache.
-   * Slow path (first add per restaurant): creates a cart via POST /carts — NO preflight GET.
-   * Race protection: if two items are added before the first cart is created,
-   * they share the same in-flight promise.
+   * Ensures a cart exists for this restaurant.
+   * If not cached locally, it calls the backend to create/find one.
    */
-  private getOrCreateCart(restaurantId: string): Observable<string> {
-    // Fast path — already known
+  ensureCart(restaurantId: string): Observable<string> {
     const cached = this.cartIdMap.get(restaurantId);
     if (cached) return of(cached);
 
-    // Deduplicate concurrent cart-creation calls for the same restaurant
-    const inFlight = this.pendingCartCreations.get(restaurantId);
-    if (inFlight) {
-      return new Observable(observer => {
-        inFlight.then(id => { observer.next(id); observer.complete(); })
-                .catch(err => observer.error(err));
-      });
-    }
+    return this.api.post<BackendCartCreatedResponse>(API_ENDPOINTS.CART.CREATE, { restaurantId }).pipe(
+      tap((resp: BackendCartCreatedResponse) => {
+        this.cartIdMap.set(restaurantId, resp.cartId);
+        this.persist();
+      }),
+      switchMap((resp: BackendCartCreatedResponse) => of(resp.cartId)),
+      catchError(err => {
+        console.error('[CartService] ensureCart failed:', err);
+        throw err;
+      })
+    );
+  }
 
-    // Create a new cart (no preflight GET /active needed)
-    const creation = new Promise<string>((resolve, reject) => {
-      this.api.post<BackendCartCreatedResponse>(API_ENDPOINTS.CART.CREATE, { restaurantId })
-        .subscribe({
-          next: resp => {
-            this.cartIdMap.set(restaurantId, resp.cartId);
-            this.pendingCartCreations.delete(restaurantId);
-            this.persist();
-            resolve(resp.cartId);
-          },
-          error: err => {
-            this.pendingCartCreations.delete(restaurantId);
-            reject(err);
-          }
-        });
-    });
+  /**
+   * Loads existing items for a restaurant from the backend.
+   */
+  loadCartForRestaurant(restaurantId: string): void {
+    this.ensureCart(restaurantId).pipe(
+      switchMap((cartId: string) => this.api.get<any[]>(API_ENDPOINTS.CART.GET_ITEMS(cartId))),
+      tap((items: any[]) => {
+        // Update local items for THIS restaurant only, keeping others
+        const otherItems = this.cartItems.value.filter(i => i.restaurantId !== restaurantId);
+        const mappedItems: CartItem[] = items.map((i: any) => ({
+          menuItem: { id: i.menuItemId, name: i.menuItemName, price: i.unitPrice } as any,
+          quantity: i.quantity,
+          restaurantId: restaurantId,
+          restaurantName: '', // Will be filled by component
+          backendItemId: i.id,
+          backendCartId: i.cartId
+        }));
+        this.cartItems.next([...otherItems, ...mappedItems]);
+        this.persist();
+      })
+    ).subscribe();
+  }
 
-    this.pendingCartCreations.set(restaurantId, creation);
-
-    return new Observable(observer => {
-      creation.then(id => { observer.next(id); observer.complete(); })
-              .catch(err => observer.error(err));
-    });
+  clearCart(): void {
+    this.cartItems.next([]);
+    this.cartIdMap.clear();
+    localStorage.removeItem('cart');
+    localStorage.removeItem('cart_id_map');
   }
 }

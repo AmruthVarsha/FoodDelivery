@@ -1,59 +1,60 @@
 <app-navbar></app-navbar>
 
-<div class="min-h-screen bg-zinc-950 text-white pt-20 pb-12">
+<div class="min-h-screen bg-background text-on-surface pt-24 pb-12">
   <div class="max-w-6xl mx-auto px-4">
 
     <!-- Header -->
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-white mb-1">Checkout</h1>
-      <p class="text-zinc-400">Review your order and place it in one tap.</p>
+      <h1 class="font-headline-lg text-headline-lg text-on-surface mb-1">Checkout</h1>
+      <p class="font-body-md text-body-md text-on-surface-variant">Review your order and place it in one tap.</p>
     </div>
 
     <!-- Empty cart -->
     @if (cartItems.length === 0) {
       <div class="flex flex-col items-center justify-center py-24 text-center">
-        <span class="material-symbols-outlined text-6xl text-zinc-600 mb-4">shopping_cart</span>
-        <h2 class="text-xl font-semibold text-zinc-300 mb-2">Your cart is empty</h2>
-        <p class="text-zinc-500 mb-6">Add items from a restaurant to get started.</p>
-        <a routerLink="/customer/dashboard" class="px-6 py-3 bg-green-500 text-black font-bold rounded-xl hover:bg-green-400 transition-colors">
+        <span class="material-symbols-outlined text-6xl text-on-surface-variant mb-4">shopping_cart</span>
+        <h2 class="font-headline-md text-headline-md text-on-surface mb-2">Your cart is empty</h2>
+        <p class="font-body-md text-body-md text-on-surface-variant mb-6">Add items from a restaurant to get started.</p>
+        <a routerLink="/customer/dashboard" class="px-6 py-3 bg-secondary text-on-secondary font-label-lg text-label-lg font-semibold rounded-xl hover:bg-surface-tint transition-colors shadow-[0_4px_12px_rgba(0,109,55,0.2)]">
           Browse Restaurants
         </a>
       </div>
     }
 
     @if (cartItems.length > 0) {
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
 
         <!-- LEFT: Cart + Address + Payment -->
         <div class="lg:col-span-2 space-y-6">
 
           <!-- Cart grouped by restaurant -->
-          @for (group of restaurantGroups; track group.restaurantId) {
-            <div class="bg-zinc-900 border border-white/8 rounded-2xl overflow-hidden">
-              <div class="px-6 py-4 border-b border-white/8 flex items-center gap-3">
-                <span class="material-symbols-outlined text-green-400">restaurant</span>
-                <h2 class="font-bold text-white text-lg">{{ group.restaurantName }}</h2>
+          @for (group of restaurantGroups; track group.restaurantId; let i = $index) {
+            <div class="bg-surface-container-lowest border border-surface-variant rounded-2xl overflow-hidden shadow-[0_4px_12px_rgba(181,28,0,0.06)] animate-slide-in-left"
+              [style.animation-delay]="(i * 0.1) + 's'">
+              <div class="px-6 py-4 border-b border-surface-variant flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary">restaurant</span>
+                <h2 class="font-headline-md text-headline-md text-on-surface">{{ group.restaurantName }}</h2>
               </div>
-              <div class="divide-y divide-white/5">
+              <div class="divide-y divide-surface-variant">
                 @for (item of group.items; track item.menuItem.id) {
                   <div class="px-6 py-4 flex items-center gap-4">
                     <div class="flex-1">
-                      <p class="font-semibold text-white">{{ item.menuItem.name }}</p>
-                      <p class="text-sm text-zinc-400">₹{{ item.menuItem.price }} × {{ item.quantity }}</p>
+                      <p class="font-label-lg text-label-lg text-on-surface font-semibold">{{ item.menuItem.name }}</p>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">₹{{ item.menuItem.price }} × {{ item.quantity }}</p>
                     </div>
                     <div class="flex items-center gap-2">
                       <button (click)="updateQuantity(item, -1)"
-                        class="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center hover:bg-zinc-700 transition-colors">
+                        class="w-8 h-8 rounded-full bg-surface-container border border-surface-variant flex items-center justify-center hover:bg-surface-container-high transition-colors">
                         <span class="material-symbols-outlined text-sm">remove</span>
                       </button>
-                      <span class="w-8 text-center font-bold">{{ item.quantity }}</span>
+                      <span class="w-8 text-center font-label-lg text-label-lg font-semibold text-on-surface">{{ item.quantity }}</span>
                       <button (click)="updateQuantity(item, 1)"
-                        class="w-8 h-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center hover:bg-zinc-700 transition-colors">
+                        class="w-8 h-8 rounded-full bg-surface-container border border-surface-variant flex items-center justify-center hover:bg-surface-container-high transition-colors">
                         <span class="material-symbols-outlined text-sm">add</span>
                       </button>
                     </div>
-                    <p class="w-20 text-right font-bold text-green-400">₹{{ item.menuItem.price * item.quantity }}</p>
-                    <button (click)="removeItem(item)" class="text-zinc-500 hover:text-red-400 transition-colors">
+                    <p class="w-20 text-right font-label-lg text-label-lg font-semibold text-secondary">₹{{ item.menuItem.price * item.quantity }}</p>
+                    <button (click)="removeItem(item)" class="text-on-surface-variant hover:text-error transition-colors">
                       <span class="material-symbols-outlined text-sm">delete</span>
                     </button>
                   </div>
@@ -63,36 +64,37 @@
           }
 
           <!-- Delivery Address -->
-          <div class="bg-zinc-900 border border-white/8 rounded-2xl p-6">
-            <h2 class="font-bold text-white text-lg mb-4 flex items-center gap-2">
-              <span class="material-symbols-outlined text-green-400">location_on</span>
+          <div class="bg-surface-container-lowest border border-surface-variant rounded-2xl p-6 shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <h2 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary">location_on</span>
               Delivery Address
             </h2>
 
             @if (isLoadingAddresses) {
-              <div class="flex items-center gap-2 text-zinc-400">
+              <div class="flex items-center gap-2 text-on-surface-variant">
                 <span class="material-symbols-outlined animate-spin">progress_activity</span>
                 Loading addresses...
               </div>
             }
 
             @if (!isLoadingAddresses && addresses.length === 0) {
-              <div class="p-4 rounded-xl bg-yellow-500/10 border border-yellow-500/30 text-yellow-300 text-sm">
+              <div class="p-4 rounded-xl bg-tertiary-container border border-tertiary text-on-tertiary-container font-body-sm text-body-sm">
                 No saved addresses found. Please add an address in your profile first.
               </div>
             }
 
             @if (!isLoadingAddresses && addresses.length > 0) {
               <div class="space-y-3">
-                @for (addr of addresses; track addr.id) {
-                  <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all"
+                @for (addr of addresses; track addr.id; let i = $index) {
+                  <label class="flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all animate-scale-in"
+                    [style.animation-delay]="(i * 0.1) + 's'"
                     [class]="selectedAddressId === addr.id
-                      ? 'border-green-500 bg-green-500/10'
-                      : 'border-white/10 bg-zinc-800/50 hover:border-white/25'">
-                    <input type="radio" [value]="addr.id" [(ngModel)]="selectedAddressId" class="mt-1 accent-green-500">
+                      ? 'border-secondary bg-secondary-fixed'
+                      : 'border-surface-variant bg-surface-container hover:border-primary'">
+                    <input type="radio" [value]="addr.id" [(ngModel)]="selectedAddressId" class="mt-1 accent-secondary">
                     <div>
-                      <p class="font-semibold text-white text-sm">{{ addr.street }}</p>
-                      <p class="text-zinc-400 text-xs">{{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}</p>
+                      <p class="font-label-lg text-label-lg text-on-surface font-semibold">{{ addr.street }}</p>
+                      <p class="font-body-sm text-body-sm text-on-surface-variant">{{ addr.city }}, {{ addr.state }} — {{ addr.pincode }}</p>
                     </div>
                   </label>
                 }
@@ -101,51 +103,51 @@
           </div>
 
           <!-- Payment Method -->
-          <div class="bg-zinc-900 border border-white/8 rounded-2xl p-6">
-            <h2 class="font-bold text-white text-lg mb-4 flex items-center gap-2">
-              <span class="material-symbols-outlined text-green-400">payments</span>
+          <div class="bg-surface-container-lowest border border-surface-variant rounded-2xl p-6 shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <h2 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary">payments</span>
               Payment Method
             </h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- COD -->
               <label class="flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all"
                 [class]="selectedPaymentMethod === PaymentMethod.COD
-                  ? 'border-green-500 bg-green-500/10'
-                  : 'border-white/10 bg-zinc-800/50 hover:border-white/25'">
-                <input type="radio" [value]="PaymentMethod.COD" [(ngModel)]="selectedPaymentMethod" class="accent-green-500">
-                <span class="material-symbols-outlined text-green-400">local_atm</span>
+                  ? 'border-secondary bg-secondary-fixed'
+                  : 'border-surface-variant bg-surface-container hover:border-primary'">
+                <input type="radio" [value]="PaymentMethod.COD" [(ngModel)]="selectedPaymentMethod" class="accent-secondary">
+                <span class="material-symbols-outlined text-secondary">local_atm</span>
                 <div>
-                  <p class="font-semibold text-white text-sm">Cash on Delivery</p>
-                  <p class="text-zinc-400 text-xs">Pay when you receive</p>
+                  <p class="font-label-lg text-label-lg text-on-surface font-semibold">Cash on Delivery</p>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Pay when you receive</p>
                 </div>
               </label>
               <!-- Online -->
               <label class="flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all"
                 [class]="selectedPaymentMethod === PaymentMethod.Online
-                  ? 'border-green-500 bg-green-500/10'
-                  : 'border-white/10 bg-zinc-800/50 hover:border-white/25'">
-                <input type="radio" [value]="PaymentMethod.Online" [(ngModel)]="selectedPaymentMethod" class="accent-green-500">
-                <span class="material-symbols-outlined text-green-400">credit_card</span>
+                  ? 'border-secondary bg-secondary-fixed'
+                  : 'border-surface-variant bg-surface-container hover:border-primary'">
+                <input type="radio" [value]="PaymentMethod.Online" [(ngModel)]="selectedPaymentMethod" class="accent-secondary">
+                <span class="material-symbols-outlined text-secondary">credit_card</span>
                 <div>
-                  <p class="font-semibold text-white text-sm">Online Payment</p>
-                  <p class="text-zinc-400 text-xs">Razorpay — UPI, Card, Wallet</p>
+                  <p class="font-label-lg text-label-lg text-on-surface font-semibold">Online Payment</p>
+                  <p class="font-body-sm text-body-sm text-on-surface-variant">Razorpay — UPI, Card, Wallet</p>
                 </div>
               </label>
             </div>
           </div>
 
           <!-- Delivery Instructions -->
-          <div class="bg-zinc-900 border border-white/8 rounded-2xl p-6">
-            <h2 class="font-bold text-white text-lg mb-4 flex items-center gap-2">
-              <span class="material-symbols-outlined text-green-400">edit_note</span>
+          <div class="bg-surface-container-lowest border border-surface-variant rounded-2xl p-6 shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <h2 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary">edit_note</span>
               Delivery Instructions
-              <span class="text-xs text-zinc-500 font-normal">(optional)</span>
+              <span class="font-body-sm text-body-sm text-on-surface-variant font-normal">(optional)</span>
             </h2>
             <textarea
               [(ngModel)]="deliveryInstructions"
               rows="2"
               placeholder="E.g. Ring the bell, leave at door..."
-              class="w-full bg-zinc-800 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-green-500 resize-none transition-colors">
+              class="w-full bg-surface-container border border-surface-variant rounded-xl px-4 py-3 text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/30 resize-none transition-colors">
             </textarea>
           </div>
 
@@ -153,41 +155,41 @@
 
         <!-- RIGHT: Order Summary -->
         <div class="lg:col-span-1">
-          <div class="sticky top-24 bg-zinc-900 border border-white/8 rounded-2xl p-6 space-y-5">
-            <h2 class="font-bold text-white text-lg">Order Summary</h2>
+          <div class="sticky top-24 bg-surface-container-lowest border border-surface-variant rounded-2xl p-6 space-y-5 shadow-[0_4px_12px_rgba(181,28,0,0.06)]">
+            <h2 class="font-headline-md text-headline-md text-on-surface">Order Summary</h2>
 
             <!-- Price breakdown -->
-            <div class="space-y-3 text-sm">
-              <div class="flex justify-between text-zinc-400">
+            <div class="space-y-3 font-body-sm text-body-sm">
+              <div class="flex justify-between text-on-surface-variant">
                 <span>Subtotal</span>
-                <span class="text-white">₹{{ subtotal }}</span>
+                <span class="text-on-surface font-semibold">₹{{ subtotal }}</span>
               </div>
-              <div class="flex justify-between text-zinc-400">
+              <div class="flex justify-between text-on-surface-variant">
                 <span>Delivery Fee</span>
-                <span [class]="deliveryFee === 0 ? 'text-green-400 font-semibold' : 'text-white'">
+                <span [class]="deliveryFee === 0 ? 'text-secondary font-semibold' : 'text-on-surface font-semibold'">
                   {{ deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee }}
                 </span>
               </div>
-              <div class="flex justify-between text-zinc-400">
+              <div class="flex justify-between text-on-surface-variant">
                 <span>GST (5%)</span>
-                <span class="text-white">₹{{ taxes }}</span>
+                <span class="text-on-surface font-semibold">₹{{ taxes }}</span>
               </div>
-              <div class="border-t border-white/10 pt-3 flex justify-between font-bold text-white text-base">
+              <div class="border-t border-surface-variant pt-3 flex justify-between font-label-lg text-label-lg text-on-surface font-semibold">
                 <span>Total</span>
-                <span class="text-green-400 text-lg">₹{{ total }}</span>
+                <span class="text-secondary">₹{{ total }}</span>
               </div>
             </div>
 
             <!-- Free delivery banner -->
             @if (deliveryFee > 0) {
-              <div class="text-xs text-zinc-500 bg-zinc-800 rounded-lg px-3 py-2">
+              <div class="font-body-sm text-body-sm text-on-surface-variant bg-surface-container rounded-lg px-3 py-2">
                 Add ₹{{ 500 - subtotal }} more for free delivery
               </div>
             }
 
             <!-- Error -->
             @if (errorMessage) {
-              <div class="p-3 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 text-sm">
+              <div class="p-3 rounded-xl bg-error-container border border-error text-on-error-container font-body-sm text-body-sm">
                 {{ errorMessage }}
               </div>
             }
@@ -196,10 +198,10 @@
             <button
               (click)="placeOrder()"
               [disabled]="!canPlaceOrder"
-              class="w-full py-4 rounded-xl font-bold text-black text-sm transition-all flex items-center justify-center gap-2"
+              class="w-full py-4 rounded-xl font-label-lg text-label-lg font-semibold transition-all flex items-center justify-center gap-2"
               [class]="canPlaceOrder
-                ? 'bg-green-400 hover:bg-green-300 active:scale-95'
-                : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'">
+                ? 'bg-secondary text-on-secondary shadow-[0_4px_12px_rgba(0,109,55,0.2)] hover:bg-surface-tint active:scale-95'
+                : 'bg-surface-container text-on-surface-variant cursor-not-allowed'">
               @if (isPlacingOrder) {
                 <span class="material-symbols-outlined animate-spin text-sm">progress_activity</span>
                 Placing Order...
@@ -209,7 +211,7 @@
               }
             </button>
 
-            <p class="text-xs text-zinc-600 text-center">
+            <p class="font-body-sm text-body-sm text-on-surface-variant text-center">
               By placing this order you agree to our Terms of Service.
             </p>
           </div>

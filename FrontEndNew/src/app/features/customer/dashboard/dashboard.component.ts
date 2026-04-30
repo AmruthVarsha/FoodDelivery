@@ -25,7 +25,7 @@ export class DashboardComponent implements OnInit {
   isLoading: boolean = false;
   errorMessage: string = '';
   isAuthenticated: boolean = false;
-  
+
   cuisines: string[] = ['All Cuisines'];
 
   restaurants: Restaurant[] = [];
@@ -34,18 +34,18 @@ export class DashboardComponent implements OnInit {
   cartItems: CartItem[] = [];
 
   constructor(
-    private catalogService: CatalogService, 
+    private catalogService: CatalogService,
     private cartService: CartService,
     private router: Router,
     private authService: AuthService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.checkAuthentication();
     this.loadCuisines();
     this.loadRestaurants();
-    
+
     this.cartService.cartItems$.subscribe(items => {
       this.cartItems = items;
       this.cdr.detectChanges();
@@ -89,7 +89,7 @@ export class DashboardComponent implements OnInit {
     this.errorMessage = '';
     this.cdr.detectChanges();
 
-    const obs = pincode 
+    const obs = pincode
       ? this.catalogService.getRestaurantsByPincode(pincode)
       : this.catalogService.getRestaurants();
 
@@ -125,8 +125,8 @@ export class DashboardComponent implements OnInit {
     let result = [...this.restaurants];
 
     if (this.selectedCuisine !== 'All Cuisines') {
-      result = result.filter(r => 
-        r.cuisines?.some(cuisine => 
+      result = result.filter(r =>
+        r.cuisines?.some(cuisine =>
           cuisine.toLowerCase().includes(this.selectedCuisine.toLowerCase())
         ) || r.cuisineType?.toLowerCase().includes(this.selectedCuisine.toLowerCase())
       );

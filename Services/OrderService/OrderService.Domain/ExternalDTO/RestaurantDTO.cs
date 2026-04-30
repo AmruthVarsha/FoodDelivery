@@ -35,11 +35,21 @@ namespace OrderService.Domain.ExternalDTO
         public TimeOnly ClosingTime { get; set; }
         public bool IsActive { get; set; }
         public bool IsApproved { get; set; }
+        public List<CategoryWithItemsDTO> Menu { get; set; } = new();
 
         /// <summary>
         /// Convenience helper to get a flat address string for snapshotting.
         /// </summary>
         public string FormattedAddress =>
             Address?.ToString() ?? string.Empty;
+    }
+
+    public class CategoryWithItemsDTO
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public int DisplayOrder { get; set; }
+        public bool IsActive { get; set; }
+        public List<MenuItemDTO> Items { get; set; } = new();
     }
 }

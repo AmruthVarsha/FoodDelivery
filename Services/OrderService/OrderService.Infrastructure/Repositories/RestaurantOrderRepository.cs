@@ -22,6 +22,7 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<RestaurantOrder?> GetByIdWithItems(Guid id)
         {
             return await _context.RestaurantOrders
+                .AsSplitQuery()
                 .Include(ro => ro.OrderItems)
                 .Include(ro => ro.Order) // include parent for address/customer info
                 .Include(ro => ro.Order!.Payment)
@@ -39,6 +40,7 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<IEnumerable<RestaurantOrder>> GetByRestaurantId(Guid restaurantId)
         {
             return await _context.RestaurantOrders
+                .AsSplitQuery()
                 .Include(ro => ro.OrderItems)
                 .Include(ro => ro.Order) // partner needs customer address
                 .Include(ro => ro.Order!.Payment)

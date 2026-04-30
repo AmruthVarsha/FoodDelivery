@@ -1,159 +1,156 @@
 <!-- Top Navigation Bar -->
-<header class="flex justify-between items-center w-full px-6 py-4 sticky top-0 bg-slate-950/80 backdrop-blur-3xl z-50 border-b border-white/5 shadow-[0px_4px_24px_rgba(0,0,0,0.4)]">
-  <div class="flex items-center gap-12">
-    <span 
-      routerLink="/customer/dashboard"
-      class="text-2xl font-black tracking-tighter text-primary-container italic cursor-pointer"
-    >
-      QuickBites
-    </span>
-    <div class="hidden md:flex items-center gap-8 text-sm font-medium tracking-tight">
-      <a routerLink="/customer/dashboard" routerLinkActive="text-primary-container border-b-2 border-primary-container pb-1" [routerLinkActiveOptions]="{exact: true}" class="text-slate-400 hover:text-white transition-colors">Explore</a>
-      <a class="text-slate-400 hover:text-white transition-colors" href="#">Offers</a>
-      <a routerLink="/customer/orders" routerLinkActive="text-primary-container border-b-2 border-primary-container pb-1" class="text-slate-400 hover:text-white transition-colors">Orders</a>
-    </div>
+<nav class="bg-white/90 backdrop-blur-md fixed top-0 w-full z-50 border-b border-slate-100 shadow-xl shadow-primary/5 flex justify-between items-center px-6 py-3">
+  <div class="text-2xl font-black tracking-tighter text-primary cursor-pointer" routerLink="/customer/dashboard">
+    Crave
   </div>
+  <ul class="hidden md:flex space-x-8 items-center">
+    <li>
+      <a routerLink="/customer/dashboard"
+        routerLinkActive="text-primary border-b-2 border-primary pb-1"
+        [routerLinkActiveOptions]="{exact: true}"
+        class="font-['Plus_Jakarta_Sans'] text-sm font-medium text-slate-500 hover:text-primary transition-all active:scale-95 duration-200 block">
+        Browse
+      </a>
+    </li>
+    <li>
+      <a href="#" class="font-['Plus_Jakarta_Sans'] text-sm font-medium text-slate-500 hover:text-primary transition-all active:scale-95 duration-200 block">
+        Offers
+      </a>
+    </li>
+    <li>
+      <a routerLink="/customer/orders"
+        routerLinkActive="text-primary border-b-2 border-primary pb-1"
+        class="font-['Plus_Jakarta_Sans'] text-sm font-medium text-slate-500 hover:text-primary transition-all active:scale-95 duration-200 block">
+        Orders
+      </a>
+    </li>
+    <li>
+      <a href="#" class="font-['Plus_Jakarta_Sans'] text-sm font-medium text-slate-500 hover:text-primary transition-all active:scale-95 duration-200 block">
+        Support
+      </a>
+    </li>
+  </ul>
 
-  <div class="flex items-center gap-6">
-    <div class="hidden lg:flex items-center neomorph-inset rounded-full px-4 py-2 w-80">
-      <span class="material-symbols-outlined text-slate-400 mr-2">search</span>
-      <input 
-        [(ngModel)]="searchQuery"
-        class="bg-transparent border-none focus:ring-0 text-sm text-white w-full placeholder-slate-500" 
-        placeholder="Search for food..." 
-        type="text"
-      />
-    </div>
+  <div class="flex items-center space-x-4 text-primary">
+    <button class="hover:text-surface-tint transition-all active:scale-95 duration-200">
+      <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+    </button>
 
-    <div class="flex items-center gap-4">
-      <button class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform">
-        <span class="material-symbols-outlined text-slate-300">notifications</span>
-      </button>
-      
       <!-- Cart Button with Dropdown -->
       <div class="relative cart-container">
-        <button 
-          (click)="goToCheckout()"
-          class="p-2 hover:bg-white/5 rounded-lg transition-all duration-200 active:scale-95 transform relative"
-        >
-          <span class="material-symbols-outlined text-slate-300">shopping_cart</span>
+        <button (click)="goToCheckout()"
+          class="hover:text-surface-tint transition-all duration-200 active:scale-95 transform relative">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_cart</span>
           @if (cartItemCount > 0) {
-            <span class="absolute -top-1 -right-1 bg-primary-container text-white text-xs font-black w-5 h-5 rounded-full flex items-center justify-center">
-              {{ cartItemCount }}
-            </span>
+          <span
+            class="absolute -top-1 -right-1 bg-primary text-on-primary text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+            {{ cartItemCount }}
+          </span>
           }
         </button>
-        
+
         <!-- Cart Dropdown -->
-        <div class="cart-dropdown glass-card rounded-2xl border border-white/10 shadow-2xl overflow-hidden bg-slate-900/95 backdrop-blur-xl">
-          <div class="p-6 border-b border-white/5 bg-slate-950/80">
-            <h3 class="text-xl font-bold text-white">Your Basket</h3>
-            <p class="text-slate-400 text-sm">{{ cartItemCount }} items ready to checkout</p>
+        <div
+          class="cart-dropdown bg-surface-container-lowest rounded-2xl border border-surface-variant shadow-[0_8px_20px_rgba(181,28,0,0.1)] overflow-hidden">
+          <div class="p-6 border-b border-surface-variant bg-surface-container">
+            <h3 class="font-headline-md text-headline-md text-on-surface">Your Basket</h3>
+            <p class="font-body-md text-body-md text-on-surface-variant">{{ cartItemCount }} items ready to checkout</p>
           </div>
 
           <!-- Empty Cart State -->
           @if (cartItems.length === 0) {
-            <div class="p-8 text-center">
-              <span class="material-symbols-outlined text-slate-500 text-5xl mb-3">shopping_cart</span>
-              <p class="text-slate-400 text-sm">Your cart is empty</p>
-              <p class="text-slate-500 text-xs mt-2">Add items from restaurants to get started</p>
-            </div>
+          <div class="p-8 text-center">
+            <span class="material-symbols-outlined text-on-surface-variant text-5xl mb-3">shopping_cart</span>
+            <p class="font-body-md text-body-md text-on-surface-variant">Your cart is empty</p>
+            <p class="font-label-sm text-label-sm text-on-surface-variant mt-2">Add items from restaurants to get started</p>
+          </div>
           }
 
           <!-- Cart Items -->
           @if (cartItems.length > 0) {
-            <div class="max-h-[400px] overflow-y-auto p-4 space-y-3">
-              @for (item of cartItems; track item.menuItem.id) {
-                <div class="flex gap-3 p-3 rounded-xl hover:bg-white/5 transition-all">
-                  <div class="h-16 w-16 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
-                    <img 
-                      [alt]="item.menuItem.name" 
-                      [src]="item.menuItem.imageUrl || 'https://via.placeholder.com/100'" 
-                      class="w-full h-full object-cover" 
-                    />
-                  </div>
-                  <div class="flex flex-col justify-center flex-1 min-w-0">
-                    <p class="text-white text-sm font-bold truncate">{{ item.menuItem.name }}</p>
-                    <p class="text-xs text-slate-500 truncate">{{ item.restaurantName }}</p>
-                    <p class="text-primary-container text-xs font-bold mt-1">₹{{ item.menuItem.price }}</p>
-                  </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
-                    <button (click)="updateCartQuantity(item, -1); $event.stopPropagation()" class="hover:text-white transition-colors">
-                      <span class="material-symbols-outlined text-slate-500 text-[18px]">remove_circle_outline</span>
-                    </button>
-                    <span class="text-white text-sm font-bold w-4 text-center">{{ item.quantity }}</span>
-                    <button (click)="updateCartQuantity(item, 1); $event.stopPropagation()" class="hover:text-white transition-colors">
-                      <span class="material-symbols-outlined text-slate-500 text-[18px]">add_circle_outline</span>
-                    </button>
-                  </div>
-                </div>
-              }
+          <div class="max-h-[400px] overflow-y-auto p-4 space-y-3">
+            @for (item of cartItems; track item.menuItem.id) {
+            <div class="flex gap-3 p-3 rounded-xl hover:bg-surface-container transition-all">
+              <div class="h-16 w-16 rounded-lg overflow-hidden border border-surface-variant flex-shrink-0">
+                <img [alt]="item.menuItem.name" [src]="item.menuItem.imageUrl || 'https://via.placeholder.com/100'"
+                  class="w-full h-full object-cover" />
+              </div>
+              <div class="flex flex-col justify-center flex-1 min-w-0">
+                <p class="font-label-lg text-label-lg text-on-surface truncate">{{ item.menuItem.name }}</p>
+                <p class="font-label-sm text-label-sm text-on-surface-variant truncate">{{ item.restaurantName }}</p>
+                <p class="font-label-sm text-label-sm text-primary font-semibold mt-1">₹{{ item.menuItem.price }}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button (click)="updateCartQuantity(item, -1); $event.stopPropagation()"
+                  class="hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">remove_circle_outline</span>
+                </button>
+                <span class="font-label-lg text-label-lg text-on-surface font-semibold w-4 text-center">{{ item.quantity }}</span>
+                <button (click)="updateCartQuantity(item, 1); $event.stopPropagation()"
+                  class="hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-on-surface-variant text-[18px]">add_circle_outline</span>
+                </button>
+              </div>
             </div>
+            }
+          </div>
 
-            <!-- Cart Summary -->
-            <div class="p-6 border-t border-white/5 space-y-4 bg-slate-950/90">
-              <div class="flex justify-between text-slate-400 text-sm">
-                <span>Subtotal</span>
-                <span class="text-white font-medium">₹{{ cartSubtotal }}</span>
-              </div>
-              <div class="flex justify-between text-slate-400 text-sm">
-                <span>Delivery Fee</span>
-                <span class="text-secondary font-medium">{{ deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee }}</span>
-              </div>
-              <div class="flex justify-between font-bold text-white text-base pt-2 border-t border-white/5">
-                <span>Total</span>
-                <span class="text-primary-container">₹{{ cartTotal }}</span>
-              </div>
-              <button 
-                (click)="goToCheckout()"
-                class="w-full bg-primary-container text-white py-3 rounded-xl font-bold primary-glow hover:scale-[1.02] active:scale-95 transform transition-all"
-              >
-                Checkout Now
-              </button>
+          <!-- Cart Summary -->
+          <div class="p-6 border-t border-surface-variant space-y-4 bg-surface-container">
+            <div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+              <span>Subtotal</span>
+              <span class="text-on-surface font-semibold">₹{{ cartSubtotal }}</span>
             </div>
+            <div class="flex justify-between font-body-md text-body-md text-on-surface-variant">
+              <span>Delivery Fee</span>
+              <span class="text-secondary font-semibold">{{ deliveryFee === 0 ? 'FREE' : '₹' + deliveryFee }}</span>
+            </div>
+            <div class="flex justify-between font-headline-md text-headline-md text-on-surface pt-2 border-t border-surface-variant">
+              <span>Total</span>
+              <span class="text-primary">₹{{ cartTotal }}</span>
+            </div>
+            <button (click)="goToCheckout()"
+              class="w-full bg-primary text-on-primary py-3 rounded-full font-label-lg text-label-lg font-semibold shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:bg-surface-tint transition-all hover:scale-105 active:scale-95">
+              Checkout Now
+            </button>
+          </div>
           }
         </div>
       </div>
-      
+
       <!-- User Profile Dropdown (Authenticated) -->
       @if (isAuthenticated) {
-        <div class="relative group">
-          <div class="h-8 w-8 rounded-full overflow-hidden border border-white/10 ml-2 cursor-pointer active:scale-95 transform transition-transform">
-            <img 
-              alt="User profile" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrYgeKzq3cvCzGshp77LfQ-pClgnPaDL2N6FyI0QkCZ9nNe-hNW4e6pHTg20oifLIs6CSRqy6ibYOTAn6qsd8uFl18W9tcjJth3nvWySx94qiZ9reVcwit9hqqWhkqkMfNe7AodaJbsEd_RpAjjDFovFB9rA5j4URJdKHp_F8LV2ACly83DILzmj_MjeX_FHxlfQGSHUos6i_5u0LGBdc4hFHrl7XF4DJLOFCHMgOTLYuFugp7knG8qKmcPDEZX2lqzoWxv_XgONQ"
-            />
-          </div>
-          
-          <!-- Dropdown Menu -->
-          <div class="absolute right-0 mt-2 w-48 glass-card rounded-2xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-xl z-50">
-            <button 
-              routerLink="/customer/profile"
-              class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-white/5 rounded-xl transition-all"
-            >
-              <span class="material-symbols-outlined">person</span>
-              <span class="text-sm font-medium">Profile</span>
-            </button>
-            <button 
-              (click)="logout()"
-              class="w-full flex items-center gap-3 px-4 py-3 text-left text-slate-300 hover:bg-white/5 rounded-xl transition-all"
-            >
-              <span class="material-symbols-outlined text-error">logout</span>
-              <span class="text-sm font-medium">Logout</span>
-            </button>
-          </div>
+      <div class="relative group">
+        <div
+          class="w-8 h-8 rounded-full overflow-hidden border border-slate-200 cursor-pointer active:scale-95 transform transition-transform">
+          <img alt="User profile"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrYgeKzq3cvCzGshp77LfQ-pClgnPaDL2N6FyI0QkCZ9nNe-hNW4e6pHTg20oifLIs6CSRqy6ibYOTAn6qsd8uFl18W9tcjJth3nvWySx94qiZ9reVcwit9hqqWhkqkMfNe7AodaJbsEd_RpAjjDFovFB9rA5j4URJdKHp_F8LV2ACly83DILzmj_MjeX_FHxlfQGSHUos6i_5u0LGBdc4hFHrl7XF4DJLOFCHMgOTLYuFugp7knG8qKmcPDEZX2lqzoWxv_XgONQ"
+            class="w-full h-full object-cover" />
         </div>
+
+        <!-- Dropdown Menu -->
+        <div
+          class="absolute right-0 mt-2 w-48 bg-surface-container-lowest rounded-2xl p-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 shadow-[0_8px_20px_rgba(181,28,0,0.1)] border border-surface-variant z-50">
+          <button routerLink="/customer/profile"
+            class="w-full flex items-center gap-3 px-4 py-3 text-left text-on-surface hover:bg-surface-container rounded-xl transition-all">
+            <span class="material-symbols-outlined">person</span>
+            <span class="font-label-lg text-label-lg">Profile</span>
+          </button>
+          <button (click)="logout()"
+            class="w-full flex items-center gap-3 px-4 py-3 text-left text-on-surface hover:bg-surface-container rounded-xl transition-all">
+            <span class="material-symbols-outlined text-error">logout</span>
+            <span class="font-label-lg text-label-lg">Logout</span>
+          </button>
+        </div>
+      </div>
       }
-      
+
       <!-- Login Button (Not Authenticated) -->
       @if (!isAuthenticated) {
-        <button 
-          routerLink="/auth/login"
-          class="px-6 py-2 bg-primary-container text-white rounded-xl font-bold text-sm primary-glow hover:scale-105 active:scale-95 transform transition-all"
-        >
-          Login
-        </button>
+      <button routerLink="/auth/login"
+        class="px-6 py-2 bg-primary text-on-primary rounded-full font-label-lg text-label-lg font-semibold shadow-[0_4px_12px_rgba(181,28,0,0.2)] hover:bg-surface-tint hover:scale-105 active:scale-95 transform transition-all">
+        Login
+      </button>
       }
-    </div>
   </div>
-</header>
+</nav>

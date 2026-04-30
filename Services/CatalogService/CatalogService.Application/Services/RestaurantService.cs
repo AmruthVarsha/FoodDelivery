@@ -173,36 +173,50 @@ namespace CatalogService.Application.Services
             if (!TimeOnly.TryParse(dto.ClosingTime, out var closingTime))
                 throw new BadRequestException("ClosingTime must be in HH:mm format.");
 
-            restaurant.Name = dto.Name.Trim();
+            // Update basic fields
+            restaurant.Name = dto.Name?.Trim() ?? restaurant.Name;
             restaurant.Description = dto.Description?.Trim();
             restaurant.LogoUrl = dto.LogoUrl;
-            restaurant.PhoneNumber = dto.PhoneNumber;
-            restaurant.Email = dto.Email.ToLowerInvariant();
+            restaurant.PhoneNumber = dto.PhoneNumber ?? restaurant.PhoneNumber;
+            restaurant.Email = dto.Email?.ToLowerInvariant() ?? restaurant.Email;
             restaurant.OpeningTime = openingTime;
             restaurant.ClosingTime = closingTime;
             restaurant.PrepTimeMinutes = dto.PrepTimeMinutes;
 
-            restaurant.Address.Street = dto.Address.Street.Trim();
-            restaurant.Address.City = dto.Address.City.Trim();
-            restaurant.Address.State = dto.Address.State.Trim();
-            restaurant.Address.Pincode = dto.Address.Pincode;
+            // Update Address
+            if (restaurant.Address != null && dto.Address != null)
+            {
+                restaurant.Address.Street = dto.Address.Street?.Trim() ?? string.Empty;
+                restaurant.Address.City = dto.Address.City?.Trim() ?? string.Empty;
+                restaurant.Address.State = dto.Address.State?.Trim() ?? string.Empty;
+                restaurant.Address.Pincode = dto.Address.Pincode ?? string.Empty;
+            }
 
-            // Replace cuisines (full replacement by names)
-            restaurant.RestaurantCuisines = cuisineIds
-                .Select(cid => new RestaurantCuisine
+            // Update Cuisines (Clear and Add to avoid tracking/duplicate issues)
+            restaurant.RestaurantCuisines.Clear();
+            foreach (var cid in cuisineIds)
+            {
+                restaurant.RestaurantCuisines.Add(new RestaurantCuisine
                 {
                     Id = Guid.NewGuid(),
                     RestaurantId = id,
                     CuisineId = cid
-                })
-                .ToList();
+                });
+            }
 
             await _restaurantRepo.UpdateAsync(restaurant);
 
-            await _dataSyncPublisher.PublishRestaurantDataSync(
-                restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
-                restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
-                restaurant.IsActive, restaurant.IsApproved, "Updated");
+            try
+            {
+                await _dataSyncPublisher.PublishRestaurantDataSync(
+                    restaurant.Id, restaurant.OwnerId, restaurant.Name, restaurant.Email,
+                    restaurant.PhoneNumber, restaurant.Rating, restaurant.TotalRatings,
+                    restaurant.IsActive, restaurant.IsApproved, "Updated");
+            }
+            catch (Exception)
+            {
+                // Silently continue if messaging fails
+            }
         }
 
         public async Task PatchStatusAsync(Guid id, bool isOpen, string requestorId)
@@ -298,6 +312,7 @@ namespace CatalogService.Application.Services
                     Id = cat.Id,
                     Name = cat.Name,
                     DisplayOrder = cat.DisplayOrder,
+                    IsActive = cat.IsActive,
                     Items = cat.MenuItems
                         .Where(mi => mi.IsAvailable)
                         .Select(mi => new MenuItemDto

@@ -39,9 +39,11 @@ export class RestaurantDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
-      this.restaurantId = params['id']; // Keep as string (Guid)
+      this.restaurantId = params['id'];
       this.loadRestaurantDetails();
       this.loadMenuItems();
+      // Proactively ensure cart exists/is loaded
+      this.cartService.loadCartForRestaurant(this.restaurantId);
     });
 
     // Subscribe to cart changes
@@ -137,7 +139,7 @@ export class RestaurantDetailComponent implements OnInit {
         },
         error: (err) => {
           this.addingItemId = null;
-          this.addError = err?.error?.message || err?.error?.error || 'Failed to add item. Please try again.';
+          this.addError = err?.message || 'Failed to add item. Please try again.';
           this.cdr.detectChanges();
         }
       });

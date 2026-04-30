@@ -73,6 +73,37 @@ namespace OrderService.Application.Services
             if (restaurant == null)
                 throw new NotFoundException("Restaurant", cartDTO.RestaurantId);
 
+            // 1. Check if an active cart already exists for this user and restaurant
+            var userCarts = await _cartRepository.GetByCustomerId(userId);
+            var existingCart = userCarts.FirstOrDefault(c => c.RestaurantId == cartDTO.RestaurantId && c.Status == CartStatus.Active);
+
+            if (existingCart != null)
+            {
+                // If a first item is provided, add it to the existing cart if not already there
+                if (cartDTO.MenuItemId.HasValue)
+                {
+                    var fullCart = await _cartRepository.GetById(existingCart.Id);
+                    if (fullCart != null && !fullCart.CartItems.Any(ci => ci.MenuItemId == cartDTO.MenuItemId.Value))
+                    {
+                        var menuItem = await _catalogRepository.GetItemById(cartDTO.MenuItemId.Value);
+                        if (menuItem != null)
+                        {
+                            fullCart.CartItems.Add(new CartItem
+                            {
+                                Id = Guid.NewGuid(),
+                                CartId = fullCart.Id,
+                                MenuItemId = menuItem.Id,
+                                MenuItemName = menuItem.Name,
+                                Quantity = cartDTO.Quantity ?? 1,
+                                UnitPrice = menuItem.Price
+                            });
+                            await _cartRepository.UpdateAsync(fullCart);
+                        }
+                    }
+                }
+                return existingCart.Id;
+            }
+
             var cart = new Cart
             {
                 Id = Guid.NewGuid(),
@@ -80,33 +111,80 @@ namespace OrderService.Application.Services
                 CustomerId = userId,
                 Status = CartStatus.Active,
                 CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                UpdatedAt = DateTime.UtcNow,
+                CartItems = new List<CartItem>()
             };
+
+            // If a first item is provided, add it atomically
+            if (cartDTO.MenuItemId.HasValue)
+            {
+                var menuItem = await _catalogRepository.GetItemById(cartDTO.MenuItemId.Value);
+                if (menuItem != null)
+                {
+                    cart.CartItems.Add(new CartItem
+                    {
+                        Id = Guid.NewGuid(),
+                        CartId = cart.Id,
+                        MenuItemId = menuItem.Id,
+                        MenuItemName = menuItem.Name,
+                        Quantity = cartDTO.Quantity ?? 1,
+                        UnitPrice = menuItem.Price
+                    });
+                }
+            }
 
             await _cartRepository.AddAsync(cart);
             return cart.Id;
         }
 
-        public async Task<CartItemResponseDTO> AddCartItem(CartItemDTO cartItemDTO)
+        public async Task<CartItemResponseDTO> AddCartItem(CartItemDTO cartItemDTO, string userId)
         {
             if (cartItemDTO.Quantity <= 0)
                 throw new BadRequestException("Quantity must be greater than 0.");
-
+ 
             if (cartItemDTO.Quantity > 100)
                 throw new BadRequestException("Quantity cannot exceed 100 items.");
-
+ 
             var menuItem = await _catalogRepository.GetItemById(cartItemDTO.MenuItemId);
             if (menuItem == null)
                 throw new NotFoundException("MenuItem", cartItemDTO.MenuItemId);
-
+ 
             if (!menuItem.IsAvailable)
                 throw new BadRequestException("The requested menu item is currently unavailable.");
 
-            // Note: category-active check intentionally omitted — the Catalog service
-            // cascades IsActive to menuItem.IsAvailable on ToggleCategoryStatus,
-            // so the IsAvailable flag above is the correct and only gate needed.
+            Cart? cart = null;
+            if (cartItemDTO.CartId != Guid.Empty)
+            {
+                cart = await _cartRepository.GetById(cartItemDTO.CartId);
+            }
+            else if (cartItemDTO.RestaurantId.HasValue)
+            {
+                // Auto-provision cart if not provided
+                var userCarts = await _cartRepository.GetByCustomerId(userId);
+                cart = userCarts.FirstOrDefault(c => c.RestaurantId == cartItemDTO.RestaurantId.Value && c.Status == CartStatus.Active);
+                
+                if (cart == null)
+                {
+                    // Create new cart
+                    cart = new Cart
+                    {
+                        Id = Guid.NewGuid(),
+                        RestaurantId = cartItemDTO.RestaurantId.Value,
+                        CustomerId = userId,
+                        Status = CartStatus.Active,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow,
+                        CartItems = new List<CartItem>()
+                    };
+                    await _cartRepository.AddAsync(cart);
+                }
+                else
+                {
+                    // Re-fetch with items to avoid tracking issues
+                    cart = await _cartRepository.GetById(cart.Id);
+                }
+            }
 
-            var cart = await _cartRepository.GetById(cartItemDTO.CartId);
             if (cart == null)
                 throw new NotFoundException("Cart", cartItemDTO.CartId);
 
@@ -126,6 +204,27 @@ namespace OrderService.Application.Services
 
             if (cart.Status != CartStatus.Active)
                 throw new BadRequestException("Cannot add items to an inactive cart.");
+
+            // CHECK IF ITEM ALREADY EXISTS IN CART
+            var existingItem = cart.CartItems.FirstOrDefault(ci => ci.MenuItemId == cartItemDTO.MenuItemId);
+            if (existingItem != null)
+            {
+                if (existingItem.Quantity + cartItemDTO.Quantity > 100)
+                    throw new BadRequestException("Total quantity for this item cannot exceed 100.");
+
+                existingItem.Quantity += cartItemDTO.Quantity;
+                await _cartItemRepository.UpdateAsync(existingItem);
+
+                return new CartItemResponseDTO
+                {
+                    Id = existingItem.Id,
+                    MenuItemId = existingItem.MenuItemId,
+                    MenuItemName = existingItem.MenuItemName,
+                    CartId = existingItem.CartId,
+                    Quantity = existingItem.Quantity,
+                    UnitPrice = existingItem.UnitPrice
+                };
+            }
 
             var cartItem = new CartItem
             {
@@ -158,9 +257,19 @@ namespace OrderService.Application.Services
             if (cartItemDTO.Quantity > 100)
                 throw new BadRequestException("Quantity cannot exceed 100 items.");
 
-            var cartItem = await _cartItemRepository.GetById(cartItemDTO.Id);
+            CartItem? cartItem = null;
+            if (cartItemDTO.Id.HasValue && cartItemDTO.Id.Value != Guid.Empty)
+            {
+                cartItem = await _cartItemRepository.GetById(cartItemDTO.Id.Value);
+            }
+            else
+            {
+                var items = await _cartItemRepository.GetAllByCartId(cartItemDTO.CartId);
+                cartItem = items.FirstOrDefault(i => i.MenuItemId == cartItemDTO.MenuItemId);
+            }
+
             if (cartItem == null)
-                throw new NotFoundException("CartItem", cartItemDTO.Id);
+                throw new NotFoundException("CartItem", cartItemDTO.MenuItemId);
 
             cartItem.Quantity = cartItemDTO.Quantity;
             await _cartItemRepository.UpdateAsync(cartItem);

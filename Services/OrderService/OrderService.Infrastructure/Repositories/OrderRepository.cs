@@ -23,6 +23,7 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<Order?> GetByIdWithDetails(Guid id)
         {
             return await _context.Orders
+                .AsSplitQuery()
                 .Include(o => o.RestaurantOrders)
                     .ThenInclude(ro => ro.OrderItems)
                 .Include(o => o.Payment)
@@ -33,6 +34,7 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<IEnumerable<Order>> GetByCustomerId(string customerId)
         {
             return await _context.Orders
+                .AsSplitQuery()
                 .Include(o => o.RestaurantOrders)
                     .ThenInclude(ro => ro.OrderItems)
                 .Include(o => o.Payment)
@@ -44,6 +46,7 @@ namespace OrderService.Infrastructure.Repositories
         public async Task<IEnumerable<Order>> GetAll()
         {
             return await _context.Orders
+                .AsSplitQuery()
                 .Include(o => o.RestaurantOrders)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
